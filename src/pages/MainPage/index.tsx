@@ -36,7 +36,7 @@ import LaunchIcon from "@mui/icons-material/Launch";
 import CloseIcon from "@mui/icons-material/Close";
 import { MOCK_STATIONS } from "../../data/stations";
 import StationDetailDialog from "./components/StationDetailDialog";
-import {UI} from "../../theme/theme";
+import { UI } from "../../theme/theme";
 import MapCanvas from "../../components/Map/MapCanvas";
 import StatusChip from "./components/StatusChip";
 import ConnectorChip from "./components/ConnectorChip";
@@ -56,8 +56,6 @@ import React from "react";
  * So this page renders a "map-like" canvas with markers (no Leaflet).
  * In your real project you can swap MapCanvas -> LeafletMap easily.
  */
-
-
 
 /** @typedef {"AVAILABLE"|"BUSY"|"OFFLINE"} Availability */
 /** @typedef {"CCS2"|"Type2"|"CHAdeMO"} ConnectorType */
@@ -351,8 +349,7 @@ export default function MainPage() {
   };
 
   return (
-<React.Fragment>
-
+    <React.Fragment>
       <Box
         sx={{
           display: "grid",
@@ -361,15 +358,15 @@ export default function MainPage() {
         }}
       >
         {/* {isMdUp ? ( */}
-          <Box
-            sx={{
-              borderRight: `1px solid ${UI.border2}`,
-              backgroundColor: UI.surface2,
-              overflow: "auto",
-            }}
-          >
-            {FiltersPanel}
-          </Box>
+        <Box
+          sx={{
+            borderRight: `1px solid ${UI.border2}`,
+            backgroundColor: UI.surface2,
+            overflow: "auto",
+          }}
+        >
+          {FiltersPanel}
+        </Box>
         {/* ) : (
           <Drawer
             open={drawerOpen}
@@ -511,11 +508,6 @@ export default function MainPage() {
         onClose={() => setDetailOpen(false)}
         onOpenMaps={() => (selected ? openGoogleMaps(selected) : null)}
       />
-
-      </React.Fragment>
+    </React.Fragment>
   );
 }
-
-
-
-
