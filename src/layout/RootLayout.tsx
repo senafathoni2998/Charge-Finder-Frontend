@@ -86,10 +86,12 @@ export default function RootLayout() {
                 }}
                 disabled={geo.loading}
                 sx={{
-                  border: `1px solid ${UI.border2}`,
                   borderRadius: 3,
-                  backgroundColor: "rgba(10,10,16,0.03)",
                   color: UI.text,
+                  ":hover": {
+                    border: `1px solid ${UI.border2}`,
+                    backgroundColor: "rgba(10,10,16,0.03)",
+                  },
                 }}
                 aria-label="Use my location"
               >
@@ -103,10 +105,12 @@ export default function RootLayout() {
               <IconButton
                 onClick={() => dispatch(setSidebarOpen(true))}
                 sx={{
-                  border: `1px solid ${UI.border2}`,
                   borderRadius: 3,
-                  backgroundColor: "rgba(10,10,16,0.03)",
                   color: UI.text,
+                  ":hover": {
+                    border: `1px solid ${UI.border2}`,
+                    backgroundColor: "rgba(10,10,16,0.03)",
+                  },
                 }}
                 aria-label="Open filters"
               >
