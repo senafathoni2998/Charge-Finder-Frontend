@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 // NOTE: This page uses react-router for navigation in the full app.
 import {
   AppBar,
@@ -18,6 +18,8 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Slider,
+  FormControlLabel,
+  Switch,
   useMediaQuery,
   CircularProgress,
 } from "@mui/material";
@@ -48,8 +50,11 @@ export default function MainPage() {
   const [status, setStatus] = useState(/** @type {""|Availability} */ "");
   const [connectorSet, setConnectorSet] = useState(new Set());
   const [minKW, setMinKW] = useState(0);
+  const [useCarFilter, setUseCarFilter] = useState(false);
+  const [carFilterTouched, setCarFilterTouched] = useState(false);
 
   const drawerOpen = useAppSelector((state) => state.app.isSidebarOpen);
+  const car = useAppSelector((state) => state.auth.car);
   const dispatch = useAppDispatch();
 
   // SSR-safe: prevents MUI from touching matchMedia during non-browser rendering.
@@ -69,18 +74,52 @@ export default function MainPage() {
   const geo = useGeoLocation();
   const userCenter = geo.loc ?? { lat: -6.2, lng: 106.8167 };
 
+  useEffect(() => {
+    if (!car) {
+      setUseCarFilter(false);
+      setCarFilterTouched(false);
+      return;
+    }
+    if (!carFilterTouched) setUseCarFilter(true);
+  }, [car, carFilterTouched]);
+
+  const carConnectorSet = useMemo(
+    () => new Set(car?.connectorTypes ?? []),
+    [car]
+  );
+
+  const effectiveConnectorSet = useMemo(() => {
+    if (useCarFilter && carConnectorSet.size) return carConnectorSet;
+    return connectorSet;
+  }, [useCarFilter, carConnectorSet, connectorSet]);
+
+  const effectiveMinKW = useMemo(() => {
+    const base = Number.isFinite(minKW) ? minKW : 0;
+    if (useCarFilter && car && Number.isFinite(car.minKW)) {
+      return Math.max(base, car.minKW);
+    }
+    return base;
+  }, [minKW, useCarFilter, car]);
+
   const filtered = useMemo(() => {
     return filterStations(
       stations,
       {
         q,
         status,
-        connectorSet,
-        minKW,
+        connectorSet: effectiveConnectorSet,
+        minKW: effectiveMinKW,
       },
       userCenter
     );
-  }, [stations, q, status, connectorSet, minKW, userCenter]);
+  }, [
+    stations,
+    q,
+    status,
+    effectiveConnectorSet,
+    effectiveMinKW,
+    userCenter,
+  ]);
 
   const selected = useMemo(
     () => filtered.find((s) => s.id === selectedId) || null,
@@ -165,6 +204,7 @@ export default function MainPage() {
                       clickable
                       label={c}
                       variant={active ? "filled" : "outlined"}
+                      disabled={useCarFilter}
                       onClick={() => {
                         setConnectorSet((prev) => {
                           const next = new Set(prev);
@@ -190,6 +230,102 @@ export default function MainPage() {
               )
             }
           </Stack>
+          {useCarFilter ? (
+            <Typography
+              variant="caption"
+              sx={{ color: UI.text3, mt: 0.75, display: "block" }}
+            >
+              Connector filters are driven by your car profile.
+            </Typography>
+          ) : null}
+        </Box>
+
+        <Box>
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Typography variant="caption" sx={{ color: UI.text3 }}>
+              My car
+            </Typography>
+            {car ? (
+              <Chip
+                size="small"
+                label={car.name}
+                sx={{
+                  borderRadius: 999,
+                  backgroundColor: "rgba(10,10,16,0.04)",
+                  border: `1px solid ${UI.border2}`,
+                  color: UI.text2,
+                  fontWeight: 750,
+                }}
+              />
+            ) : null}
+          </Stack>
+
+          {car ? (
+            <>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={useCarFilter}
+                    onChange={(e) => {
+                      setUseCarFilter(e.target.checked);
+                      setCarFilterTouched(true);
+                    }}
+                    color="primary"
+                  />
+                }
+                label={
+                  <Typography sx={{ color: UI.text2, fontWeight: 700 }}>
+                    Use my car to filter stations
+                  </Typography>
+                }
+                sx={{ mt: 0.5, ml: -0.5 }}
+              />
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{ mt: 0.75, flexWrap: "wrap" }}
+              >
+                {car.connectorTypes.map((c) => (
+                  <Chip
+                    key={c}
+                    size="small"
+                    label={c}
+                    sx={{
+                      borderRadius: 999,
+                      backgroundColor: "rgba(124,92,255,0.12)",
+                      borderColor: "rgba(124,92,255,0.35)",
+                      color: UI.text,
+                      fontWeight: 700,
+                    }}
+                  />
+                ))}
+              </Stack>
+            </>
+          ) : (
+            <Stack spacing={1} sx={{ mt: 0.75 }}>
+              <Typography variant="body2" sx={{ color: UI.text2 }}>
+                Add your car in Profile to personalize results.
+              </Typography>
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={() => navigate("/profile")}
+                sx={{
+                  textTransform: "none",
+                  borderRadius: 3,
+                  borderColor: UI.border,
+                  color: UI.text,
+                  alignSelf: "flex-start",
+                }}
+              >
+                Add car
+              </Button>
+            </Stack>
+          )}
         </Box>
 
         <Box>
@@ -202,7 +338,7 @@ export default function MainPage() {
               Minimum power
             </Typography>
             <Typography variant="caption" sx={{ color: UI.text2 }}>
-              {minKW || 0} kW
+              {effectiveMinKW || 0} kW
             </Typography>
           </Stack>
           <Slider

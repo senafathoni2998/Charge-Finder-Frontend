@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Avatar,
   Box,
@@ -7,7 +7,9 @@ import {
   CardContent,
   Chip,
   Divider,
+  Slider,
   Stack,
+  TextField,
   Typography,
 } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
@@ -15,12 +17,21 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import { useNavigate } from "react-router";
 import { UI } from "../../theme/theme";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
-import { logout } from "../../features/auth/authSlice";
+import { logout, setCar } from "../../features/auth/authSlice";
+import type { ConnectorType } from "../../models/model";
 
 export default function ProfilePage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const email = useAppSelector((state) => state.auth.email);
+  const car = useAppSelector((state) => state.auth.car);
+
+  const [carName, setCarName] = useState(car?.name ?? "");
+  const [carConnectors, setCarConnectors] = useState(
+    new Set<ConnectorType>(car?.connectorTypes ?? [])
+  );
+  const [carMinKW, setCarMinKW] = useState(car?.minKW ?? 0);
+  const [carError, setCarError] = useState<string | null>(null);
 
   const displayName = useMemo(() => {
     if (!email) return "Driver";
@@ -34,11 +45,57 @@ export default function ProfilePage() {
     return parts[0].charAt(0).toUpperCase();
   }, [displayName]);
 
+  useEffect(() => {
+    setCarName(car?.name ?? "");
+    setCarConnectors(new Set<ConnectorType>(car?.connectorTypes ?? []));
+    setCarMinKW(car?.minKW ?? 0);
+    setCarError(null);
+  }, [car]);
+
+  const handleSaveCar = () => {
+    const trimmedName = carName.trim() || "My EV";
+    const connectorTypes = Array.from(carConnectors);
+    if (!connectorTypes.length) {
+      setCarError("Select at least one connector type.");
+      return;
+    }
+    const nextCar = {
+      name: trimmedName,
+      connectorTypes,
+      minKW: Number.isFinite(carMinKW) ? carMinKW : 0,
+    };
+    setCarError(null);
+    dispatch(setCar(nextCar));
+    if (typeof window !== "undefined") {
+      try {
+        window.localStorage.setItem("cf_user_car", JSON.stringify(nextCar));
+      } catch {
+        // ignore
+      }
+    }
+  };
+
+  const handleClearCar = () => {
+    setCarName("");
+    setCarConnectors(new Set<ConnectorType>());
+    setCarMinKW(0);
+    setCarError(null);
+    dispatch(setCar(null));
+    if (typeof window !== "undefined") {
+      try {
+        window.localStorage.removeItem("cf_user_car");
+      } catch {
+        // ignore
+      }
+    }
+  };
+
   const handleLogout = () => {
     if (typeof window !== "undefined") {
       try {
         window.localStorage.removeItem("cf_auth_token");
         window.localStorage.removeItem("cf_auth_email");
+        window.localStorage.removeItem("cf_user_car");
       } catch {
         // ignore
       }
@@ -187,6 +244,150 @@ export default function ProfilePage() {
                     }}
                   >
                     Sign out
+                  </Button>
+                </Stack>
+              </Stack>
+            </CardContent>
+          </Card>
+
+          <Card
+            variant="outlined"
+            sx={{
+              borderRadius: 5,
+              borderColor: UI.border2,
+              background: UI.surface,
+              boxShadow: "0 18px 50px rgba(10,10,16,0.10)",
+              overflow: "hidden",
+            }}
+          >
+            <Box sx={{ height: 8, background: UI.brandGradStrong }} />
+            <CardContent sx={{ p: { xs: 2.25, sm: 3 } }}>
+              <Stack spacing={2}>
+                <Box>
+                  <Typography sx={{ fontWeight: 900, color: UI.text }}>
+                    Your car
+                  </Typography>
+                  <Typography sx={{ color: UI.text2 }}>
+                    Personalize filters and compatibility based on your EV.
+                  </Typography>
+                </Box>
+
+                <TextField
+                  label="Car name"
+                  value={carName}
+                  onChange={(e) => setCarName(e.target.value)}
+                  placeholder="e.g. Hyundai Ioniq 5"
+                  fullWidth
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 3,
+                      backgroundColor: "rgba(10,10,16,0.02)",
+                    },
+                  }}
+                />
+
+                <Box>
+                  <Typography variant="caption" sx={{ color: UI.text3 }}>
+                    Connector types
+                  </Typography>
+                  <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: "wrap" }}>
+                    {(["CCS2", "Type2", "CHAdeMO"] as ConnectorType[]).map(
+                      (c) => {
+                        const active = carConnectors.has(c);
+                        return (
+                          <Chip
+                            key={c}
+                            clickable
+                            label={c}
+                            variant={active ? "filled" : "outlined"}
+                            onClick={() => {
+                              setCarConnectors((prev) => {
+                                const next = new Set(prev);
+                                if (next.has(c)) next.delete(c);
+                                else next.add(c);
+                                return next;
+                              });
+                            }}
+                            sx={{
+                              borderRadius: 999,
+                              backgroundColor: active
+                                ? "rgba(124,92,255,0.12)"
+                                : "transparent",
+                              borderColor: active
+                                ? "rgba(124,92,255,0.35)"
+                                : UI.border2,
+                              color: UI.text,
+                              fontWeight: 700,
+                            }}
+                          />
+                        );
+                      }
+                    )}
+                  </Stack>
+                  {carError ? (
+                    <Typography variant="caption" sx={{ color: "rgba(244,67,54,0.9)", mt: 0.75, display: "block" }}>
+                      {carError}
+                    </Typography>
+                  ) : null}
+                </Box>
+
+                <Box>
+                  <Stack
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="center"
+                  >
+                    <Typography variant="caption" sx={{ color: UI.text3 }}>
+                      Preferred minimum power
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: UI.text2 }}>
+                      {carMinKW || 0} kW
+                    </Typography>
+                  </Stack>
+                  <Slider
+                    value={Number.isFinite(carMinKW) ? carMinKW : 0}
+                    onChange={(_, v) =>
+                      setCarMinKW(Array.isArray(v) ? v[0] : v)
+                    }
+                    step={10}
+                    min={0}
+                    max={200}
+                    sx={{ mt: 1 }}
+                  />
+                </Box>
+
+                <Divider sx={{ borderColor: UI.border2 }} />
+
+                <Stack
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={1}
+                  alignItems={{ sm: "center" }}
+                >
+                  <Button
+                    variant="outlined"
+                    onClick={handleClearCar}
+                    sx={{
+                      textTransform: "none",
+                      borderRadius: 3,
+                      borderColor: UI.border,
+                      color: UI.text,
+                      backgroundColor: "rgba(10,10,16,0.01)",
+                    }}
+                  >
+                    Clear car
+                  </Button>
+                  <Box sx={{ flex: 1 }} />
+                  <Button
+                    variant="contained"
+                    onClick={handleSaveCar}
+                    sx={{
+                      textTransform: "none",
+                      borderRadius: 3,
+                      background: UI.brandGradStrong,
+                      color: "white",
+                    }}
+                  >
+                    Save car profile
                   </Button>
                 </Stack>
               </Stack>

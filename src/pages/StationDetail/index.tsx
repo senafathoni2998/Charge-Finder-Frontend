@@ -42,6 +42,7 @@ import SectionCard from "./components/SectionCard";
 import StatusChip from "../MainPage/components/StatusChip";
 import MiniPhoto from "./components/MiniPhoto";
 import { useParams } from "react-router";
+import { useAppSelector } from "../../app/hooks";
 
 /**
  * ChargeFinder — Station Detail Page (Canvas-safe) — LIGHT MODE
@@ -59,6 +60,7 @@ export default function StationDetailPage() {
   });
 
   const { id: stationId } = useParams();
+  const car = useAppSelector((state) => state.auth.car);
 
   // Demo selector for canvas. In your app, stationId will come from route params.
   //   const [stationId, setStationId] = useState("st-001");
@@ -88,7 +90,13 @@ export default function StationDetailPage() {
     return haversineKm(userCenter, { lat: station.lat, lng: station.lng });
   }, [station, userCenter]);
 
-  const canStartCharging = station?.status === "AVAILABLE";
+  const isCompatible = useMemo(() => {
+    if (!car || !station || !car.connectorTypes.length) return null;
+    return station.connectors.some((c) => car.connectorTypes.includes(c.type));
+  }, [car, station]);
+
+  const canStartCharging =
+    station?.status === "AVAILABLE" && (isCompatible ?? true);
 
   const openGoogleMaps = () => {
     if (!station || typeof window === "undefined") return;
@@ -147,7 +155,28 @@ export default function StationDetailPage() {
               loading ? (
                 <Skeleton variant="rounded" width={90} height={28} />
               ) : station ? (
-                <StatusChip status={station.status as Availability} />
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <StatusChip status={station.status as Availability} />
+                  {car && car.connectorTypes.length ? (
+                    <Chip
+                      size="small"
+                      label={isCompatible ? "Compatible" : "Not supported"}
+                      sx={{
+                        borderRadius: 999,
+                        backgroundColor: isCompatible
+                          ? "rgba(0,229,255,0.16)"
+                          : "rgba(244,67,54,0.16)",
+                        border: `1px solid ${
+                          isCompatible
+                            ? "rgba(0,229,255,0.35)"
+                            : "rgba(244,67,54,0.35)"
+                        }`,
+                        color: UI.text,
+                        fontWeight: 800,
+                      }}
+                    />
+                  ) : null}
+                </Stack>
               ) : null
             }
           >
@@ -332,6 +361,11 @@ export default function StationDetailPage() {
                 >
                   Start charging
                 </Button>
+                {car && isCompatible === false ? (
+                  <Typography variant="caption" sx={{ color: UI.text3 }}>
+                    Not compatible with your car's connector types.
+                  </Typography>
+                ) : null}
 
                 <Button
                   variant="outlined"
