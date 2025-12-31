@@ -1,3 +1,17 @@
+import { Availability } from "../models/model";
+
+export function statusLabel(status: Availability) {
+  if (status === "AVAILABLE") return "Available";
+  if (status === "BUSY") return "Busy";
+  return "Offline";
+}
+
+export function formatCurrency(currency: string, value?: number) {
+  if (!value && value !== 0) return "—";
+  // Keep formatting simple & stable across runtimes.
+  return `${currency} ${value.toLocaleString("en-US")}`;
+}
+
 export function haversineKm(a, b) {
   const R = 6371;
   const dLat = ((b.lat - a.lat) * Math.PI) / 180;

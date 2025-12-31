@@ -34,20 +34,19 @@ import FilterListIcon from "@mui/icons-material/FilterList";
 import ElectricCarIcon from "@mui/icons-material/ElectricCar";
 import LaunchIcon from "@mui/icons-material/Launch";
 import CloseIcon from "@mui/icons-material/Close";
-import { MOCK_STATIONS } from "../../data/stations";
+import { DRAWER_WIDTH, MOCK_STATIONS } from "../../data/stations";
 import StationDetailDialog from "./components/StationDetailDialog";
 import { UI } from "../../theme/theme";
 import MapCanvas from "../../components/Map/MapCanvas";
 import StatusChip from "./components/StatusChip";
 import ConnectorChip from "./components/ConnectorChip";
 import { minutesAgo } from "../../utils/time";
-import { useGeoLocation } from "./utils/useGeoLocation";
-import { boundsFromStations, filterStations } from "./utils/utilFunc";
-import { DRAWER_WIDTH } from "./utils/data";
 import React from "react";
 import StationCard from "./components/StationCard";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { setMdMode, setSidebarOpen } from "../../features/app/appSlice";
+import { boundsFromStations, filterStations } from "../../utils/distance";
+import { useGeoLocation } from "../../hooks/useGeolocation";
 
 /**
  * ChargeFinder — Map Explorer Page (Canvas-safe) — LIGHT MODE

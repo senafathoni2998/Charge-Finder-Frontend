@@ -4,9 +4,16 @@ import LegendRow from "./LegendRow";
 import MapGrid from "./MapGrid";
 import MarkerDot from "./MarkedDot";
 import { UI } from "../../theme/theme";
-import { normalizeToCanvas, statusColor } from "./utils/canvasFunc";
+import { normalizeToCanvas } from "./utils/canvasFunc";
+import { statusColor } from "../../utils/map";
 
-export default function MapCanvas({ stations, bounds, selectedId, onSelect, userLoc }) {
+export default function MapCanvas({
+  stations,
+  bounds,
+  selectedId,
+  onSelect,
+  userLoc,
+}) {
   const containerRef = useRef(null);
 
   return (

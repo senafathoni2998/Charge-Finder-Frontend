@@ -1,19 +1,26 @@
 import { NavLink, Outlet } from "react-router";
-import { AppBar, Box, Toolbar, Typography, IconButton, Tooltip, useMediaQuery, CircularProgress } from "@mui/material";
+import {
+  AppBar,
+  Box,
+  Toolbar,
+  Typography,
+  IconButton,
+  Tooltip,
+  useMediaQuery,
+  CircularProgress,
+} from "@mui/material";
 import ElectricCarIcon from "@mui/icons-material/ElectricCar";
 import MyLocationIcon from "@mui/icons-material/MyLocation";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { UI } from "../theme/theme";
-import { useGeoLocation } from "../pages/MainPage/utils/useGeoLocation";
-import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { setSidebarOpen } from "../features/app/appSlice";
+import { useGeoLocation } from "../hooks/useGeolocation";
 
 export default function RootLayout() {
-      const geo = useGeoLocation();
-      const isMdUp = useAppSelector((state) => state.app.isMdMode);
-      const dispatch = useAppDispatch();
-
+  const geo = useGeoLocation();
+  const isMdUp = useAppSelector((state) => state.app.isMdMode);
+  const dispatch = useAppDispatch();
 
   return (
     <Box sx={{ minHeight: "100dvh", backgroundColor: UI.bg }}>
@@ -96,7 +103,6 @@ export default function RootLayout() {
       </AppBar>
 
       <Outlet />
-
-      </Box>
+    </Box>
   );
 }
