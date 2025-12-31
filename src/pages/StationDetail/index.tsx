@@ -316,7 +316,9 @@ export default function StationDetailPage() {
                   sx={{
                     textTransform: "none",
                     borderRadius: 3,
-                    background: UI.brandGradStrong,
+                    background: canStartCharging
+                      ? UI.brandGradStrong
+                      : UI.brandGradDisabled,
                     color: "white",
                     boxShadow: "0 14px 40px rgba(124,92,255,0.14)",
                   }}

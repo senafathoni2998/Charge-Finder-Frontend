@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-// NOTE: To keep this canvas runnable everywhere, this file does NOT require react-router.
-// In your real app, you can wire navigation to routes like /stations/:id.
+// NOTE: This page uses react-router for navigation in the full app.
 import {
   AppBar,
   Toolbar,
@@ -20,22 +19,12 @@ import {
   ToggleButtonGroup,
   Slider,
   useMediaQuery,
-  Tooltip,
   CircularProgress,
-  Skeleton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import MyLocationIcon from "@mui/icons-material/MyLocation";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import ElectricCarIcon from "@mui/icons-material/ElectricCar";
 import LaunchIcon from "@mui/icons-material/Launch";
-import CloseIcon from "@mui/icons-material/Close";
 import { DRAWER_WIDTH, MOCK_STATIONS } from "../../data/stations";
-import StationDetailDialog from "./components/StationDetailDialog";
 import { UI } from "../../theme/theme";
 import MapCanvas from "../../components/Map/MapCanvas";
 import StatusChip from "./components/StatusChip";
@@ -48,17 +37,6 @@ import { setMdMode, setSidebarOpen } from "../../features/app/appSlice";
 import { boundsFromStations, filterStations } from "../../utils/distance";
 import { useGeoLocation } from "../../hooks/useGeolocation";
 import { useNavigate } from "react-router";
-
-/**
- * ChargeFinder — Map Explorer Page (Canvas-safe) — LIGHT MODE
- *
- * Why this version?
- * - Some sandboxes don’t have react-router context (useNavigate/useSearchParams throws).
- * - Some sandboxes don’t have leaflet installed (module resolution fails at build time).
- *
- * So this page renders a "map-like" canvas with markers (no Leaflet).
- * In your real project you can swap MapCanvas -> LeafletMap easily.
- */
 
 /** @typedef {"AVAILABLE"|"BUSY"|"OFFLINE"} Availability */
 /** @typedef {"CCS2"|"Type2"|"CHAdeMO"} ConnectorType */
@@ -86,7 +64,6 @@ export default function MainPage() {
 
   // const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
-  const [detailOpen, setDetailOpen] = useState(false);
 
   const stations = MOCK_STATIONS;
   const geo = useGeoLocation();
@@ -116,8 +93,8 @@ export default function MainPage() {
   );
 
   const focusStation = (s) => {
-    navigate(`/station/${s.id}`);
-    // setSelectedId(s.id);
+    // navigate(`/station/${s.id}`);
+    setSelectedId(s.id);
   };
 
   const FiltersPanel = (
@@ -354,12 +331,36 @@ export default function MainPage() {
             />
           </Box>
 
+          <IconButton
+            onClick={() => {
+              geo.request();
+              if (!isMdUp) dispatch(setSidebarOpen(true));
+            }}
+            disabled={geo.loading}
+            sx={{
+              zIndex: 9999,
+              position: "absolute",
+              right: 14,
+              bottom: 14,
+              border: `1px solid ${UI.border2}`,
+              borderRadius: 3,
+              backgroundColor: "hsla(0, 0%, 97%, 1.00)",
+              color: UI.text,
+              boxShadow: UI.shadow,
+              ":hover": { backgroundColor: "hsla(0, 0%, 95%, 1.00)" },
+            }}
+            aria-label="Use my location"
+          >
+            {geo.loading ? <CircularProgress size={18} /> : <MyLocationIcon />}
+          </IconButton>
+
           {selected && (
             <Card
               elevation={0}
               sx={{
+                zIndex: 9999,
                 position: "absolute",
-                right: 14,
+                left: 14,
                 bottom: 14,
                 width: "min(420px, calc(100% - 28px))",
                 borderRadius: 4,
@@ -421,7 +422,8 @@ export default function MainPage() {
                     <Button
                       variant="contained"
                       fullWidth
-                      onClick={() => setDetailOpen(true)}
+                      // onClick={() => setDetailOpen(true)}
+                      onClick={() => navigate(`/station/${selected.id}`)}
                       sx={{
                         textTransform: "none",
                         borderRadius: 3,
@@ -453,13 +455,6 @@ export default function MainPage() {
           )}
         </Box>
       </Box>
-
-      <StationDetailDialog
-        open={detailOpen}
-        station={selected}
-        onClose={() => setDetailOpen(false)}
-        onOpenMaps={() => (selected ? openGoogleMaps(selected) : null)}
-      />
     </React.Fragment>
   );
 }

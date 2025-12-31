@@ -1,69 +1,138 @@
 import { Box, Stack, Typography } from "@mui/material";
-import { useRef } from "react";
+import { useEffect, useMemo } from "react";
+import {
+  CircleMarker,
+  MapContainer,
+  TileLayer,
+  Tooltip,
+  useMap,
+} from "react-leaflet";
+import type { LatLngBoundsExpression } from "leaflet";
 import LegendRow from "./LegendRow";
-import MapGrid from "./MapGrid";
-import MarkerDot from "./MarkedDot";
 import { UI } from "../../theme/theme";
-import { normalizeToCanvas } from "./utils/canvasFunc";
 import { statusColor } from "../../utils/map";
+import "leaflet/dist/leaflet.css";
+
+function FitBounds({ bounds }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (
+      !bounds ||
+      !Number.isFinite(bounds.minLat) ||
+      !Number.isFinite(bounds.minLng) ||
+      !Number.isFinite(bounds.maxLat) ||
+      !Number.isFinite(bounds.maxLng)
+    )
+      return;
+    map.fitBounds(
+      [
+        [bounds.minLat, bounds.minLng],
+        [bounds.maxLat, bounds.maxLng],
+      ],
+      { padding: [40, 40] }
+    );
+  }, [map, bounds]);
+
+  return null;
+}
 
 export default function MapCanvas({
-  stations,
+  stations = [],
   bounds,
   selectedId,
   onSelect,
   userLoc,
 }) {
-  const containerRef = useRef(null);
+  const mapBounds = useMemo<LatLngBoundsExpression>(() => {
+    if (
+      !bounds ||
+      !Number.isFinite(bounds.minLat) ||
+      !Number.isFinite(bounds.minLng) ||
+      !Number.isFinite(bounds.maxLat) ||
+      !Number.isFinite(bounds.maxLng)
+    ) {
+      return [
+        [0, 0],
+        [0, 0],
+      ];
+    }
+    return [
+      [bounds.minLat, bounds.minLng],
+      [bounds.maxLat, bounds.maxLng],
+    ];
+  }, [bounds]);
 
   return (
     <Box
-      ref={containerRef}
       sx={{
         position: "absolute",
         inset: 0,
         overflow: "hidden",
-        background:
-          "radial-gradient(900px 520px at 20% 10%, rgba(124,92,255,0.10), rgba(255,255,255,0) 60%),\n           radial-gradient(900px 520px at 70% 70%, rgba(0,229,255,0.08), rgba(255,255,255,0) 60%),\n           linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.72))",
         border: `1px solid ${UI.border2}`,
         borderRadius: 0,
+        "& .leaflet-container": {
+          height: "100%",
+          width: "100%",
+          fontFamily: "inherit",
+        },
       }}
     >
-      <MapGrid />
-
-      {/* Markers */}
-      {stations.map((s) => {
-        const p = normalizeToCanvas(s.lat, s.lng, bounds);
-        return (
-          <MarkerDot
-            key={s.id}
-            x={p.x}
-            y={p.y}
-            color={statusColor(s.status)}
-            active={selectedId === s.id}
-            label={`${s.name} • ${s.status}`}
-            onClick={() => onSelect(s.id)}
-          />
-        );
-      })}
-
-      {userLoc && (
-        <MarkerDot
-          x={normalizeToCanvas(userLoc.lat, userLoc.lng, bounds).x}
-          y={normalizeToCanvas(userLoc.lat, userLoc.lng, bounds).y}
-          color="rgba(124,92,255,0.98)"
-          active={false}
-          label="Your location"
-          onClick={() => {}}
+      <MapContainer bounds={mapBounds}>
+        <TileLayer
+          // attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-      )}
+        <FitBounds bounds={bounds} />
+
+        {stations.map((s) => {
+          const isActive = selectedId === s.id;
+          const color = statusColor(s.status);
+          return (
+            <CircleMarker
+              key={s.id}
+              center={[s.lat, s.lng]}
+              // radius={isActive ? 9 : 7}
+              pathOptions={{
+                color,
+                fillColor: color,
+                fillOpacity: 0.9,
+                weight: isActive ? 3 : 2,
+              }}
+              eventHandlers={{
+                click: () => onSelect?.(s.id),
+              }}
+            >
+              <Tooltip>
+                {s.name} • {s.status}
+              </Tooltip>
+            </CircleMarker>
+          );
+        })}
+
+        {userLoc && (
+          <CircleMarker
+            center={[userLoc.lat, userLoc.lng]}
+            // radius={6}
+            pathOptions={{
+              color: "rgba(124,92,255,0.98)",
+              fillColor: "rgba(124,92,255,0.98)",
+              fillOpacity: 0.9,
+              weight: 2,
+            }}
+          >
+            <Tooltip>Your location</Tooltip>
+          </CircleMarker>
+        )}
+      </MapContainer>
 
       {/* Legend */}
       <Box
         sx={{
           position: "absolute",
-          left: 12,
-          bottom: 12,
+          right: 12,
+          top: 12,
+          zIndex: 1000,
           p: 1.25,
           borderRadius: 3,
           border: `1px solid ${UI.border}`,
@@ -90,6 +159,7 @@ export default function MapCanvas({
           top: 12,
           left: 12,
           right: 12,
+          zIndex: 1000,
           display: "flex",
           justifyContent: "center",
           pointerEvents: "none",

@@ -10,7 +10,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import ElectricCarIcon from "@mui/icons-material/ElectricCar";
-import MyLocationIcon from "@mui/icons-material/MyLocation";
+import PersonIcon from "@mui/icons-material/Person";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { UI } from "../theme/theme";
@@ -82,7 +82,6 @@ export default function RootLayout() {
             <span>
               <IconButton
                 onClick={() => {
-                  geo.request();
                   if (!isMdUp) dispatch(setSidebarOpen(true));
                 }}
                 disabled={geo.loading}
@@ -94,11 +93,7 @@ export default function RootLayout() {
                 }}
                 aria-label="Use my location"
               >
-                {geo.loading ? (
-                  <CircularProgress size={18} />
-                ) : (
-                  <MyLocationIcon />
-                )}
+                <PersonIcon />
               </IconButton>
             </span>
           </Tooltip>

@@ -13,4 +13,6 @@ export const UI = {
     "linear-gradient(135deg, rgba(124,92,255,0.95), rgba(0,229,255,0.85))",
   brandGradStrong:
     "linear-gradient(135deg, rgba(124,92,255,1), rgba(0,229,255,0.90))",
+  brandGradDisabled:
+    "linear-gradient(135deg, rgba(124,92,255,0.40), rgba(0,229,255,0.30))",
 };
