@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 // NOTE: This page uses react-router for navigation in the full app.
 import {
-  AppBar,
-  Toolbar,
   Box,
   Typography,
   IconButton,
@@ -42,13 +40,14 @@ import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { setMdMode, setSidebarOpen } from "../../features/app/appSlice";
 import { boundsFromStations, filterStations } from "../../utils/distance";
 import { useGeoLocation } from "../../hooks/useGeolocation";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 
 /** @typedef {"AVAILABLE"|"BUSY"|"OFFLINE"} Availability */
 /** @typedef {"CCS2"|"Type2"|"CHAdeMO"} ConnectorType */
 
 export default function MainPage() {
   // Filters are local state (canvas-safe). In your real app, sync them to URL query.
+  const location = useLocation();
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [status, setStatus] = useState(/** @type {""|Availability} */ "");
@@ -58,6 +57,7 @@ export default function MainPage() {
   const [carFilterTouched, setCarFilterTouched] = useState(false);
 
   const drawerOpen = useAppSelector((state) => state.app.isSidebarOpen);
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
   const cars = useAppSelector((state) => state.auth.cars);
   const activeCarId = useAppSelector((state) => state.auth.activeCarId);
   const dispatch = useAppDispatch();
@@ -78,19 +78,19 @@ export default function MainPage() {
   const stations = MOCK_STATIONS;
   const geo = useGeoLocation();
   const userCenter = geo.loc ?? { lat: -6.2, lng: 106.8167 };
-  const activeCar = useMemo(
-    () => cars.find((c) => c.id === activeCarId) ?? null,
-    [cars, activeCarId]
-  );
+  const activeCar = useMemo(() => {
+    if (!isAuthenticated) return null;
+    return cars.find((c) => c.id === activeCarId) ?? null;
+  }, [cars, activeCarId, isAuthenticated]);
 
   useEffect(() => {
-    if (!activeCar || !activeCar.connectorTypes.length) {
+    if (!isAuthenticated || !activeCar || !activeCar.connectorTypes.length) {
       setUseCarFilter(false);
       setCarFilterTouched(false);
       return;
     }
     if (!carFilterTouched) setUseCarFilter(true);
-  }, [activeCar, carFilterTouched]);
+  }, [activeCar, carFilterTouched, isAuthenticated]);
 
   const carConnectorSet = useMemo(
     () => new Set(activeCar?.connectorTypes ?? []),
@@ -194,6 +194,46 @@ export default function MainPage() {
           </AccordionSummary>
           <AccordionDetails sx={accordionDetailsSx}>
             <Stack spacing={2}>
+              {!isAuthenticated ? (
+                <Box
+                  sx={{
+                    p: 1.5,
+                    borderRadius: 3,
+                    border: `1px dashed ${UI.border}`,
+                    backgroundColor: "rgba(10,10,16,0.02)",
+                  }}
+                >
+                  <Stack spacing={0.75}>
+                    <Typography sx={{ fontWeight: 900, color: UI.text }}>
+                      Guest mode
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: UI.text2 }}>
+                      Log in to save cars and personalize filters.
+                    </Typography>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() =>
+                        navigate(
+                          `/login?next=${encodeURIComponent(
+                            `${location.pathname}${location.search}${location.hash}`
+                          )}`
+                        )
+                      }
+                      sx={{
+                        textTransform: "none",
+                        borderRadius: 3,
+                        borderColor: UI.border,
+                        color: UI.text,
+                        alignSelf: "flex-start",
+                      }}
+                    >
+                      Log in
+                    </Button>
+                  </Stack>
+                </Box>
+              ) : null}
+
               <Box
                 sx={{
                   display: "flex",
@@ -337,7 +377,7 @@ export default function MainPage() {
                       ))}
                     </Stack>
                   </>
-                ) : (
+                ) : isAuthenticated ? (
                   <Stack spacing={1} sx={{ mt: 0.75 }}>
                     <Typography variant="body2" sx={{ color: UI.text2 }}>
                       Add a car to personalize results.
@@ -355,6 +395,32 @@ export default function MainPage() {
                       }}
                     >
                       Add car
+                    </Button>
+                  </Stack>
+                ) : (
+                  <Stack spacing={1} sx={{ mt: 0.75 }}>
+                    <Typography variant="body2" sx={{ color: UI.text2 }}>
+                      Log in to add a car and personalize results.
+                    </Typography>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() =>
+                        navigate(
+                          `/login?next=${encodeURIComponent(
+                            `${location.pathname}${location.search}${location.hash}`
+                          )}`
+                        )
+                      }
+                      sx={{
+                        textTransform: "none",
+                        borderRadius: 3,
+                        borderColor: UI.border,
+                        color: UI.text,
+                        alignSelf: "flex-start",
+                      }}
+                    >
+                      Log in
                     </Button>
                   </Stack>
                 )}

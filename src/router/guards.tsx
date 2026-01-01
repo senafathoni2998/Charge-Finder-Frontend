@@ -20,6 +20,19 @@ export function RequireAuth() {
   const location = useLocation();
 
   if (!isAuthenticated) {
+    if (typeof window !== "undefined") {
+      try {
+        const logoutRedirect = window.sessionStorage.getItem(
+          "cf_logout_redirect"
+        );
+        if (logoutRedirect) {
+          window.sessionStorage.removeItem("cf_logout_redirect");
+          return <Navigate to="/" replace />;
+        }
+      } catch {
+        // ignore
+      }
+    }
     const next = encodeURIComponent(
       `${location.pathname}${location.search}${location.hash}`
     );

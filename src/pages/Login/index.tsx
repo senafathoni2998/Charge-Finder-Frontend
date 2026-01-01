@@ -144,7 +144,14 @@ export default function ChargeFinderLoginPage() {
             }}
             aria-label="ChargeFinder"
           >
-            <ElectricBoltIcon fontSize="small" />
+            <IconButton
+              onClick={() => navigate("/")}
+              aria-hidden
+              disableRipple
+              sx={{ color: "inherit" }}
+            >
+              <ElectricBoltIcon fontSize="small" />
+            </IconButton>
           </Box>
           <Box sx={{ minWidth: 0 }}>
             <Typography
@@ -158,7 +165,7 @@ export default function ChargeFinderLoginPage() {
             </Typography>
           </Box>
           <Box sx={{ flex: 1 }} />
-          <Chip
+          {/* <Chip
             size="small"
             label="Light mode"
             sx={{
@@ -168,12 +175,14 @@ export default function ChargeFinderLoginPage() {
               color: UI.text2,
               fontWeight: 750,
             }}
-          />
+          /> */}
         </Toolbar>
       </AppBar>
 
       <Box
         sx={{
+          width: "100%",
+          height: "100vh",
           position: "relative",
           px: { xs: 2, md: 3 },
           py: { xs: 2.5, md: 4 },
@@ -350,7 +359,7 @@ export default function ChargeFinderLoginPage() {
                       spacing={1}
                       sx={{ mt: -0.5 }}
                     >
-                      <Chip
+                      {/* <Chip
                         size="small"
                         variant="outlined"
                         label={`Strength: ${pwStrength.label}`}
@@ -361,7 +370,7 @@ export default function ChargeFinderLoginPage() {
                           borderWidth: 1,
                           ...toneChipSx(pwStrength.tone),
                         }}
-                      />
+                      /> */}
                       <Box sx={{ flex: 1 }} />
                       <Link
                         component="button"

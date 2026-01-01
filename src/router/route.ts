@@ -10,20 +10,20 @@ import { RedirectIfAuth, RequireAuth } from "./guards";
 
 const router = createBrowserRouter([
   {
-    Component: RequireAuth,
+    path: "/",
+    Component: RootLayout,
     children: [
       {
-        path: "/",
-        Component: RootLayout,
+        index: true,
+        Component: App,
+      },
+      {
+        path: "station/:id",
+        Component: StationDetail,
+      },
+      {
+        Component: RequireAuth,
         children: [
-          {
-            index: true,
-            Component: App,
-          },
-          {
-            path: "station/:id",
-            Component: StationDetail,
-          },
           {
             path: "profile",
             Component: Profile,

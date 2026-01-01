@@ -57,7 +57,7 @@ export default function ProfilePage() {
   const handleRemoveCar = (carId: string) => {
     const nextCars = cars.filter((c) => c.id !== carId);
     const nextActiveId =
-      activeCarId === carId ? (nextCars[0]?.id ?? null) : activeCarId;
+      activeCarId === carId ? nextCars[0]?.id ?? null : activeCarId;
     dispatch(removeCar(carId));
     persistCars(nextCars, nextActiveId);
   };
@@ -70,12 +70,13 @@ export default function ProfilePage() {
         window.localStorage.removeItem("cf_user_car");
         window.localStorage.removeItem("cf_user_cars");
         window.localStorage.removeItem("cf_active_car_id");
+        window.sessionStorage.setItem("cf_logout_redirect", "1");
       } catch {
         // ignore
       }
     }
     dispatch(logout());
-    navigate("/login", { replace: true });
+    navigate("/", { replace: true });
   };
 
   return (
