@@ -3,6 +3,7 @@ import App from "../pages/MainPage";
 import RootLayout from "../layout/RootLayout";
 import StationDetail from "../pages/StationDetail";
 import Login from "../pages/Login";
+import Signup from "../pages/Signup";
 import Profile from "../pages/Profile";
 import { RedirectIfAuth, RequireAuth } from "./guards";
 
@@ -37,6 +38,16 @@ const router = createBrowserRouter([
       {
         index: true,
         Component: Login,
+      },
+    ],
+  },
+  {
+    path: "/signup",
+    Component: RedirectIfAuth,
+    children: [
+      {
+        index: true,
+        Component: Signup,
       },
     ],
   },

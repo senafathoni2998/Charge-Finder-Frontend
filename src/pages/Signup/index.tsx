@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Alert,
   AppBar,
@@ -8,6 +8,7 @@ import {
   Card,
   CardContent,
   Checkbox,
+  Chip,
   CssBaseline,
   Divider,
   FormControlLabel,
@@ -19,15 +20,12 @@ import {
   Toolbar,
   Typography,
   Snackbar,
-  Chip,
 } from "@mui/material";
 import ElectricBoltIcon from "@mui/icons-material/ElectricBolt";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import EmailIcon from "@mui/icons-material/Email";
 import LockIcon from "@mui/icons-material/Lock";
-import GoogleIcon from "@mui/icons-material/Google";
-import AppleIcon from "@mui/icons-material/Apple";
 import { useNavigate, useSearchParams } from "react-router";
 import {
   isValidEmail,
@@ -39,18 +37,17 @@ import { UI } from "../../theme/theme";
 import { useAppDispatch } from "../../app/hooks";
 import { login } from "../../features/auth/authSlice";
 
-/**
- * ChargeFinder — Login Page (Light mode)
- */
-
-export default function ChargeFinderLoginPage() {
+export default function ChargeFinderSignupPage() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [searchParams] = useSearchParams();
+
   const [email, setEmail] = useState("demo@chargefinder.app");
   const [password, setPassword] = useState("DemoPass123");
+  const [confirm, setConfirm] = useState("DemoPass123");
   const [remember, setRemember] = useState(true);
   const [showPw, setShowPw] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,47 +55,35 @@ export default function ChargeFinderLoginPage() {
 
   const pwIssue = useMemo(() => passwordIssue(password), [password]);
   const pwStrength = useMemo(() => strengthLabel(password), [password]);
+  const passwordsMatch = password === confirm;
   const nextPath = useMemo(() => {
     const raw = searchParams.get("next");
     if (!raw || !raw.startsWith("/") || raw.startsWith("/login")) return "/";
+    if (raw.startsWith("/signup")) return "/";
     return raw;
   }, [searchParams]);
-
-  // Optional: load remembered email (client-only)
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      const saved = window.localStorage.getItem("cf_login_email");
-      if (saved) setEmail(saved);
-    } catch {
-      // ignore
-    }
-  }, []);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    const emailOk = isValidEmail(email);
-    const pwOk = !passwordIssue(password);
-
-    if (!emailOk) {
+    if (!isValidEmail(email)) {
       setError("Please enter a valid email address.");
       return;
     }
-    if (!pwOk) {
-      setError(passwordIssue(password) || "Invalid password.");
+    if (pwIssue) {
+      setError(pwIssue);
+      return;
+    }
+    if (!passwordsMatch) {
+      setError("Passwords do not match.");
       return;
     }
 
     setSubmitting(true);
-
-    // demo latency
     await new Promise((r) => setTimeout(r, 750));
-
-    // demo success
     setSubmitting(false);
-    setToast("Logged in (demo). Wire this to your API.");
+    setToast("Account created (demo).");
 
     if (typeof window !== "undefined") {
       try {
@@ -154,7 +139,7 @@ export default function ChargeFinderLoginPage() {
               ChargeFinder
             </Typography>
             <Typography variant="caption" sx={{ color: UI.text3 }}>
-              Find compatible chargers faster
+              Create your account
             </Typography>
           </Box>
           <Box sx={{ flex: 1 }} />
@@ -179,7 +164,6 @@ export default function ChargeFinderLoginPage() {
           py: { xs: 2.5, md: 4 },
         }}
       >
-        {/* background blobs */}
         <Box
           aria-hidden
           sx={{
@@ -225,7 +209,6 @@ export default function ChargeFinderLoginPage() {
             mx: "auto",
           }}
         >
-          {/* Login card */}
           <Card
             variant="outlined"
             sx={{
@@ -253,10 +236,10 @@ export default function ChargeFinderLoginPage() {
                       lineHeight: 1.15,
                     }}
                   >
-                    Welcome back
+                    Create your account
                   </Typography>
                   <Typography sx={{ color: UI.text2, mt: 0.5 }}>
-                    Sign in to access your car profile and tickets.
+                    Save your car profile and personalize stations.
                   </Typography>
                 </Box>
 
@@ -307,7 +290,7 @@ export default function ChargeFinderLoginPage() {
                       label="Password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      autoComplete="current-password"
+                      autoComplete="new-password"
                       fullWidth
                       type={showPw ? "text" : "password"}
                       error={password.length > 0 && !!pwIssue}
@@ -344,6 +327,53 @@ export default function ChargeFinderLoginPage() {
                       }}
                     />
 
+                    <TextField
+                      label="Confirm password"
+                      value={confirm}
+                      onChange={(e) => setConfirm(e.target.value)}
+                      autoComplete="new-password"
+                      fullWidth
+                      type={showConfirm ? "text" : "password"}
+                      error={confirm.length > 0 && !passwordsMatch}
+                      helperText={
+                        confirm.length > 0 && !passwordsMatch
+                          ? "Passwords do not match."
+                          : " "
+                      }
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <LockIcon sx={{ color: UI.text3 }} />
+                          </InputAdornment>
+                        ),
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={() => setShowConfirm((v) => !v)}
+                              edge="end"
+                              aria-label={
+                                showConfirm
+                                  ? "Hide confirm password"
+                                  : "Show confirm password"
+                              }
+                            >
+                              {showConfirm ? (
+                                <VisibilityOffIcon sx={{ color: UI.text3 }} />
+                              ) : (
+                                <VisibilityIcon sx={{ color: UI.text3 }} />
+                              )}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          borderRadius: 3,
+                          backgroundColor: "rgba(10,10,16,0.02)",
+                        },
+                      }}
+                    />
+
                     <Stack
                       direction="row"
                       alignItems="center"
@@ -362,20 +392,6 @@ export default function ChargeFinderLoginPage() {
                           ...toneChipSx(pwStrength.tone),
                         }}
                       />
-                      <Box sx={{ flex: 1 }} />
-                      <Link
-                        component="button"
-                        type="button"
-                        onClick={() =>
-                          setToast(
-                            "Forgot password (demo). Wire to reset flow."
-                          )
-                        }
-                        underline="hover"
-                        sx={{ color: UI.text2, fontWeight: 800, fontSize: 13 }}
-                      >
-                        Forgot password?
-                      </Link>
                     </Stack>
 
                     <Stack
@@ -426,81 +442,37 @@ export default function ChargeFinderLoginPage() {
                           boxShadow: "0 14px 40px rgba(124,92,255,0.16)",
                         }}
                       >
-                        {submitting ? "Signing in…" : "Sign in"}
+                        {submitting ? "Creating..." : "Create account"}
                       </Button>
                     </Stack>
 
                     <Divider sx={{ borderColor: UI.border2, my: 0.75 }} />
 
-                    <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-                      <Button
+                    <Typography variant="body2" sx={{ color: UI.text2 }}>
+                      Already have an account?{" "}
+                      <Link
+                        component="button"
                         type="button"
-                        variant="outlined"
-                        onClick={() => setToast("Google sign-in (demo).")}
-                        startIcon={<GoogleIcon />}
+                        onClick={() =>
+                          navigate(
+                            `/login?next=${encodeURIComponent(nextPath)}`
+                          )
+                        }
+                        underline="hover"
                         sx={{
-                          textTransform: "none",
-                          borderRadius: 3,
-                          borderColor: UI.border,
-                          color: UI.text,
-                          backgroundColor: "rgba(10,10,16,0.01)",
+                          fontWeight: 950,
+                          color: "rgba(124,92,255,0.95)",
                         }}
-                        fullWidth
                       >
-                        Continue with Google
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outlined"
-                        onClick={() => setToast("Apple sign-in (demo).")}
-                        startIcon={<AppleIcon />}
-                        sx={{
-                          textTransform: "none",
-                          borderRadius: 3,
-                          borderColor: UI.border,
-                          color: UI.text,
-                          backgroundColor: "rgba(10,10,16,0.01)",
-                        }}
-                        fullWidth
-                      >
-                        Continue with Apple
-                      </Button>
-                    </Stack>
-
-                    <Box
-                      sx={{
-                        mt: 0.25,
-                        p: 1.25,
-                        borderRadius: 3,
-                        border: `1px dashed ${UI.border}`,
-                        backgroundColor: "rgba(10,10,16,0.02)",
-                      }}
-                    >
-                      <Typography variant="body2" sx={{ color: UI.text2 }}>
-                        New here?{" "}
-                        <Link
-                          component="button"
-                          type="button"
-                          onClick={() =>
-                            navigate(
-                              `/signup?next=${encodeURIComponent(nextPath)}`
-                            )
-                          }
-                          underline="hover"
-                          sx={{
-                            fontWeight: 950,
-                            color: "rgba(124,92,255,0.95)",
-                          }}
-                        >
-                          Create an account
-                        </Link>
-                      </Typography>
-                    </Box>
+                        Sign in
+                      </Link>
+                    </Typography>
                   </Stack>
                 </Box>
 
                 <Typography variant="caption" sx={{ color: UI.text3 }}>
-                  By signing in, you agree to the demo Terms and Privacy.
+                  By creating an account, you agree to the demo Terms and
+                  Privacy.
                 </Typography>
               </Stack>
             </CardContent>

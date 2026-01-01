@@ -2,7 +2,12 @@ import { Navigate, Outlet, useLocation, useSearchParams } from "react-router";
 import { useAppSelector } from "../app/hooks";
 
 function safeNextPath(next: string | null): string {
-  if (!next || !next.startsWith("/") || next.startsWith("/login")) {
+  if (
+    !next ||
+    !next.startsWith("/") ||
+    next.startsWith("/login") ||
+    next.startsWith("/signup")
+  ) {
     return "/";
   }
   return next;
