@@ -41,7 +41,7 @@ import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { setMdMode, setSidebarOpen } from "../../features/app/appSlice";
 import { setActiveCar } from "../../features/auth/authSlice";
 import { boundsFromStations, filterStations } from "../../utils/distance";
-import { useGeoLocation } from "../../hooks/useGeolocation";
+import { useGeoLocation } from "../../hooks/geolocation-hook";
 import { useLocation, useNavigate } from "react-router";
 
 /** @typedef {"AVAILABLE"|"BUSY"|"OFFLINE"} Availability */

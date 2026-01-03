@@ -12,10 +12,10 @@ import {
   Typography,
 } from "@mui/material";
 import { useNavigate } from "react-router";
-import { UI } from "../../../theme/theme";
-import { useAppDispatch, useAppSelector } from "../../../app/hooks";
-import { addCar } from "../../../features/auth/authSlice";
-import type { ConnectorType } from "../../../models/model";
+import { UI } from "../../theme/theme";
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import { addCar } from "../../features/auth/authSlice";
+import type { ConnectorType } from "../../models/model";
 
 const CONNECTOR_OPTIONS: ConnectorType[] = ["CCS2", "Type2", "CHAdeMO"];
 
@@ -38,10 +38,7 @@ export default function AddCarPage() {
   const [carMinKW, setCarMinKW] = useState(0);
   const [carError, setCarError] = useState<string | null>(null);
 
-  const connectorList = useMemo(
-    () => CONNECTOR_OPTIONS,
-    []
-  );
+  const connectorList = useMemo(() => CONNECTOR_OPTIONS, []);
 
   const persistCars = (nextCars, nextActiveId) => {
     if (typeof window === "undefined") return;

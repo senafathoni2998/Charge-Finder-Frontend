@@ -33,15 +33,18 @@ import {
   setActiveCar,
   updateProfile,
 } from "../../features/auth/authSlice";
-import {
-  passwordIssue,
-  strengthLabel,
-  toneChipSx,
-} from "../../utils/validate";
+import { passwordIssue, strengthLabel, toneChipSx } from "../../utils/validate";
+import useHttpClient from "../../hooks/http-hook";
 
 export default function ProfilePage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const {
+    sendRequest,
+    isLoading,
+    error: httpError,
+    clearError,
+  } = useHttpClient();
   const email = useAppSelector((state) => state.auth.email);
   const profileName = useAppSelector((state) => state.auth.name);
   const profileRegion = useAppSelector((state) => state.auth.region);
@@ -95,7 +98,10 @@ export default function ProfilePage() {
     }
   };
 
-  const persistProfile = (nextName: string | null, nextRegion: string | null) => {
+  const persistProfile = (
+    nextName: string | null,
+    nextRegion: string | null
+  ) => {
     if (typeof window === "undefined") return;
     try {
       if (nextName) window.localStorage.setItem("cf_profile_name", nextName);
@@ -207,24 +213,40 @@ export default function ProfilePage() {
     persistCars(nextCars, nextActiveId);
   };
 
-  const handleLogout = () => {
-    if (typeof window !== "undefined") {
-      try {
-        window.localStorage.removeItem("cf_auth_token");
-        window.localStorage.removeItem("cf_auth_email");
-        window.localStorage.removeItem("cf_auth_password");
-        window.localStorage.removeItem("cf_profile_name");
-        window.localStorage.removeItem("cf_profile_region");
-        window.localStorage.removeItem("cf_user_car");
-        window.localStorage.removeItem("cf_user_cars");
-        window.localStorage.removeItem("cf_active_car_id");
-        window.sessionStorage.setItem("cf_logout_redirect", "1");
-      } catch {
-        // ignore
+  const handleLogout = async () => {
+    try {
+      const responseData = await sendRequest(
+        `${import.meta.env.VITE_APP_BACKEND_URL}/auth/logout`,
+        "POST",
+        null,
+        {
+          "Content-Type": "application/json",
+        }
+      );
+      // Log response and authenticate user
+      console.log("Login response:", responseData);
+      if (typeof window !== "undefined") {
+        try {
+          window.localStorage.removeItem("cf_auth_token");
+          window.localStorage.removeItem("cf_auth_email");
+          window.localStorage.removeItem("cf_auth_password");
+          window.localStorage.removeItem("cf_profile_name");
+          window.localStorage.removeItem("cf_profile_region");
+          window.localStorage.removeItem("cf_user_car");
+          window.localStorage.removeItem("cf_user_cars");
+          window.localStorage.removeItem("cf_active_car_id");
+          window.sessionStorage.setItem("cf_logout_redirect", "1");
+        } catch {
+          // ignore
+        }
       }
+      dispatch(logout());
+      navigate("/", { replace: true });
+      // auth.login(responseData.user, responseData.user.token);
+    } catch (err) {
+      console.error("Login error:", err);
+      // Error handled by useHttpClient
     }
-    dispatch(logout());
-    navigate("/", { replace: true });
   };
 
   return (
@@ -605,12 +627,7 @@ export default function ProfilePage() {
               error={!!profileError}
               helperText={profileError || "Shown on your profile."}
             />
-            <TextField
-              label="Email"
-              value={email || ""}
-              fullWidth
-              disabled
-            />
+            <TextField label="Email" value={email || ""} fullWidth disabled />
             <TextField
               label="Region"
               value={regionDraft}
@@ -722,7 +739,9 @@ export default function ProfilePage() {
               fullWidth
               type={showNewPw ? "text" : "password"}
               error={newPassword.length > 0 && !!newPwIssue}
-              helperText={newPassword.length > 0 && newPwIssue ? newPwIssue : " "}
+              helperText={
+                newPassword.length > 0 && newPwIssue ? newPwIssue : " "
+              }
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">

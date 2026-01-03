@@ -6,9 +6,9 @@ export function isValidEmail(input: string) {
 
 export function passwordIssue(pw: string) {
   const v = String(pw || "");
-  if (v.length < 8) return "Password must be at least 8 characters.";
-  if (!/[A-Z]/.test(v) && !/[a-z]/.test(v))
-    return "Use letters in your password.";
+  if (v.length < 7) return "Password must be at least 7 characters.";
+  // if (!/[A-Z]/.test(v) && !/[a-z]/.test(v))
+  //   return "Use letters in your password.";
   if (!/\d/.test(v)) return "Add at least one number.";
   return null;
 }

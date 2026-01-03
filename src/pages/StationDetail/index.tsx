@@ -41,7 +41,7 @@ import ConnectorRow from "./components/ConnectorRow";
 import { minutesAgo } from "../../utils/time";
 import { statusColor } from "../../utils/map";
 import { formatCurrency, haversineKm, statusLabel } from "../../utils/distance";
-import { useGeoLocation } from "../../hooks/useGeolocation";
+import { useGeoLocation } from "../../hooks/geolocation-hook";
 import SectionCard from "./components/SectionCard";
 import StatusChip from "../MainPage/components/StatusChip";
 import MiniPhoto from "./components/MiniPhoto";
@@ -84,9 +84,7 @@ export default function StationDetailPage() {
   const { id: stationId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const isAuthenticated = useAppSelector(
-    (state) => state.auth.isAuthenticated
-  );
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
   const cars = useAppSelector((state) => state.auth.cars);
   const activeCarId = useAppSelector((state) => state.auth.activeCarId);
 
@@ -138,7 +136,10 @@ export default function StationDetailPage() {
 
   const ticketKwh = 20;
   const ticketPriceLabel = station
-    ? formatCurrency(station.pricing.currency, station.pricing.perKwh * ticketKwh)
+    ? formatCurrency(
+        station.pricing.currency,
+        station.pricing.perKwh * ticketKwh
+      )
     : "N/A";
   const totalChargeMinutes = 18;
   const remainingMinutes = Math.max(
@@ -175,8 +176,8 @@ export default function StationDetailPage() {
   const paymentActionLabel = !isAuthenticated
     ? "Log in to buy ticket"
     : ticket
-      ? "Change payment"
-      : "Buy charging ticket";
+    ? "Change payment"
+    : "Buy charging ticket";
 
   const handleLoginRedirect = () => {
     const next = encodeURIComponent(
@@ -504,7 +505,9 @@ export default function StationDetailPage() {
                   sx={{
                     textTransform: "none",
                     borderRadius: 3,
-                    background: canCharge ? UI.brandGradStrong : UI.brandGradDisabled,
+                    background: canCharge
+                      ? UI.brandGradStrong
+                      : UI.brandGradDisabled,
                     color: "white",
                     boxShadow: "0 14px 40px rgba(124,92,255,0.14)",
                   }}
@@ -800,7 +803,10 @@ export default function StationDetailPage() {
                           <Typography sx={{ fontWeight: 800, color: UI.text }}>
                             {method.label}
                           </Typography>
-                          <Typography variant="caption" sx={{ color: UI.text3 }}>
+                          <Typography
+                            variant="caption"
+                            sx={{ color: UI.text3 }}
+                          >
                             {method.helper}
                           </Typography>
                         </Box>

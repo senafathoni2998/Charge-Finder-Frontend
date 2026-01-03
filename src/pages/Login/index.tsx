@@ -38,6 +38,7 @@ import {
 import { UI } from "../../theme/theme";
 import { useAppDispatch } from "../../app/hooks";
 import { login } from "../../features/auth/authSlice";
+import useHttpClient from "../../hooks/http-hook";
 
 /**
  * ChargeFinder — Login Page (Light mode)
@@ -46,6 +47,12 @@ import { login } from "../../features/auth/authSlice";
 export default function ChargeFinderLoginPage() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const {
+    sendRequest,
+    isLoading,
+    error: httpError,
+    clearError,
+  } = useHttpClient();
   const [searchParams] = useSearchParams();
   const [email, setEmail] = useState("demo@chargefinder.app");
   const [password, setPassword] = useState("DemoPass123");
@@ -91,47 +98,75 @@ export default function ChargeFinderLoginPage() {
       return;
     }
 
-    if (typeof window !== "undefined") {
-      try {
-        const storedPassword = window.localStorage.getItem("cf_auth_password");
-        if (
-          storedPassword &&
-          storedPassword.trim() &&
-          storedPassword !== password
-        ) {
-          setError("Incorrect password.");
-          return;
-        }
-      } catch {
-        // ignore
-      }
-    }
+    // if (typeof window !== "undefined") {
+    //   try {
+    //     const storedPassword = window.localStorage.getItem("cf_auth_password");
+    //     if (
+    //       storedPassword &&
+    //       storedPassword.trim() &&
+    //       storedPassword !== password
+    //     ) {
+    //       setError("Incorrect password.");
+    //       return;
+    //     }
+    //   } catch {
+    //     // ignore
+    //   }
+    // }
 
     setSubmitting(true);
 
     // demo latency
-    await new Promise((r) => setTimeout(r, 750));
+    // await new Promise((r) => setTimeout(r, 750));
+    console.log("Logging in with", { email, password, remember });
+    try {
+      const responseData = await sendRequest(
+        `${import.meta.env.VITE_APP_BACKEND_URL}/auth/login`,
+        "POST",
+        JSON.stringify({
+          email: email.trim(),
+          password: password,
+        }),
+        {
+          "Content-Type": "application/json",
+        }
+      );
+      // Log response and authenticate user
+      console.log("Login response:", responseData);
+      if (typeof window !== "undefined") {
+        try {
+          window.localStorage.setItem("cf_auth_token", responseData.user.token);
+          window.localStorage.setItem("cf_auth_email", email.trim());
+          window.localStorage.setItem("cf_auth_password", password);
+          if (remember)
+            window.localStorage.setItem("cf_login_email", email.trim());
+          else window.localStorage.removeItem("cf_login_email");
+
+          setToast("Logged in (demo). Wire this to your API.");
+
+          dispatch(login({ email: email.trim() }));
+          navigate(nextPath, { replace: true });
+        } catch {
+          // ignore
+        }
+      }
+      // auth.login(responseData.user, responseData.user.token);
+    } catch (err) {
+      console.error("Login error:", err);
+      // Error handled by useHttpClient
+    }
 
     // demo success
     setSubmitting(false);
-    setToast("Logged in (demo). Wire this to your API.");
-
-    if (typeof window !== "undefined") {
-      try {
-        window.localStorage.setItem("cf_auth_token", String(Date.now()));
-        window.localStorage.setItem("cf_auth_email", email.trim());
-        window.localStorage.setItem("cf_auth_password", password);
-        if (remember)
-          window.localStorage.setItem("cf_login_email", email.trim());
-        else window.localStorage.removeItem("cf_login_email");
-      } catch {
-        // ignore
-      }
-    }
-
-    dispatch(login({ email: email.trim() }));
-    navigate(nextPath, { replace: true });
   };
+
+  useEffect(() => {
+    if (httpError) {
+      setError(httpError);
+      clearError();
+      setSubmitting(false);
+    }
+  }, [httpError, clearError]);
 
   return (
     <Box sx={{ minHeight: "100dvh", backgroundColor: UI.bg }}>
