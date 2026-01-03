@@ -4,6 +4,11 @@ export function isValidEmail(input: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 }
 
+export function isValidName(input: string) {
+  const v = String(input || "").trim();
+  return v.length >= 2 && v.length <= 50;
+}
+
 export function passwordIssue(pw: string) {
   const v = String(pw || "");
   if (v.length < 7) return "Password must be at least 7 characters.";

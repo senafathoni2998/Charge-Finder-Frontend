@@ -29,6 +29,7 @@ import LockIcon from "@mui/icons-material/Lock";
 import { useNavigate, useSearchParams } from "react-router";
 import {
   isValidEmail,
+  isValidName,
   passwordIssue,
   strengthLabel,
   toneChipSx,
@@ -36,15 +37,19 @@ import {
 import { UI } from "../../theme/theme";
 import { useAppDispatch } from "../../app/hooks";
 import { login } from "../../features/auth/authSlice";
+import useHttpClient from "../../hooks/http-hook";
+import PersonIcon from "@mui/icons-material/Person";
 
 export default function ChargeFinderSignupPage() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [searchParams] = useSearchParams();
+  const { sendRequest, error: httpError, clearError } = useHttpClient();
 
-  const [email, setEmail] = useState("demo@chargefinder.app");
-  const [password, setPassword] = useState("DemoPass123");
-  const [confirm, setConfirm] = useState("DemoPass123");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [remember, setRemember] = useState(true);
   const [showPw, setShowPw] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -81,25 +86,46 @@ export default function ChargeFinderSignupPage() {
     }
 
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 750));
+    // await new Promise((r) => setTimeout(r, 750));
+    try {
+      const responseData = await sendRequest(
+        `${import.meta.env.VITE_APP_BACKEND_URL}/auth/signup`,
+        "POST",
+        JSON.stringify({
+          email: email.trim(),
+          password: password,
+          name: name.trim(),
+        }),
+        {
+          "Content-Type": "application/json",
+        }
+      );
+      // Log response and authenticate user
+      console.log("Login response:", responseData);
+      if (typeof window !== "undefined") {
+        try {
+          window.localStorage.setItem("cf_auth_token", responseData.user.token);
+          window.localStorage.setItem("cf_auth_email", email.trim());
+          window.localStorage.setItem("cf_auth_password", password);
+          if (remember)
+            window.localStorage.setItem("cf_login_email", email.trim());
+          else window.localStorage.removeItem("cf_login_email");
+
+          setToast("Logged in (demo). Wire this to your API.");
+
+          dispatch(login({ email: email.trim() }));
+          navigate(nextPath, { replace: true });
+        } catch {
+          // ignore
+        }
+      }
+      // auth.login(responseData.user, responseData.user.token);
+    } catch (err) {
+      console.error("Login error:", err);
+      // Error handled by useHttpClient
+    }
     setSubmitting(false);
     setToast("Account created (demo).");
-
-    if (typeof window !== "undefined") {
-      try {
-        window.localStorage.setItem("cf_auth_token", String(Date.now()));
-        window.localStorage.setItem("cf_auth_email", email.trim());
-        window.localStorage.setItem("cf_auth_password", password);
-        if (remember)
-          window.localStorage.setItem("cf_login_email", email.trim());
-        else window.localStorage.removeItem("cf_login_email");
-      } catch {
-        // ignore
-      }
-    }
-
-    dispatch(login({ email: email.trim() }));
-    navigate(nextPath, { replace: true });
   };
 
   return (
@@ -261,7 +287,36 @@ export default function ChargeFinderSignupPage() {
                 <Box component="form" onSubmit={onSubmit} noValidate>
                   <Stack spacing={1.5}>
                     <TextField
+                      placeholder="Your full name"
+                      label="Name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      autoComplete="name"
+                      fullWidth
+                      error={name.length > 0 && !isValidName(name)}
+                      helperText={
+                        name.length > 0 && !isValidName(name)
+                          ? "Please enter a valid name."
+                          : " "
+                      }
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <PersonIcon sx={{ color: UI.text3 }} />
+                          </InputAdornment>
+                        ),
+                      }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          borderRadius: 3,
+                          backgroundColor: "rgba(10,10,16,0.02)",
+                        },
+                      }}
+                    />
+
+                    <TextField
                       label="Email"
+                      placeholder="name@email.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       autoComplete="email"
@@ -289,6 +344,7 @@ export default function ChargeFinderSignupPage() {
 
                     <TextField
                       label="Password"
+                      placeholder="At least 7 characters"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       autoComplete="new-password"
@@ -330,6 +386,7 @@ export default function ChargeFinderSignupPage() {
 
                     <TextField
                       label="Confirm password"
+                      placeholder="Re-enter your password"
                       value={confirm}
                       onChange={(e) => setConfirm(e.target.value)}
                       autoComplete="new-password"

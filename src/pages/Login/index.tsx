@@ -47,12 +47,7 @@ import useHttpClient from "../../hooks/http-hook";
 export default function ChargeFinderLoginPage() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const {
-    sendRequest,
-    isLoading,
-    error: httpError,
-    clearError,
-  } = useHttpClient();
+  const { sendRequest, error: httpError, clearError } = useHttpClient();
   const [searchParams] = useSearchParams();
   const [email, setEmail] = useState("demo@chargefinder.app");
   const [password, setPassword] = useState("DemoPass123");
