@@ -138,15 +138,15 @@ export default function ProfilePage() {
     setProfileOpen(false);
   };
 
-  const readStoredPassword = () => {
-    if (typeof window === "undefined") return null;
-    try {
-      const stored = window.localStorage.getItem("cf_auth_password");
-      return stored && stored.trim() ? stored : null;
-    } catch {
-      return null;
-    }
-  };
+  // const readStoredPassword = () => {
+  //   if (typeof window === "undefined") return null;
+  //   try {
+  //     const stored = window.localStorage.getItem("cf_auth_password");
+  //     return stored && stored.trim() ? stored : null;
+  //   } catch {
+  //     return null;
+  //   }
+  // };
 
   const handleOpenPasswordEditor = () => {
     setCurrentPassword("");
@@ -161,15 +161,15 @@ export default function ProfilePage() {
 
   const handleSavePassword = () => {
     setPasswordError(null);
-    const storedPassword = readStoredPassword();
+    // const storedPassword = readStoredPassword();
     if (!currentPassword.trim()) {
       setPasswordError("Enter your current password.");
       return;
     }
-    if (storedPassword && currentPassword !== storedPassword) {
-      setPasswordError("Current password is incorrect.");
-      return;
-    }
+    // if (storedPassword && currentPassword !== storedPassword) {
+    //   setPasswordError("Current password is incorrect.");
+    //   return;
+    // }
     if (newPwIssue) {
       setPasswordError(newPwIssue);
       return;
