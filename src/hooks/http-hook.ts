@@ -11,12 +11,12 @@ const useHttpClient = () => {
       setIsLoading(true);
       const httpAbortCtrl = new AbortController();
       activeHttpRequests.current.push(httpAbortCtrl);
-      debugger;
       try {
         const response = await fetch(url, {
           method,
           body,
           headers,
+          credentials: "include",
           signal: httpAbortCtrl.signal,
         });
 

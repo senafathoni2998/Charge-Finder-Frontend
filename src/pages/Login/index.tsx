@@ -116,7 +116,6 @@ export default function ChargeFinderLoginPage() {
         try {
           window.localStorage.setItem("cf_auth_token", responseData.user.token);
           window.localStorage.setItem("cf_auth_email", email.trim());
-          // window.localStorage.setItem("cf_auth_password", password);
           window.localStorage.setItem(
             "cf_profile_region",
             responseData.user.region.trim()

@@ -138,16 +138,6 @@ export default function ProfilePage() {
     setProfileOpen(false);
   };
 
-  // const readStoredPassword = () => {
-  //   if (typeof window === "undefined") return null;
-  //   try {
-  //     const stored = window.localStorage.getItem("cf_auth_password");
-  //     return stored && stored.trim() ? stored : null;
-  //   } catch {
-  //     return null;
-  //   }
-  // };
-
   const handleOpenPasswordEditor = () => {
     setCurrentPassword("");
     setNewPassword("");
@@ -159,17 +149,13 @@ export default function ProfilePage() {
     setPasswordOpen(true);
   };
 
-  const handleSavePassword = () => {
+  const handleSavePassword = async () => {
     setPasswordError(null);
-    // const storedPassword = readStoredPassword();
     if (!currentPassword.trim()) {
       setPasswordError("Enter your current password.");
       return;
     }
-    // if (storedPassword && currentPassword !== storedPassword) {
-    //   setPasswordError("Current password is incorrect.");
-    //   return;
-    // }
+
     if (newPwIssue) {
       setPasswordError(newPwIssue);
       return;
@@ -186,18 +172,42 @@ export default function ProfilePage() {
       setPasswordError("New password must be different.");
       return;
     }
-    if (typeof window !== "undefined") {
-      try {
-        window.localStorage.setItem("cf_auth_password", newPassword);
-      } catch {
-        // ignore
-      }
+
+    try {
+      console.log(
+        JSON.stringify({
+          email: email.trim(),
+          currentPassword: currentPassword,
+          newPassword: newPassword,
+        })
+      );
+      const responseData = await sendRequest(
+        `${import.meta.env.VITE_APP_BACKEND_URL}/profile/update-password`,
+        "PATCH",
+        JSON.stringify({
+          email: email.trim(),
+          currentPassword: currentPassword,
+          newPassword: newPassword,
+        }),
+        {
+          "Content-Type": "application/json",
+        }
+      );
+      // Log response and authenticate user
+      console.log("Login response:", responseData);
+      setPasswordToast("Password updated.");
+      // auth.login(responseData.user, responseData.user.token);
+
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+
+      setPasswordOpen(false);
+    } catch (err) {
+      console.error("Login error:", err);
+      setPasswordError(err.message || "Failed to update password.");
+      // Error handled by useHttpClient
     }
-    setPasswordOpen(false);
-    setPasswordToast("Password updated (demo).");
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
   };
 
   const handleSetActive = (carId: string) => {
@@ -229,7 +239,6 @@ export default function ProfilePage() {
         try {
           window.localStorage.removeItem("cf_auth_token");
           window.localStorage.removeItem("cf_auth_email");
-          window.localStorage.removeItem("cf_auth_password");
           window.localStorage.removeItem("cf_profile_name");
           window.localStorage.removeItem("cf_profile_region");
           window.localStorage.removeItem("cf_user_car");
