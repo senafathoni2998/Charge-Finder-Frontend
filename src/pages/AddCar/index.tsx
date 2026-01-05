@@ -16,6 +16,7 @@ import { UI } from "../../theme/theme";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { addCar } from "../../features/auth/authSlice";
 import type { ConnectorType } from "../../models/model";
+import useHttpClient from "../../hooks/http-hook";
 
 const CONNECTOR_OPTIONS: ConnectorType[] = ["CCS2", "Type2", "CHAdeMO"];
 
@@ -29,7 +30,9 @@ const createCarId = () => {
 export default function AddCarPage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { sendRequest } = useHttpClient();
   const cars = useAppSelector((state) => state.auth.cars);
+  const email = useAppSelector((state) => state.auth.email);
 
   const [carName, setCarName] = useState("");
   const [carConnectors, setCarConnectors] = useState<Set<ConnectorType>>(
@@ -53,24 +56,55 @@ export default function AddCarPage() {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const trimmedName = carName.trim() || "My EV";
     const connectorTypes = Array.from(carConnectors);
     if (!connectorTypes.length) {
       setCarError("Select at least one connector type.");
       return;
     }
-    const nextCar = {
-      id: createCarId(),
-      name: trimmedName,
-      connectorTypes,
-      minKW: Number.isFinite(carMinKW) ? carMinKW : 0,
-    };
-    setCarError(null);
-    const nextCars = [...cars, nextCar];
-    dispatch(addCar(nextCar));
-    persistCars(nextCars, nextCar.id);
-    navigate("/profile", { replace: true });
+    try {
+      const vehicle = await sendRequest(
+        `${import.meta.env.VITE_APP_BACKEND_URL}/vehicles/add-vehicle`,
+        "POST",
+        JSON.stringify({
+          email: email.trim(),
+          name: trimmedName,
+          connector_type: connectorTypes,
+          min_power: Number.isFinite(carMinKW) ? carMinKW : 0,
+        }),
+        {
+          "Content-Type": "application/json",
+        }
+      );
+      console.log("Vehicle updated:", vehicle);
+      const nextCar = {
+        id: vehicle.id,
+        name: trimmedName,
+        connectorTypes,
+        minKW: Number.isFinite(carMinKW) ? carMinKW : 0,
+      };
+      setCarError(null);
+      const nextCars = [...cars, nextCar];
+      dispatch(addCar(nextCar));
+      persistCars(nextCars, nextCar.id);
+      navigate("/profile", { replace: true });
+    } catch (err) {
+      console.error("Login error:", err);
+      setCarError(err.message || "Could not save car.");
+      // Error handled by useHttpClient
+    }
+    // const nextCar = {
+    //   id: createCarId(),
+    //   name: trimmedName,
+    //   connectorTypes,
+    //   minKW: Number.isFinite(carMinKW) ? carMinKW : 0,
+    // };
+    // setCarError(null);
+    // const nextCars = [...cars, nextCar];
+    // dispatch(addCar(nextCar));
+    // persistCars(nextCars, nextCar.id);
+    // navigate("/profile", { replace: true });
   };
 
   return (
