@@ -1,73 +1,32 @@
-import * as React from "react";
 import { useEffect, useMemo, useState } from "react";
-import {
-  AppBar,
-  Toolbar,
-  Box,
-  Typography,
-  IconButton,
-  Stack,
-  Chip,
-  Card,
-  CardContent,
-  Button,
-  Divider,
-  Tooltip,
-  CircularProgress,
-  LinearProgress,
-  FormControlLabel,
-  Radio,
-  RadioGroup,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  MenuItem,
-  Skeleton,
-  useMediaQuery,
-} from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import ElectricBoltIcon from "@mui/icons-material/ElectricBolt";
-import ShareIcon from "@mui/icons-material/Share";
-import ReportProblemIcon from "@mui/icons-material/ReportProblem";
-import MyLocationIcon from "@mui/icons-material/MyLocation";
-import LaunchIcon from "@mui/icons-material/Launch";
+import { Box, Stack, useMediaQuery } from "@mui/material";
+import { useLocation, useNavigate, useParams } from "react-router";
 import { UI } from "../../theme/theme";
 import { MOCK_STATIONS } from "../../data/stations";
-import InfoRow from "./components/InfoRow";
-import { Availability } from "../../models/model";
-import ConnectorRow from "./components/ConnectorRow";
-import { minutesAgo } from "../../utils/time";
-import { statusColor } from "../../utils/map";
-import { formatCurrency, haversineKm, statusLabel } from "../../utils/distance";
 import { useGeoLocation } from "../../hooks/geolocation-hook";
-import SectionCard from "./components/SectionCard";
-import StatusChip from "../MainPage/components/StatusChip";
-import MiniPhoto from "./components/MiniPhoto";
-import { useLocation, useNavigate, useParams } from "react-router";
+import { haversineKm } from "../../utils/distance";
 import { useAppSelector } from "../../app/hooks";
-
-const PAYMENT_METHODS = [
-  {
-    id: "card",
-    label: "Card - Visa **** 4242",
-    helper: "Instant approval",
-  },
-  {
-    id: "ewallet",
-    label: "E-Wallet - GoPay",
-    helper: "Balance required",
-  },
-  {
-    id: "bank",
-    label: "Bank transfer - BCA",
-    helper: "May take 1-3 min",
-  },
-];
+import {
+  PAYMENT_METHODS,
+  REPORT_ISSUE_TYPES,
+  TICKET_KWH,
+  TOTAL_CHARGE_MINUTES,
+} from "./constants";
+import { buildMapsUrl, getSharePayload, getTicketPriceLabel } from "./utils";
+import type { ChargingStatus, Station, Ticket } from "./types";
+import StationOverviewSection from "./components/StationOverviewSection";
+import ConnectorsSection from "./components/ConnectorsSection";
+import AmenitiesSection from "./components/AmenitiesSection";
+import ActionsCard from "./components/ActionsCard";
+import PricingSection from "./components/PricingSection";
+import CoordinatesSection from "./components/CoordinatesSection";
+import PaymentDialog from "./components/PaymentDialog";
+import ChargingDialog from "./components/ChargingDialog";
+import ReportDialog from "./components/ReportDialog";
+import ShareDialog from "./components/ShareDialog";
 
 /**
- * ChargeFinder — Station Detail Page (Canvas-safe) — LIGHT MODE
+ * ChargeFinder - Station Detail Page (Canvas-safe) - LIGHT MODE
  *
  * Canvas notes:
  * - No react-router required.
@@ -92,37 +51,31 @@ export default function StationDetailPage() {
   //   const [stationId, setStationId] = useState("st-001");
   const [reportOpen, setReportOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-  const [reportType, setReportType] = useState("Broken connector");
+  const [reportType, setReportType] = useState(REPORT_ISSUE_TYPES[0]);
   const [reportNote, setReportNote] = useState("");
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [selectedPaymentId, setSelectedPaymentId] = useState(
     PAYMENT_METHODS[0].id
   );
-  const [ticket, setTicket] = useState<{
-    id: string;
-    methodId: string;
-    methodLabel: string;
-    priceLabel: string;
-    purchasedAt: string;
-  } | null>(null);
+  const [ticket, setTicket] = useState<Ticket | null>(null);
   const [chargingOpen, setChargingOpen] = useState(false);
   const [chargingProgress, setChargingProgress] = useState(0);
-  const [chargingStatus, setChargingStatus] = useState<
-    "idle" | "charging" | "done"
-  >("idle");
+  const [chargingStatus, setChargingStatus] = useState<ChargingStatus>("idle");
 
   const geo = useGeoLocation();
   const userCenter = geo.loc ?? { lat: -6.2, lng: 106.8167 };
 
-  // Simulate async load
+  // Simulate async load.
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 1000);
-    return () => clearTimeout(t);
+    const t = window.setTimeout(() => setLoading(false), 1000);
+    return () => window.clearTimeout(t);
   }, [stationId]);
 
-  const station = useMemo(() => {
-    return MOCK_STATIONS.find((s) => s.id === stationId) ?? null;
+  const station = useMemo<Station | null>(() => {
+    return (MOCK_STATIONS.find((s) => s.id === stationId) ?? null) as
+      | Station
+      | null;
   }, [stationId]);
 
   console.log("Station detail for ID:", stationId, station);
@@ -134,19 +87,12 @@ export default function StationDetailPage() {
     [selectedPaymentId]
   );
 
-  const ticketKwh = 20;
-  const ticketPriceLabel = station
-    ? formatCurrency(
-        station.pricing.currency,
-        station.pricing.perKwh * ticketKwh
-      )
-    : "N/A";
-  const totalChargeMinutes = 18;
+  const ticketPriceLabel = getTicketPriceLabel(station, TICKET_KWH);
   const remainingMinutes = Math.max(
     0,
-    Math.ceil(((100 - chargingProgress) / 100) * totalChargeMinutes)
+    Math.ceil(((100 - chargingProgress) / 100) * TOTAL_CHARGE_MINUTES)
   );
-  const deliveredKwh = Math.round((ticketKwh * chargingProgress) / 100);
+  const deliveredKwh = Math.round((TICKET_KWH * chargingProgress) / 100);
 
   const distanceKm = useMemo(() => {
     if (!station) return null;
@@ -179,6 +125,7 @@ export default function StationDetailPage() {
     ? "Change payment"
     : "Buy charging ticket";
 
+  // Redirects unauthenticated users to login while preserving return path.
   const handleLoginRedirect = () => {
     const next = encodeURIComponent(
       `${location.pathname}${location.search}${location.hash}`
@@ -186,20 +133,21 @@ export default function StationDetailPage() {
     navigate(`/login?next=${next}`);
   };
 
+  // Creates a charging ticket for the selected payment method.
   const handleBuyTicket = () => {
     if (!station || !isAuthenticated) return;
     const ticketId = `TICKET-${Date.now()}`;
-    const methodLabel = selectedPayment.label;
     setTicket({
       id: ticketId,
       methodId: selectedPayment.id,
-      methodLabel,
+      methodLabel: selectedPayment.label,
       priceLabel: ticketPriceLabel,
       purchasedAt: new Date().toISOString(),
     });
     setPaymentOpen(false);
   };
 
+  // Starts the charging progress simulation.
   const handleStartCharging = () => {
     if (!canStartCharging) return;
     setChargingProgress(0);
@@ -215,6 +163,7 @@ export default function StationDetailPage() {
     handleStartCharging();
   };
 
+  // Opens the payment dialog or redirects to login if needed.
   const handlePaymentOpen = () => {
     if (!isAuthenticated) {
       handleLoginRedirect();
@@ -260,24 +209,17 @@ export default function StationDetailPage() {
 
   const openGoogleMaps = () => {
     if (!station || typeof window === "undefined") return;
-    const url = `https://www.google.com/maps/search/?api=1&query=${station.lat},${station.lng}`;
-    window.open(url, "_blank", "noopener,noreferrer");
+    window.open(buildMapsUrl(station.lat, station.lng), "_blank", "noopener,noreferrer");
   };
 
   const share = async () => {
     if (!station) return;
-    const shareText = `${station.name} — ${station.address}`;
-    const shareUrl = `https://www.google.com/maps/search/?api=1&query=${station.lat},${station.lng}`;
+    const payload = getSharePayload(station);
 
     try {
-      // Prefer native share
-
+      // Prefer native share.
       if (typeof navigator !== "undefined" && navigator.share) {
-        await navigator.share({
-          title: station.name,
-          text: shareText,
-          url: shareUrl,
-        });
+        await navigator.share(payload);
         return;
       }
       setShareOpen(true);
@@ -306,832 +248,86 @@ export default function StationDetailPage() {
           alignItems: "start",
         }}
       >
-        {/* Left column */}
         <Stack spacing={2}>
-          <SectionCard
-            title={loading ? "Loading…" : station?.name ?? "Station"}
-            subtitle={loading ? "" : station?.address}
-            right={
-              loading ? (
-                <Skeleton variant="rounded" width={90} height={28} />
-              ) : station ? (
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <StatusChip status={station.status as Availability} />
-                  {activeCar && activeCar.connectorTypes.length ? (
-                    <Chip
-                      size="small"
-                      label={isCompatible ? "Compatible" : "Not supported"}
-                      sx={{
-                        borderRadius: 999,
-                        backgroundColor: isCompatible
-                          ? "rgba(0,229,255,0.16)"
-                          : "rgba(244,67,54,0.16)",
-                        border: `1px solid ${
-                          isCompatible
-                            ? "rgba(0,229,255,0.35)"
-                            : "rgba(244,67,54,0.35)"
-                        }`,
-                        color: UI.text,
-                        fontWeight: 800,
-                      }}
-                    />
-                  ) : null}
-                </Stack>
-              ) : null
-            }
-          >
-            {loading || !station ? (
-              <Stack spacing={1.25}>
-                <Skeleton variant="rounded" height={140} />
-                <Skeleton variant="rounded" height={140} />
-              </Stack>
-            ) : (
-              <Stack spacing={1.25}>
-                <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25}>
-                  <MiniPhoto
-                    label={station.photos[0]?.label ?? "Photo"}
-                    gradient={station.photos[0]?.gradient ?? UI.brandGrad}
-                  />
-                  <MiniPhoto
-                    label={station.photos[1]?.label ?? "Photo"}
-                    gradient={station.photos[1]?.gradient ?? UI.brandGrad}
-                  />
-                  <MiniPhoto
-                    label={station.photos[2]?.label ?? "Photo"}
-                    gradient={station.photos[2]?.gradient ?? UI.brandGrad}
-                  />
-                </Stack>
-
-                <Stack
-                  direction={{ xs: "column", sm: "row" }}
-                  spacing={1}
-                  alignItems={{ sm: "center" }}
-                >
-                  <Chip
-                    icon={<LaunchIcon />}
-                    label={
-                      distanceKm ? `${distanceKm.toFixed(1)} km away` : "—"
-                    }
-                    sx={{
-                      borderRadius: 999,
-                      backgroundColor: "rgba(10,10,16,0.04)",
-                      border: `1px solid ${UI.border2}`,
-                      color: UI.text2,
-                      fontWeight: 750,
-                      alignSelf: { xs: "flex-start", sm: "auto" },
-                    }}
-                  />
-                  <Chip
-                    label={`Updated ${minutesAgo(station.lastUpdatedISO)}m ago`}
-                    sx={{
-                      borderRadius: 999,
-                      backgroundColor: "rgba(10,10,16,0.04)",
-                      border: `1px solid ${UI.border2}`,
-                      color: UI.text2,
-                      fontWeight: 750,
-                      alignSelf: { xs: "flex-start", sm: "auto" },
-                    }}
-                  />
-                  <Box sx={{ flex: 1 }} />
-                  <Button
-                    variant="outlined"
-                    onClick={() => setReportOpen(true)}
-                    startIcon={<ReportProblemIcon />}
-                    sx={{
-                      textTransform: "none",
-                      borderRadius: 3,
-                      borderColor: UI.border,
-                      color: UI.text,
-                      alignSelf: { xs: "stretch", sm: "auto" },
-                    }}
-                  >
-                    Report issue
-                  </Button>
-                </Stack>
-
-                {station.notes ? (
-                  <Box
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 3,
-                      border: `1px dashed ${UI.border}`,
-                      backgroundColor: "rgba(10,10,16,0.02)",
-                    }}
-                  >
-                    <Typography sx={{ fontWeight: 900, color: UI.text }}>
-                      Notes
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: UI.text2, mt: 0.5 }}
-                    >
-                      {station.notes}
-                    </Typography>
-                  </Box>
-                ) : null}
-              </Stack>
-            )}
-          </SectionCard>
-
-          <SectionCard
-            title="Connectors"
-            subtitle="Compatibility + real‑time availability per connector type"
-          >
-            {loading || !station ? (
-              <Stack spacing={1.2}>
-                <Skeleton variant="rounded" height={72} />
-                <Skeleton variant="rounded" height={72} />
-              </Stack>
-            ) : (
-              <Stack spacing={1.2}>
-                {station.connectors.map((c) => (
-                  <ConnectorRow key={c.type} c={c as any} />
-                ))}
-              </Stack>
-            )}
-          </SectionCard>
-
-          <SectionCard
-            title="Amenities"
-            subtitle="Helpful things near this station"
-          >
-            {loading || !station ? (
-              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <Skeleton key={i} variant="rounded" width={92} height={28} />
-                ))}
-              </Stack>
-            ) : (
-              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                {station.amenities.map((a) => (
-                  <Chip
-                    key={a}
-                    label={a}
-                    sx={{
-                      borderRadius: 999,
-                      backgroundColor: "rgba(10,10,16,0.04)",
-                      border: `1px solid ${UI.border2}`,
-                      color: UI.text2,
-                      fontWeight: 750,
-                    }}
-                  />
-                ))}
-              </Stack>
-            )}
-          </SectionCard>
+          <StationOverviewSection
+            loading={loading}
+            station={station}
+            activeCar={activeCar}
+            isCompatible={isCompatible}
+            distanceKm={distanceKm}
+            onReportIssue={() => setReportOpen(true)}
+          />
+          <ConnectorsSection loading={loading} station={station} />
+          <AmenitiesSection loading={loading} station={station} />
         </Stack>
 
-        {/* Right column */}
         <Stack spacing={2}>
-          <Card
-            variant="outlined"
-            sx={{
-              borderRadius: 4,
-              borderColor: UI.border2,
-              backgroundColor: UI.surface2,
-              backdropFilter: "blur(10px)",
-              boxShadow: UI.shadow,
-            }}
-          >
-            <CardContent sx={{ p: 2.25 }}>
-              <Stack spacing={1.5}>
-                <Typography sx={{ fontWeight: 950, color: UI.text }}>
-                  Actions
-                </Typography>
-                <Button
-                  variant="contained"
-                  disabled={!canCharge}
-                  startIcon={<ElectricBoltIcon />}
-                  sx={{
-                    textTransform: "none",
-                    borderRadius: 3,
-                    background: canCharge
-                      ? UI.brandGradStrong
-                      : UI.brandGradDisabled,
-                    color: "white",
-                    boxShadow: "0 14px 40px rgba(124,92,255,0.14)",
-                  }}
-                  onClick={handleChargingAction}
-                >
-                  {chargingActionLabel}
-                </Button>
-                {!isAuthenticated ? (
-                  <Typography variant="caption" sx={{ color: UI.text3 }}>
-                    Log in to buy a ticket and start charging.
-                  </Typography>
-                ) : !ticket ? (
-                  <Typography variant="caption" sx={{ color: UI.text3 }}>
-                    Buy a ticket to start charging.
-                  </Typography>
-                ) : null}
-                {activeCar && isCompatible === false ? (
-                  <Typography variant="caption" sx={{ color: UI.text3 }}>
-                    Not compatible with your car's connector types.
-                  </Typography>
-                ) : null}
-
-                <Button
-                  variant="outlined"
-                  onClick={openGoogleMaps}
-                  startIcon={<LaunchIcon />}
-                  sx={{
-                    textTransform: "none",
-                    borderRadius: 3,
-                    borderColor: UI.border,
-                    color: UI.text,
-                  }}
-                >
-                  Open in Google Maps
-                </Button>
-
-                <Divider sx={{ borderColor: UI.border2 }} />
-
-                <Stack spacing={0.75}>
-                  <Typography
-                    variant="caption"
-                    sx={{ color: UI.text3, fontWeight: 750 }}
-                  >
-                    Charging status
-                  </Typography>
-                  {loading || !station ? (
-                    <Skeleton variant="rounded" height={44} />
-                  ) : (
-                    <Box
-                      sx={{
-                        p: 1.25,
-                        borderRadius: 3,
-                        border: `1px solid ${UI.border2}`,
-                        backgroundColor: "rgba(10,10,16,0.02)",
-                      }}
-                    >
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <Box
-                          sx={{
-                            width: 10,
-                            height: 10,
-                            borderRadius: 999,
-                            backgroundColor: statusColor(
-                              station.status as Availability
-                            ),
-                            boxShadow: "0 8px 18px rgba(10,10,16,0.14)",
-                            border: "1px solid rgba(255,255,255,0.95)",
-                          }}
-                        />
-                        <Typography sx={{ fontWeight: 900, color: UI.text }}>
-                          {statusLabel(station.status as Availability)}
-                        </Typography>
-                        <Box sx={{ flex: 1 }} />
-                        <Typography
-                          variant="caption"
-                          sx={{ color: UI.text3, fontWeight: 750 }}
-                        >
-                          {minutesAgo(station.lastUpdatedISO)}m
-                        </Typography>
-                      </Stack>
-                    </Box>
-                  )}
-
-                  {!loading && station?.status !== "AVAILABLE" ? (
-                    <Typography variant="body2" sx={{ color: UI.text2 }}>
-                      {station.status === "BUSY"
-                        ? "All ports are currently in use. You can still navigate here and queue."
-                        : "This station is currently offline. Use “Open in Google Maps” for alternatives."}
-                    </Typography>
-                  ) : null}
-                </Stack>
-              </Stack>
-            </CardContent>
-          </Card>
-
-          <SectionCard
-            title="Pricing"
-            subtitle="Estimated cost info (may vary by operator)"
-          >
-            {loading || !station ? (
-              <Stack spacing={1}>
-                <Skeleton variant="rounded" height={18} />
-                <Skeleton variant="rounded" height={18} />
-                <Skeleton variant="rounded" height={18} />
-              </Stack>
-            ) : (
-              <Stack spacing={1.25}>
-                <Box
-                  sx={{
-                    p: 1.25,
-                    borderRadius: 3,
-                    border: `1px solid ${UI.border2}`,
-                    backgroundColor: "rgba(10,10,16,0.02)",
-                  }}
-                >
-                  <Stack spacing={1}>
-                    <Stack
-                      direction="row"
-                      justifyContent="space-between"
-                      alignItems="center"
-                    >
-                      <Typography variant="caption" sx={{ color: UI.text3 }}>
-                        Charging ticket
-                      </Typography>
-                      {ticket ? (
-                        <Chip
-                          size="small"
-                          label="Ready"
-                          sx={{
-                            borderRadius: 999,
-                            backgroundColor: "rgba(0,229,255,0.12)",
-                            border: "1px solid rgba(0,229,255,0.3)",
-                            color: UI.text,
-                            fontWeight: 800,
-                          }}
-                        />
-                      ) : null}
-                    </Stack>
-
-                    <Typography sx={{ fontWeight: 900, color: UI.text }}>
-                      {ticket ? ticket.priceLabel : ticketPriceLabel}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: UI.text2 }}>
-                      {ticket
-                        ? `Paid with ${ticket.methodLabel}`
-                        : `Estimated ${ticketKwh} kWh pack`}
-                    </Typography>
-                    <Button
-                      variant={ticket ? "outlined" : "contained"}
-                      onClick={handlePaymentOpen}
-                      disabled={!station}
-                      sx={{
-                        textTransform: "none",
-                        borderRadius: 3,
-                        borderColor: UI.border,
-                        color: ticket ? UI.text : "white",
-                        background: ticket ? "transparent" : UI.brandGradStrong,
-                      }}
-                    >
-                      {paymentActionLabel}
-                    </Button>
-                  </Stack>
-                </Box>
-                <Divider sx={{ borderColor: UI.border2 }} />
-                <InfoRow
-                  label="Per kWh"
-                  value={
-                    station.pricing.perKwh
-                      ? formatCurrency(
-                          station.pricing.currency,
-                          station.pricing.perKwh
-                        )
-                      : "—"
-                  }
-                />
-                <InfoRow
-                  label="Per minute"
-                  value={
-                    station.pricing.perMinute
-                      ? formatCurrency(
-                          station.pricing.currency,
-                          station.pricing.perMinute
-                        )
-                      : "—"
-                  }
-                />
-                <InfoRow
-                  label="Parking"
-                  value={station.pricing.parkingFee ?? "—"}
-                />
-              </Stack>
-            )}
-          </SectionCard>
-
-          <SectionCard
-            title="Coordinates"
-            subtitle="For debugging and precise navigation"
-          >
-            {loading || !station ? (
-              <Stack spacing={1}>
-                <Skeleton variant="rounded" height={18} />
-                <Skeleton variant="rounded" height={18} />
-              </Stack>
-            ) : (
-              <Stack spacing={1.1}>
-                <InfoRow label="Latitude" value={station.lat.toFixed(5)} />
-                <InfoRow label="Longitude" value={station.lng.toFixed(5)} />
-              </Stack>
-            )}
-          </SectionCard>
+          <ActionsCard
+            loading={loading}
+            station={station}
+            isAuthenticated={isAuthenticated}
+            hasTicket={!!ticket}
+            activeCar={activeCar}
+            isCompatible={isCompatible}
+            canCharge={canCharge}
+            chargingActionLabel={chargingActionLabel}
+            onChargingAction={handleChargingAction}
+            onOpenMaps={openGoogleMaps}
+          />
+          <PricingSection
+            loading={loading}
+            station={station}
+            ticket={ticket}
+            ticketPriceLabel={ticketPriceLabel}
+            ticketKwh={TICKET_KWH}
+            paymentActionLabel={paymentActionLabel}
+            onPaymentOpen={handlePaymentOpen}
+          />
+          <CoordinatesSection loading={loading} station={station} />
         </Stack>
       </Box>
 
-      {/* Payment dialog */}
-      <Dialog
+      <PaymentDialog
         open={paymentOpen && isAuthenticated}
         onClose={() => setPaymentOpen(false)}
-        fullWidth
-        maxWidth="sm"
-        PaperProps={{
-          sx: {
-            borderRadius: 4,
-            backgroundColor: UI.surface,
-            border: `1px solid ${UI.border}`,
-            color: UI.text,
-            boxShadow: "0 24px 70px rgba(10,10,16,0.18)",
-          },
-        }}
-      >
-        <DialogTitle sx={{ fontWeight: 950 }}>Charging ticket</DialogTitle>
-        <DialogContent dividers sx={{ borderColor: UI.border2 }}>
-          <Stack spacing={2}>
-            <Typography variant="body2" sx={{ color: UI.text2 }}>
-              Choose a payment method for a {ticketKwh} kWh ticket.
-            </Typography>
-            <Box
-              sx={{
-                p: 1.25,
-                borderRadius: 3,
-                border: `1px solid ${UI.border2}`,
-                backgroundColor: "rgba(10,10,16,0.02)",
-              }}
-            >
-              <Stack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-              >
-                <Typography variant="caption" sx={{ color: UI.text3 }}>
-                  Total
-                </Typography>
-                <Typography sx={{ fontWeight: 900, color: UI.text }}>
-                  {ticketPriceLabel}
-                </Typography>
-              </Stack>
-              <Typography variant="caption" sx={{ color: UI.text3 }}>
-                Price based on station rate.
-              </Typography>
-            </Box>
-            <RadioGroup
-              value={selectedPaymentId}
-              onChange={(event) => setSelectedPaymentId(event.target.value)}
-              sx={{ gap: 1 }}
-            >
-              {PAYMENT_METHODS.map((method) => {
-                const isSelected = selectedPaymentId === method.id;
-                return (
-                  <Box
-                    key={method.id}
-                    sx={{
-                      p: 1.25,
-                      borderRadius: 3,
-                      border: `1px solid ${
-                        isSelected ? "rgba(0,229,255,0.35)" : UI.border2
-                      }`,
-                      backgroundColor: isSelected
-                        ? "rgba(0,229,255,0.08)"
-                        : "rgba(10,10,16,0.02)",
-                    }}
-                  >
-                    <FormControlLabel
-                      value={method.id}
-                      control={
-                        <Radio
-                          sx={{
-                            color: UI.text3,
-                            "&.Mui-checked": { color: UI.text },
-                          }}
-                        />
-                      }
-                      label={
-                        <Box>
-                          <Typography sx={{ fontWeight: 800, color: UI.text }}>
-                            {method.label}
-                          </Typography>
-                          <Typography
-                            variant="caption"
-                            sx={{ color: UI.text3 }}
-                          >
-                            {method.helper}
-                          </Typography>
-                        </Box>
-                      }
-                      sx={{ alignItems: "flex-start", m: 0 }}
-                    />
-                  </Box>
-                );
-              })}
-            </RadioGroup>
-          </Stack>
-        </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button
-            variant="outlined"
-            onClick={() => setPaymentOpen(false)}
-            sx={{
-              textTransform: "none",
-              borderRadius: 3,
-              borderColor: UI.border,
-              color: UI.text,
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleBuyTicket}
-            disabled={!station || !isAuthenticated}
-            sx={{
-              textTransform: "none",
-              borderRadius: 3,
-              background: UI.brandGradStrong,
-              color: "white",
-            }}
-          >
-            {ticket ? "Update payment" : "Buy ticket"}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        ticketKwh={TICKET_KWH}
+        ticketPriceLabel={ticketPriceLabel}
+        selectedPaymentId={selectedPaymentId}
+        onPaymentChange={setSelectedPaymentId}
+        paymentMethods={PAYMENT_METHODS}
+        onConfirm={handleBuyTicket}
+        canSubmit={!!station && isAuthenticated}
+        hasTicket={!!ticket}
+      />
 
-      {/* Charging dialog */}
-      <Dialog
+      <ChargingDialog
         open={chargingOpen}
         onClose={handleCloseCharging}
-        fullWidth
-        maxWidth="sm"
-        PaperProps={{
-          sx: {
-            borderRadius: 4,
-            backgroundColor: UI.surface,
-            border: `1px solid ${UI.border}`,
-            color: UI.text,
-            boxShadow: "0 24px 70px rgba(10,10,16,0.18)",
-          },
-        }}
-      >
-        <DialogTitle sx={{ fontWeight: 950 }}>
-          {chargingStatus === "done"
-            ? "Charging complete"
-            : "Charging in progress"}
-        </DialogTitle>
-        <DialogContent dividers sx={{ borderColor: UI.border2 }}>
-          <Stack spacing={2}>
-            <Typography variant="body2" sx={{ color: UI.text2 }}>
-              {chargingStatus === "done"
-                ? "Session complete. You can unplug when it is safe."
-                : "Keep the connector plugged in while we deliver your ticket."}
-            </Typography>
-            <Box
-              sx={{
-                p: 1.5,
-                borderRadius: 3,
-                border: `1px solid ${UI.border2}`,
-                backgroundColor: "rgba(10,10,16,0.02)",
-              }}
-            >
-              <Stack spacing={1}>
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
-                  <Typography sx={{ fontWeight: 900, color: UI.text }}>
-                    {chargingProgress}%
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: UI.text2 }}>
-                    {deliveredKwh} / {ticketKwh} kWh
-                  </Typography>
-                </Stack>
-                <LinearProgress
-                  variant="determinate"
-                  value={chargingProgress}
-                  sx={{
-                    height: 10,
-                    borderRadius: 999,
-                    backgroundColor: "rgba(10,10,16,0.08)",
-                    "& .MuiLinearProgress-bar": {
-                      borderRadius: 999,
-                      background: UI.brandGradStrong,
-                    },
-                  }}
-                />
-                <Typography variant="caption" sx={{ color: UI.text3 }}>
-                  {chargingStatus === "done"
-                    ? "Charging complete."
-                    : `Estimated time remaining: ${remainingMinutes} min`}
-                </Typography>
-              </Stack>
-            </Box>
-            {ticket ? (
-              <Box
-                sx={{
-                  p: 1.25,
-                  borderRadius: 3,
-                  border: `1px dashed ${UI.border}`,
-                  backgroundColor: "rgba(10,10,16,0.02)",
-                }}
-              >
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  justifyContent="space-between"
-                >
-                  <Typography variant="caption" sx={{ color: UI.text3 }}>
-                    Ticket ID
-                  </Typography>
-                  <Chip
-                    size="small"
-                    label={ticket.id}
-                    sx={{
-                      borderRadius: 999,
-                      backgroundColor: "rgba(10,10,16,0.04)",
-                      border: `1px solid ${UI.border2}`,
-                      color: UI.text,
-                      fontWeight: 800,
-                    }}
-                  />
-                </Stack>
-                <Typography variant="body2" sx={{ color: UI.text2, mt: 0.75 }}>
-                  Paid with {ticket.methodLabel}
-                </Typography>
-              </Box>
-            ) : null}
-          </Stack>
-        </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          {chargingStatus === "charging" ? (
-            <>
-              <Button
-                variant="outlined"
-                onClick={handleStopCharging}
-                sx={{
-                  textTransform: "none",
-                  borderRadius: 3,
-                  borderColor: UI.border,
-                  color: UI.text,
-                }}
-              >
-                Stop charging
-              </Button>
-              <Button
-                variant="contained"
-                onClick={handleCloseCharging}
-                sx={{
-                  textTransform: "none",
-                  borderRadius: 3,
-                  background: UI.brandGradStrong,
-                  color: "white",
-                }}
-              >
-                Hide
-              </Button>
-            </>
-          ) : (
-            <Button
-              variant="contained"
-              onClick={handleCloseCharging}
-              sx={{
-                textTransform: "none",
-                borderRadius: 3,
-                background: UI.brandGradStrong,
-                color: "white",
-              }}
-            >
-              Done
-            </Button>
-          )}
-        </DialogActions>
-      </Dialog>
+        onStop={handleStopCharging}
+        chargingStatus={chargingStatus}
+        chargingProgress={chargingProgress}
+        ticket={ticket}
+        ticketKwh={TICKET_KWH}
+        deliveredKwh={deliveredKwh}
+        remainingMinutes={remainingMinutes}
+      />
 
-      {/* Report dialog */}
-      <Dialog
+      <ReportDialog
         open={reportOpen}
         onClose={() => setReportOpen(false)}
-        fullWidth
-        maxWidth="sm"
-        PaperProps={{
-          sx: {
-            borderRadius: 4,
-            backgroundColor: UI.surface,
-            border: `1px solid ${UI.border}`,
-            color: UI.text,
-            boxShadow: "0 24px 70px rgba(10,10,16,0.18)",
-          },
-        }}
-      >
-        <DialogTitle sx={{ fontWeight: 950 }}>Report an issue</DialogTitle>
-        <DialogContent dividers sx={{ borderColor: UI.border2 }}>
-          <Stack spacing={1.5}>
-            <Typography variant="body2" sx={{ color: UI.text2 }}>
-              Help improve data quality — your report will update station trust.
-            </Typography>
-            <TextField
-              select
-              label="Issue type"
-              value={reportType}
-              onChange={(e) => setReportType(e.target.value)}
-              fullWidth
-            >
-              {[
-                "Broken connector",
-                "Occupied but shown available",
-                "Payment problem",
-                "Station offline",
-                "Other",
-              ].map((t) => (
-                <MenuItem key={t} value={t}>
-                  {t}
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField
-              label="Notes (optional)"
-              value={reportNote}
-              onChange={(e) => setReportNote(e.target.value)}
-              fullWidth
-              multiline
-              minRows={3}
-              placeholder="Example: CCS2 #2 not working, error code 14"
-            />
-          </Stack>
-        </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button
-            variant="outlined"
-            onClick={() => setReportOpen(false)}
-            sx={{
-              textTransform: "none",
-              borderRadius: 3,
-              borderColor: UI.border,
-              color: UI.text,
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            onClick={submitReport}
-            sx={{
-              textTransform: "none",
-              borderRadius: 3,
-              background: UI.brandGradStrong,
-              color: "white",
-            }}
-          >
-            Submit report
-          </Button>
-        </DialogActions>
-      </Dialog>
+        reportType={reportType}
+        reportNote={reportNote}
+        onReportTypeChange={setReportType}
+        onReportNoteChange={setReportNote}
+        onSubmit={submitReport}
+        issueTypes={REPORT_ISSUE_TYPES}
+      />
 
-      {/* Share fallback dialog */}
-      <Dialog
+      <ShareDialog
         open={shareOpen}
         onClose={() => setShareOpen(false)}
-        fullWidth
-        maxWidth="sm"
-        PaperProps={{
-          sx: {
-            borderRadius: 4,
-            backgroundColor: UI.surface,
-            border: `1px solid ${UI.border}`,
-            color: UI.text,
-            boxShadow: "0 24px 70px rgba(10,10,16,0.18)",
-          },
-        }}
-      >
-        <DialogTitle sx={{ fontWeight: 950 }}>Share</DialogTitle>
-        <DialogContent dividers sx={{ borderColor: UI.border2 }}>
-          <Typography variant="body2" sx={{ color: UI.text2 }}>
-            Your browser doesn’t support native share here. Copy the details
-            manually.
-          </Typography>
-          <Box
-            sx={{
-              mt: 1.25,
-              p: 1.5,
-              borderRadius: 3,
-              border: `1px dashed ${UI.border}`,
-              backgroundColor: "rgba(10,10,16,0.02)",
-            }}
-          >
-            <Typography sx={{ fontWeight: 900 }}>
-              {station?.name ?? "—"}
-            </Typography>
-            <Typography variant="body2" sx={{ color: UI.text2 }}>
-              {station?.address ?? "—"}
-            </Typography>
-          </Box>
-        </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button
-            variant="contained"
-            onClick={() => setShareOpen(false)}
-            sx={{
-              textTransform: "none",
-              borderRadius: 3,
-              background: UI.brandGradStrong,
-              color: "white",
-            }}
-          >
-            Done
-          </Button>
-        </DialogActions>
-      </Dialog>
+        station={station}
+      />
     </Box>
   );
 }
