@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 // NOTE: This page uses react-router for navigation in the full app.
 import { Box, Drawer, useMediaQuery } from "@mui/material";
 import { useLocation, useNavigate } from "react-router";
-import { DRAWER_WIDTH, MOCK_STATIONS } from "../../data/stations";
+import { DRAWER_WIDTH, MOCK_STATIONS, fetchStations } from "../../data/stations";
 import { UI } from "../../theme/theme";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { setMdMode, setSidebarOpen } from "../../features/app/appSlice";
@@ -10,7 +10,7 @@ import { setActiveCar } from "../../features/auth/authSlice";
 import { boundsFromStations, filterStations } from "../../utils/distance";
 import { useGeoLocation } from "../../hooks/geolocation-hook";
 import type { ConnectorType } from "../../models/model";
-import type { FilterStatus, StationWithDistance } from "./types";
+import type { FilterStatus, Station, StationWithDistance } from "./types";
 import { persistActiveCarId } from "./mainPageStorage";
 import { buildMapsUrl } from "./utils";
 import FiltersPanel from "./components/FiltersPanel";
@@ -31,6 +31,7 @@ export default function MainPage() {
   const [useCarFilter, setUseCarFilter] = useState(false);
   const [carFilterTouched, setCarFilterTouched] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [stations, setStations] = useState<Station[]>(MOCK_STATIONS);
 
   const drawerOpen = useAppSelector((state) => state.app.isSidebarOpen);
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
@@ -47,7 +48,24 @@ export default function MainPage() {
     dispatch(setMdMode(isMdUp));
   }, [dispatch, isMdUp]);
 
-  const stations = MOCK_STATIONS;
+  useEffect(() => {
+    const controller = new AbortController();
+    let active = true;
+
+    const loadStations = async () => {
+      const result = await fetchStations(controller.signal);
+      if (!active) return;
+      if (result.ok && result.stations.length) {
+        setStations(result.stations);
+      }
+    };
+
+    loadStations();
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, []);
   const geo = useGeoLocation();
   const userCenter = geo.loc ?? { lat: -6.2, lng: 106.8167 };
   const activeCar = useMemo(() => {
