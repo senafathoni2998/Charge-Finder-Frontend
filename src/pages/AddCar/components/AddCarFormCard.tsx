@@ -29,6 +29,9 @@ type AddCarFormCardProps = {
   onCancel: () => void;
   userId: string;
   email: string;
+  vehicleId?: string | null;
+  submitLabel?: string;
+  submittingLabel?: string;
   minPower: {
     min: number;
     max: number;
@@ -36,7 +39,7 @@ type AddCarFormCardProps = {
   };
 };
 
-// Renders the add-car form card with inputs and connector selections.
+// Renders the car form card with inputs and connector selections.
 export default function AddCarFormCard({
   values,
   handlers,
@@ -47,6 +50,9 @@ export default function AddCarFormCard({
   onCancel,
   userId,
   email,
+  vehicleId,
+  submitLabel,
+  submittingLabel,
   minPower,
 }: AddCarFormCardProps) {
   return (
@@ -65,6 +71,9 @@ export default function AddCarFormCard({
         <Box component={Form} method="post" onSubmit={onSubmit} noValidate>
           <input type="hidden" name="userId" value={userId} />
           <input type="hidden" name="email" value={email} />
+          {vehicleId ? (
+            <input type="hidden" name="vehicleId" value={vehicleId} />
+          ) : null}
           {Array.from(values.connectors).map((connector) => (
             <input
               key={connector}
@@ -111,7 +120,12 @@ export default function AddCarFormCard({
 
             <Divider sx={{ borderColor: UI.border2 }} />
 
-            <AddCarActions isSubmitting={isSubmitting} onCancel={onCancel} />
+            <AddCarActions
+              isSubmitting={isSubmitting}
+              onCancel={onCancel}
+              submitLabel={submitLabel}
+              submittingLabel={submittingLabel}
+            />
           </Stack>
         </Box>
       </CardContent>

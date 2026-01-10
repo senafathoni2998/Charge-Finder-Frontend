@@ -16,6 +16,7 @@ type CarsCardProps = {
   onAddCar: () => void;
   onSetActive: (carId: string) => void;
   onRemove: (carId: string) => void;
+  onEdit: (carId: string) => void;
 };
 
 // Renders the car list card with active car selection controls.
@@ -25,6 +26,7 @@ export default function CarsCard({
   onAddCar,
   onSetActive,
   onRemove,
+  onEdit,
 }: CarsCardProps) {
   const hasCars = cars.length > 0;
 
@@ -134,6 +136,17 @@ export default function CarsCard({
                             Use this car
                           </Button>
                         ) : null}
+                        <Button
+                          size="small"
+                          variant="text"
+                          onClick={() => onEdit(car.id)}
+                          sx={{
+                            textTransform: "none",
+                            color: UI.text,
+                          }}
+                        >
+                          Edit
+                        </Button>
                         <Button
                           size="small"
                           variant="text"

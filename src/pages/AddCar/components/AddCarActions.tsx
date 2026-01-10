@@ -4,12 +4,16 @@ import { UI } from "../../../theme/theme";
 type AddCarActionsProps = {
   isSubmitting: boolean;
   onCancel: () => void;
+  submitLabel?: string;
+  submittingLabel?: string;
 };
 
-// Renders the primary and secondary actions for the add-car form.
+// Renders the primary and secondary actions for the car form.
 export default function AddCarActions({
   isSubmitting,
   onCancel,
+  submitLabel = "Save car",
+  submittingLabel = "Saving...",
 }: AddCarActionsProps) {
   return (
     <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{ sm: "center" }}>
@@ -38,7 +42,7 @@ export default function AddCarActions({
           color: "white",
         }}
       >
-        {isSubmitting ? "Saving\u2026" : "Save car"}
+        {isSubmitting ? submittingLabel : submitLabel}
       </Button>
     </Stack>
   );

@@ -238,6 +238,10 @@ export default function ProfilePage() {
     persistCarsToStorage(cars, carId);
   };
 
+  const handleEditCar = (carId: string) => {
+    navigate(`/profile/cars/${carId}/edit`);
+  };
+
   const handleRemoveCar = (carId: string) => {
     const nextCars = cars.filter((c) => c.id !== carId);
     const nextActiveId =
@@ -288,6 +292,7 @@ export default function ProfilePage() {
             onAddCar={() => navigate("/profile/cars/new")}
             onSetActive={handleSetActive}
             onRemove={handleRemoveCar}
+            onEdit={handleEditCar}
           />
         </Stack>
       </Box>

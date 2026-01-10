@@ -6,6 +6,7 @@ import Login, { loginAction } from "../pages/Login";
 import Signup, { signupAction } from "../pages/Signup";
 import Profile, { profileAction, profileLoader } from "../pages/Profile";
 import AddCar, { addCarAction } from "../pages/AddCar";
+import EditCar, { editCarAction } from "../pages/EditCar";
 import { RedirectIfAuth, RequireAuth } from "./guards";
 
 const router = createBrowserRouter([
@@ -34,6 +35,11 @@ const router = createBrowserRouter([
             path: "profile/cars/new",
             Component: AddCar,
             action: addCarAction,
+          },
+          {
+            path: "profile/cars/:carId/edit",
+            Component: EditCar,
+            action: editCarAction,
           },
         ],
       },
