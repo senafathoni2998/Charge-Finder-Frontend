@@ -15,6 +15,7 @@ import {
   persistCarsToStorage,
   persistProfileToStorage,
 } from "./profileStorage";
+import { deleteVehicleRequest, setActiveVehicleRequest } from "./vehicleRequests";
 import ProfileOverviewCard from "./components/ProfileOverviewCard";
 import CarsCard from "./components/CarsCard";
 import EditProfileDialog from "./components/EditProfileDialog";
@@ -44,6 +45,7 @@ export default function ProfilePage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [passwordToast, setPasswordToast] = useState<string | null>(null);
+  const [carError, setCarError] = useState<string | null>(null);
 
   const newPwIssue = useMemo(() => passwordIssue(newPassword), [newPassword]);
   const newPwStrength = useMemo(
@@ -233,7 +235,13 @@ export default function ProfilePage() {
     }
   };
 
-  const handleSetActive = (carId: string) => {
+  const handleSetActive = async (carId: string) => {
+    setCarError(null);
+    const result = await setActiveVehicleRequest({ vehicleId: carId, userId });
+    if (!result.ok) {
+      setCarError(result.error || "Could not update active car.");
+      return;
+    }
     dispatch(setActiveCar(carId));
     persistCarsToStorage(cars, carId);
   };
@@ -242,7 +250,14 @@ export default function ProfilePage() {
     navigate(`/profile/cars/${carId}/edit`);
   };
 
-  const handleRemoveCar = (carId: string) => {
+  const handleRemoveCar = async (carId: string) => {
+    setCarError(null);
+    const result = await deleteVehicleRequest({ vehicleId: carId, userId });
+    if (!result.ok) {
+      setCarError(result.error || "Could not delete car.");
+      return;
+    }
+
     const nextCars = cars.filter((c) => c.id !== carId);
     const nextActiveId =
       activeCarId === carId ? nextCars[0]?.id ?? null : activeCarId;
@@ -339,6 +354,22 @@ export default function ProfilePage() {
           sx={{ borderRadius: 3 }}
         >
           {passwordToast}
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        open={!!carError}
+        autoHideDuration={4000}
+        onClose={() => setCarError(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setCarError(null)}
+          severity="error"
+          variant="filled"
+          sx={{ borderRadius: 3 }}
+        >
+          {carError}
         </Alert>
       </Snackbar>
     </Box>
