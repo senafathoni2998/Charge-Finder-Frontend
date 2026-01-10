@@ -10,7 +10,7 @@ import { setActiveCar } from "../../features/auth/authSlice";
 import { boundsFromStations, filterStations } from "../../utils/distance";
 import { useGeoLocation } from "../../hooks/geolocation-hook";
 import type { ConnectorType } from "../../models/model";
-import type { FilterStatus, Station, StationWithDistance } from "./types";
+import type { FilterStatus, StationWithDistance } from "./types";
 import { persistActiveCarId } from "./mainPageStorage";
 import { buildMapsUrl } from "./utils";
 import FiltersPanel from "./components/FiltersPanel";
@@ -47,7 +47,7 @@ export default function MainPage() {
     dispatch(setMdMode(isMdUp));
   }, [dispatch, isMdUp]);
 
-  const stations = MOCK_STATIONS as Station[];
+  const stations = MOCK_STATIONS;
   const geo = useGeoLocation();
   const userCenter = geo.loc ?? { lat: -6.2, lng: 106.8167 };
   const activeCar = useMemo(() => {

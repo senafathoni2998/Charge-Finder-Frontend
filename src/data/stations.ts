@@ -1,23 +1,8 @@
-import { ConnectorType, Availability } from "../models/model";
+import type { Station } from "../models/model";
 
 export const DRAWER_WIDTH = 380;
 
-/**
- * @typedef Station
- * @property {string} id
- * @property {string} name
- * @property {number} lat
- * @property {number} lng
- * @property {string} address
- * @property {{type: ConnectorType, powerKW: number}[]} connectors
- * @property {Availability} status
- * @property {string} lastUpdatedISO
- * @property {{label: string, gradient: string}[]} photos
- * @property {{currency: string, perKwh: number, perMinute?: number, parkingFee?: string}} pricing
- * @property {string[]} amenities
- * @property {string} [notes]
- */
-export const MOCK_STATIONS = /** @type {Station[]} */ [
+export const MOCK_STATIONS: Station[] = [
   {
     id: "st-001",
     name: "Central Plaza Fast Charge",

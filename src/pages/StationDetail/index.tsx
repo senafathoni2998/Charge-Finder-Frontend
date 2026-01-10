@@ -73,9 +73,7 @@ export default function StationDetailPage() {
   }, [stationId]);
 
   const station = useMemo<Station | null>(() => {
-    return (MOCK_STATIONS.find((s) => s.id === stationId) ?? null) as
-      | Station
-      | null;
+    return MOCK_STATIONS.find((s) => s.id === stationId) ?? null;
   }, [stationId]);
 
   console.log("Station detail for ID:", stationId, station);
