@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router';
 import { Provider } from 'react-redux';
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import EditCarPage from '../index';
-import type { UserCar } from '../../features/auth/authSlice';
+import type { UserCar } from '../../../features/auth/authSlice';
 
 // Create a minimal mock auth reducer
 const createMockAuthReducer = (cars: UserCar[] = []) => {
