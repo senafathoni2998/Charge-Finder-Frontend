@@ -37,7 +37,7 @@ describe('EditProfileDialog', () => {
 
     it('should render the name field', () => {
         render(<EditProfileDialog {...defaultProps} />);
-        expect(screen.getByLabelText('Full name')).toBeInTheDocument();
+        expect(screen.getByRole('textbox', { name: /full name/i })).toBeInTheDocument();
     });
 
     it('should render the email field as disabled', () => {
@@ -76,7 +76,7 @@ describe('EditProfileDialog', () => {
     it('should call onNameChange when name field changes', () => {
         const onNameChange = vi.fn();
         render(<EditProfileDialog {...defaultProps} onNameChange={onNameChange} />);
-        const nameField = screen.getByLabelText('Full name');
+        const nameField = screen.getByRole('textbox', { name: /full name/i });
         fireEvent.change(nameField, { target: { value: 'Jane Doe' } });
         expect(onNameChange).toHaveBeenCalledWith('Jane Doe');
     });

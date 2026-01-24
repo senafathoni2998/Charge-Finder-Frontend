@@ -24,7 +24,8 @@ describe('ProfileOverviewCard', () => {
 
     it('should render the profile card', () => {
         render(<ProfileOverviewCard {...defaultProps} />);
-        expect(screen.getByText('John Doe')).toBeInTheDocument();
+        const nameElements = screen.getAllByText('John Doe');
+        expect(nameElements.length).toBeGreaterThan(0);
     });
 
     it('should render the email', () => {

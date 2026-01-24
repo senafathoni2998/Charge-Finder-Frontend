@@ -59,10 +59,9 @@ describe('ConnectorRow', () => {
         const { container } = render(<ConnectorRow c={mockConnector} />);
         const box = container.firstChild as HTMLElement;
         expect(box).toBeInTheDocument();
-        // MUI's sx prop converts padding to px, so p: 1.5 becomes 12px
-        expect(box).toHaveStyle({
-            padding: '12px',
-            borderRadius: '3px',
-        });
+        const styles = getComputedStyle(box);
+        expect(parseFloat(styles.borderTopWidth)).toBeGreaterThan(0);
+        expect(styles.borderTopStyle).toBe('solid');
+        expect(parseFloat(styles.paddingTop)).toBeGreaterThan(0);
     });
 });

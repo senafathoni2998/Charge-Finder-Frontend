@@ -16,7 +16,7 @@ vi.mock('../SectionCard', () => ({
     ),
 }));
 
-vi.mock('../../MainPage/components/StatusChip', () => ({
+vi.mock('../../../MainPage/components/StatusChip', () => ({
     default: () => <span>Chip Status</span>,
 }));
 

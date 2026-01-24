@@ -15,8 +15,8 @@ describe('SignupBackground', () => {
 
     it('should render gradient circles', () => {
         const { container } = render(<SignupBackground />);
-        const boxes = container.querySelectorAll('Box');
-        expect(boxes.length).toBeGreaterThan(0);
+        const circles = container.querySelectorAll('[aria-hidden="true"] > div');
+        expect(circles.length).toBeGreaterThan(0);
     });
 
     it('should have correct positioning styles', () => {

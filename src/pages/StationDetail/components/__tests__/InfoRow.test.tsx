@@ -20,9 +20,11 @@ describe('InfoRow', () => {
     });
 
     it('should render with empty string values', () => {
-        render(<InfoRow label="Empty" value="" />);
+        const { container } = render(<InfoRow label="Empty" value="" />);
         expect(screen.getByText('Empty')).toBeInTheDocument();
-        expect(screen.getByText('')).toBeInTheDocument();
+        const typographyNodes = container.querySelectorAll('.MuiTypography-root');
+        expect(typographyNodes.length).toBeGreaterThanOrEqual(2);
+        expect(typographyNodes[1].textContent).toBe('');
     });
 
     it('should render with special characters', () => {
