@@ -190,8 +190,7 @@ describe('loginStorage', () => {
 
         it('should return early when window is undefined', () => {
             const originalWindow = globalThis.window;
-            // @ts-expect-error - intentionally undefined for testing
-            delete globalThis.window;
+            delete (globalThis as any).window;
 
             expect(() => {
                 persistLoginSession({
@@ -203,7 +202,7 @@ describe('loginStorage', () => {
                 });
             }).not.toThrow();
 
-            globalThis.window = originalWindow;
+            (globalThis as any).window = originalWindow;
         });
     });
 
@@ -222,13 +221,12 @@ describe('loginStorage', () => {
         it('should return null when window is undefined', () => {
             localStorage.setItem('cf_login_email', 'test@example.com');
             const originalWindow = globalThis.window;
-            // @ts-expect-error - intentionally undefined for testing
-            delete globalThis.window;
+            delete (globalThis as any).window;
 
             const email = getRememberedLoginEmail();
             expect(email).toBeNull();
 
-            globalThis.window = originalWindow;
+            (globalThis as any).window = originalWindow;
         });
 
         it('should handle localStorage errors gracefully', () => {

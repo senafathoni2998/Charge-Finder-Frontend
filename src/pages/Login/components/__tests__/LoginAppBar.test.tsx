@@ -18,7 +18,7 @@ describe('LoginAppBar', () => {
     });
 
     it('should have sticky position', () => {
-        const { container } = render(<LoginAppBar onNavigateHome={vi.fn()} />);
+        render(<LoginAppBar onNavigateHome={vi.fn()} />);
 
         const appBar = screen.getByRole('banner');
         expect(appBar).toBeInTheDocument();

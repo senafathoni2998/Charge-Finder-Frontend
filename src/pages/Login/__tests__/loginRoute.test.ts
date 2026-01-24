@@ -46,7 +46,7 @@ describe('loginAction', () => {
 
     it('should return error when password has issues', async () => {
         vi.mocked(validate.isValidEmail).mockReturnValue(true);
-        vi.mocked(validate.passwordIssue).mockReturnValue('Password is too short');
+        vi.mocked(validate.passwordIssue).mockReturnValue('Password must be at least 7 characters.' as any);
 
         const formData = new FormData();
         formData.append('email', 'test@example.com');
@@ -60,7 +60,7 @@ describe('loginAction', () => {
         const result = await loginAction({ request });
 
         expect(result).toEqual({
-            error: 'Password is too short',
+            error: 'Password must be at least 7 characters.',
         });
     });
 
