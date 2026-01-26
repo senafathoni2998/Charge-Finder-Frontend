@@ -28,6 +28,7 @@ describe('addCarRoute action', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         vi.stubGlobal('fetch', vi.fn());
+        vi.stubEnv('VITE_APP_BACKEND_URL', 'http://localhost:8000');
     });
 
     afterEach(() => {

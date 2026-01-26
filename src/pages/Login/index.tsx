@@ -25,17 +25,19 @@ export default function ChargeFinderLoginPage() {
   const navigation = useNavigation();
   const [searchParams] = useSearchParams();
 
-  const [email, setEmail] = useState(() => getRememberedLoginEmail() ?? "");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState(
+    () => getRememberedLoginEmail() ?? "demo@chargefinder.com",
+  );
+  const [password, setPassword] = useState("demo123");
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(() =>
-    consumeSessionMessage()
+    consumeSessionMessage(),
   );
 
   const pwIssue = useMemo(() => passwordIssue(password), [password]);
   const nextPath = useMemo(
     () => safeNextPath(searchParams.get("next")),
-    [searchParams]
+    [searchParams],
   );
   const isSubmitting = navigation.state === "submitting";
 
@@ -62,7 +64,6 @@ export default function ChargeFinderLoginPage() {
   const handleForgotPassword = () => {
     setToast("Forgot password (demo). Wire to reset flow.");
   };
-
 
   const handleNavigateToSignup = () => {
     navigate(`/signup?next=${encodeURIComponent(nextPath)}`);

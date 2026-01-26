@@ -5,6 +5,7 @@ describe('editCarRoute', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         global.fetch = vi.fn();
+        vi.stubEnv('VITE_APP_BACKEND_URL', 'http://localhost:8000');
     });
 
     it('should return error when vehicleId is missing', async () => {

@@ -92,24 +92,24 @@ describe('ChargeFinderLoginPage', () => {
         expect(screen.getByTestId('login-form-card')).toBeInTheDocument();
     });
 
-    it('should start with empty email when no remembered email', () => {
+    it('should start with demo email when no remembered email', () => {
         render(
             <MemoryRouter>
                 <ChargeFinderLoginPage />
             </MemoryRouter>
         );
 
-        expect(screen.getByTestId('email')).toHaveValue('');
+        expect(screen.getByTestId('email')).toHaveValue('demo@chargefinder.com');
     });
 
-    it('should start with empty password', () => {
+    it('should start with demo password', () => {
         render(
             <MemoryRouter>
                 <ChargeFinderLoginPage />
             </MemoryRouter>
         );
 
-        expect(screen.getByTestId('password')).toHaveValue('');
+        expect(screen.getByTestId('password')).toHaveValue('demo123');
     });
 
     it('should load remembered email on mount', () => {
