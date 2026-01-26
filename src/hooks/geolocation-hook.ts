@@ -17,7 +17,6 @@ export function useGeoLocation() {
     setLoading(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        debugger;
         console.log("Got position:", pos);
         setLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setLoading(false);
@@ -28,7 +27,7 @@ export function useGeoLocation() {
         setLoading(false);
         setRequestId((prev) => prev + 1);
       },
-      { enableHighAccuracy: true, timeout: 10_000 }
+      { enableHighAccuracy: true, timeout: 10_000 },
     );
   }, []);
 
