@@ -13,7 +13,7 @@ const DEFAULT_TITLE = 'Charge Finder - EV Charging Station Locator | Full-Stack 
 const DEFAULT_DESCRIPTION =
   'A full-stack demo web application that helps electric vehicle owners find nearby charging stations. Frontend: React, TypeScript, Leaflet. Backend: Node.js, Express, Redis, MongoDB. A portfolio project showcasing modern full-stack web development skills.'
 const DEFAULT_OG_IMAGE = '/og-image.png'
-const SITE_URL = 'https://charge-finder-demo.vercel.app'
+const SITE_URL = 'https://chargefinder.senafathoni.dev'
 
 export function SEO({
   title,
