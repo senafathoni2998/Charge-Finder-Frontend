@@ -28,7 +28,7 @@ export default function StationOverviewSection({
   distanceKm,
   onReportIssue,
 }: StationOverviewSectionProps) {
-  const title = loading ? `Loading\u2026` : station?.name ?? "Station";
+  const title = loading ? `Loading` : (station?.name ?? "Station");
   const subtitle = loading ? "" : station?.address;
 
   return (

@@ -105,7 +105,7 @@ export default function FiltersPanel({
           <TextField
             fullWidth
             size="small"
-            placeholder="Search station or area\u2026"
+            placeholder="Search station or area"
             value={query}
             onChange={(event) => onQueryChange(event.target.value)}
             InputProps={{

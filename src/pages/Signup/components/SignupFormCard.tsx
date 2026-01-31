@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+} from "react";
 import {
   Alert,
   Avatar,
@@ -208,7 +214,9 @@ export default function SignupFormCard({
                 label="Region"
                 name="region"
                 value={values.region}
-                onChange={(event) => handlers.onRegionChange(event.target.value)}
+                onChange={(event) =>
+                  handlers.onRegionChange(event.target.value)
+                }
                 autoComplete="address-level1"
                 fullWidth
                 error={values.region.length > 0 && !isValidName(values.region)}
@@ -331,7 +339,9 @@ export default function SignupFormCard({
                 placeholder="At least 7 characters"
                 name="password"
                 value={values.password}
-                onChange={(event) => handlers.onPasswordChange(event.target.value)}
+                onChange={(event) =>
+                  handlers.onPasswordChange(event.target.value)
+                }
                 autoComplete="new-password"
                 fullWidth
                 type={showPw ? "text" : "password"}
@@ -372,7 +382,9 @@ export default function SignupFormCard({
                 placeholder="Re-enter your password"
                 name="confirm"
                 value={values.confirm}
-                onChange={(event) => handlers.onConfirmChange(event.target.value)}
+                onChange={(event) =>
+                  handlers.onConfirmChange(event.target.value)
+                }
                 autoComplete="new-password"
                 fullWidth
                 type={showConfirm ? "text" : "password"}
@@ -416,7 +428,12 @@ export default function SignupFormCard({
                 }}
               />
 
-              <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: -0.5 }}>
+              <Stack
+                direction="row"
+                alignItems="center"
+                spacing={1}
+                sx={{ mt: -0.5 }}
+              >
                 <Chip
                   size="small"
                   variant="outlined"
@@ -481,7 +498,7 @@ export default function SignupFormCard({
                     boxShadow: "0 14px 40px rgba(124,92,255,0.16)",
                   }}
                 >
-                  {isSubmitting ? "Creating\u2026" : "Create account"}
+                  {isSubmitting ? "Creating" : "Create account"}
                 </Button>
               </Stack>
 

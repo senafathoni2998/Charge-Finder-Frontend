@@ -23,7 +23,7 @@ export default function StationList({
   if (isLoading) {
     return (
       <Typography sx={{ color: UI.text2, fontSize: 14 }}>
-        Loading stations\u2026
+        Loading stations
       </Typography>
     );
   }

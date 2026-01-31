@@ -251,7 +251,7 @@ export default function LoginFormCard({
                     boxShadow: "0 14px 40px rgba(124,92,255,0.16)",
                   }}
                 >
-                  {isSubmitting ? "Signing in\u2026" : "Sign in"}
+                  {isSubmitting ? "Signing in" : "Sign in"}
                 </Button>
               </Stack>
 

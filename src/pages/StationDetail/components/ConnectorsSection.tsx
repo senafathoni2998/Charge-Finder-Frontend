@@ -16,7 +16,7 @@ export default function ConnectorsSection({
   return (
     <SectionCard
       title="Connectors"
-      subtitle="Compatibility + real\u2011time availability per connector type"
+      subtitle="Compatibility + realtime availability per connector type"
     >
       {loading || !station ? (
         <Stack spacing={1.2}>
