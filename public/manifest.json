@@ -1,0 +1,20 @@
+{
+  "name": "Charge Finder Demo - Full-Stack Portfolio Project",
+  "short_name": "Charge Finder",
+  "description": "A full-stack demo for finding EV charging stations. Frontend: React, TypeScript, Leaflet. Backend: Node.js, Express, Redis, MongoDB. Portfolio project.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1976d2",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/app-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["utilities", "navigation"],
+  "screenshots": []
+}

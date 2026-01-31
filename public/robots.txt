@@ -1,0 +1,8 @@
+# robots.txt for Charge Finder Demo
+# This is a portfolio project demo
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://charge-finder-demo.vercel.app/sitemap.xml
