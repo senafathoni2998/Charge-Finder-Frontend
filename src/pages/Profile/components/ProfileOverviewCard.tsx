@@ -193,6 +193,7 @@ export default function ProfileOverviewCard({
                 sx={{
                   textTransform: "none",
                   borderRadius: 3,
+                  width: { xs: "100%", sm: "auto" },
                   backgroundColor: "rgba(244,67,54,0.9)",
                   "&:hover": {
                     backgroundColor: "rgba(244,67,54,1)",
