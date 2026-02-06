@@ -102,7 +102,7 @@ export default function ProfileOverviewCard({
           <Box
             sx={{
               display: "grid",
-              gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)" },
+              gridTemplateColumns: "repeat(2, 1fr)",
               gap: { xs: 1, sm: 1.5, md: 2 },
             }}
           >
