@@ -23,6 +23,7 @@ export default function RootLayout() {
   const navigate = useNavigate();
   const navigation = useNavigation();
   const showBack = location.pathname !== "/";
+  const isMapPage = location.pathname === "/";
   const hideProfileButton = location.pathname.startsWith("/profile");
   const isMdUp = useAppSelector((state) => state.app.isMdMode);
   const isAdmin = useAppSelector(
@@ -145,7 +146,7 @@ export default function RootLayout() {
             </Tooltip>
           )}
 
-          {!hideProfileButton && (
+          {isMapPage && !hideProfileButton && (
             <Tooltip title="Profile">
               <IconButton
                 onClick={() => navigate("/profile")}
@@ -164,7 +165,7 @@ export default function RootLayout() {
             </Tooltip>
           )}
 
-          {!isMdUp && (
+          {isMapPage && !isMdUp && (
             <Tooltip title="Filters">
               <IconButton
                 onClick={() => dispatch(setSidebarOpen(true))}
