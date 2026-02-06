@@ -198,6 +198,10 @@ export default function MainPage() {
 
   const handleFocusStation = (station: StationWithDistance) => {
     setSelectedId(station.id);
+    // Close sidebar on mobile when a station is selected
+    if (!isMdUp) {
+      dispatch(setSidebarOpen(false));
+    }
   };
 
   const handleSelectCar = (carId: string) => {
