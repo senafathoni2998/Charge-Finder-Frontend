@@ -35,7 +35,7 @@ describe('ChargingHistoryCard', () => {
 
     it('should render the subtitle', () => {
         render(<ChargingHistoryCard items={[]} />);
-        expect(screen.getByText('Sessions from the last 3 days.')).toBeInTheDocument();
+        expect(screen.getByText('Sessions from the last 3 days')).toBeInTheDocument();
     });
 
     it('should render loading skeletons when loading', () => {
@@ -55,8 +55,8 @@ describe('ChargingHistoryCard', () => {
     it('should render no sessions message when items array is empty', () => {
         render(<ChargingHistoryCard items={[]} />);
 
-        expect(screen.getByText('No recent charging sessions.')).toBeInTheDocument();
-        expect(screen.getByText('Your last 3 days of charging will appear here.')).toBeInTheDocument();
+        expect(screen.getByText('No recent charging sessions')).toBeInTheDocument();
+        expect(screen.getByText('Your last 3 days of charging will appear here')).toBeInTheDocument();
     });
 
     it('should render history items', () => {

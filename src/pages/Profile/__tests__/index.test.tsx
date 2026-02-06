@@ -143,7 +143,7 @@ describe('ProfilePage', () => {
         );
 
         expect(screen.getByText('Profile')).toBeInTheDocument();
-        expect(screen.getByText('Manage your account and charging preferences.')).toBeInTheDocument();
+        expect(screen.getByText('Manage your account and charging preferences')).toBeInTheDocument();
     });
 
     it('should open edit profile dialog when button is clicked', async () => {

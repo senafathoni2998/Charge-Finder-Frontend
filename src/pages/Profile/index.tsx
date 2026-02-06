@@ -552,18 +552,18 @@ export default function ProfilePage() {
       sx={{
         minHeight: "calc(100dvh - 64px)",
         backgroundColor: UI.bg,
-        px: { xs: 2, md: 3 },
-        py: { xs: 2.5, md: 4 },
+        px: { xs: 1.5, sm: 2.5, md: 4 },
+        py: { xs: 2, sm: 3, md: 4 },
       }}
     >
-      <Box sx={{ maxWidth: 720, mx: "auto" }}>
-        <Stack spacing={2.5}>
-          <Box>
-            <Typography sx={{ fontWeight: 950, color: UI.text, fontSize: 28 }}>
+      <Box sx={{ maxWidth: 900, mx: "auto" }}>
+        <Stack spacing={3}>
+          <Box sx={{ mb: 0.5 }}>
+            <Typography sx={{ fontWeight: 950, color: UI.text, fontSize: { xs: 24, sm: 28, md: 32 } }}>
               Profile
             </Typography>
-            <Typography sx={{ color: UI.text2 }}>
-              Manage your account and charging preferences.
+            <Typography sx={{ color: UI.text2, fontSize: { xs: 14, sm: 15 } }}>
+              Manage your account and charging preferences
             </Typography>
           </Box>
 

@@ -79,48 +79,52 @@ export default function ChargingHistoryCard({
     <Card
       variant="outlined"
       sx={{
-        borderRadius: 5,
+        borderRadius: { xs: 4, sm: 5 },
         borderColor: UI.border2,
         background: UI.surface,
-        boxShadow: "0 18px 50px rgba(10,10,16,0.10)",
+        boxShadow: "0 20px 60px rgba(10,10,16,0.08)",
         overflow: "hidden",
+        transition: "box-shadow 0.2s ease",
+        "&:hover": {
+          boxShadow: "0 24px 70px rgba(10,10,16,0.12)",
+        },
       }}
     >
-      <Box sx={{ height: 8, background: UI.brandGradStrong }} />
-      <CardContent sx={{ p: { xs: 2.25, sm: 3 } }}>
-        <Stack spacing={2}>
+      <Box sx={{ height: { xs: 6, sm: 8 }, background: UI.brandGradStrong }} />
+      <CardContent sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
+        <Stack spacing={{ xs: 2, sm: 2.5 }}>
           <Box>
-            <Typography sx={{ fontWeight: 900, color: UI.text }}>
+            <Typography sx={{ fontWeight: 900, color: UI.text, fontSize: { xs: 17, sm: 18 } }}>
               Charging history
             </Typography>
-            <Typography sx={{ color: UI.text2 }}>
-              Sessions from the last 3 days.
+            <Typography sx={{ color: UI.text2, fontSize: { xs: 13, sm: 14 } }}>
+              Sessions from the last 3 days
             </Typography>
           </Box>
 
           {loading ? (
-            <Stack spacing={1.5}>
-              <Skeleton variant="rounded" height={72} />
-              <Skeleton variant="rounded" height={72} />
+            <Stack spacing={{ xs: 1.25, sm: 1.5 }}>
+              <Skeleton variant="rounded" height={{ xs: 68, sm: 72 }} />
+              <Skeleton variant="rounded" height={{ xs: 68, sm: 72 }} />
             </Stack>
           ) : error ? (
             <Box
               sx={{
-                p: 2,
-                borderRadius: 3,
-                border: `1px dashed ${UI.border}`,
+                p: { xs: 1.75, sm: 2 },
+                borderRadius: { xs: 3, sm: 4 },
+                border: `1.5px dashed ${UI.border}`,
                 backgroundColor: "rgba(10,10,16,0.02)",
               }}
             >
-              <Typography sx={{ fontWeight: 800, color: UI.text }}>
+              <Typography sx={{ fontWeight: 800, color: UI.text, fontSize: { xs: 15, sm: 16 } }}>
                 Unable to load history
               </Typography>
-              <Typography sx={{ color: UI.text2, mt: 0.5 }}>
+              <Typography sx={{ color: UI.text2, mt: 0.5, fontSize: { xs: 13, sm: 14 } }}>
                 {error}
               </Typography>
             </Box>
           ) : hasItems ? (
-            <Stack spacing={1.5}>
+            <Stack spacing={{ xs: 1.25, sm: 1.5 }}>
               {items.map((item) => {
                 const progressLabel =
                   item.progressPercent != null
@@ -142,19 +146,23 @@ export default function ChargingHistoryCard({
                   <Box
                     key={item.id}
                     sx={{
-                      p: 1.5,
-                      borderRadius: 3,
+                      p: { xs: 1.25, sm: 1.5 },
+                      borderRadius: { xs: 3, sm: 4 },
                       border: `1px solid ${UI.border2}`,
                       backgroundColor: "rgba(10,10,16,0.01)",
+                      transition: "all 0.2s ease",
+                      "&:hover": {
+                        backgroundColor: "rgba(10,10,16,0.02)",
+                      },
                     }}
                   >
-                    <Stack spacing={0.75}>
+                    <Stack spacing={{ xs: 0.75, sm: 1 }}>
                       <Stack
                         direction={{ xs: "column", sm: "row" }}
                         alignItems={{ sm: "center" }}
-                        spacing={1}
+                        spacing={{ xs: 0.75, sm: 1 }}
                       >
-                        <Typography sx={{ fontWeight: 900, color: UI.text }}>
+                        <Typography sx={{ fontWeight: 900, color: UI.text, fontSize: { xs: 15, sm: 16 } }}>
                           {item.stationName || "Charging session"}
                         </Typography>
                         <Chip
@@ -166,20 +174,21 @@ export default function ChargingHistoryCard({
                             backgroundColor: chipStyle.backgroundColor,
                             color: UI.text,
                             fontWeight: 800,
+                            height: { xs: 24, sm: 26 },
                           }}
                         />
                         <Box sx={{ flex: 1 }} />
-                        <Typography variant="caption" sx={{ color: UI.text3 }}>
+                        <Typography variant="caption" sx={{ color: UI.text3, fontSize: { xs: 11, sm: 12 } }}>
                           {formatHistoryTime(item.endedAt)}
                         </Typography>
                       </Stack>
                       {item.stationAddress ? (
-                        <Typography variant="body2" sx={{ color: UI.text2 }}>
+                        <Typography variant="body2" sx={{ color: UI.text2, fontSize: { xs: 13, sm: 14 } }}>
                           {item.stationAddress}
                         </Typography>
                       ) : null}
                       {metaLabels.length ? (
-                        <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
+                        <Stack direction="row" spacing={0.75} sx={{ flexWrap: "wrap" }}>
                           {metaLabels.map((meta) => (
                             <Chip
                               key={meta}
@@ -191,6 +200,8 @@ export default function ChargingHistoryCard({
                                 border: `1px solid ${UI.border2}`,
                                 color: UI.text,
                                 fontWeight: 700,
+                                height: { xs: 22, sm: 24 },
+                                fontSize: { xs: 11, sm: 12 },
                               }}
                             />
                           ))}
@@ -204,17 +215,17 @@ export default function ChargingHistoryCard({
           ) : (
             <Box
               sx={{
-                p: 2,
-                borderRadius: 3,
-                border: `1px dashed ${UI.border}`,
+                p: { xs: 1.75, sm: 2 },
+                borderRadius: { xs: 3, sm: 4 },
+                border: `1.5px dashed ${UI.border}`,
                 backgroundColor: "rgba(10,10,16,0.02)",
               }}
             >
-              <Typography sx={{ fontWeight: 900, color: UI.text }}>
-                No recent charging sessions.
+              <Typography sx={{ fontWeight: 900, color: UI.text, fontSize: { xs: 15, sm: 16 } }}>
+                No recent charging sessions
               </Typography>
-              <Typography sx={{ color: UI.text2, mt: 0.5 }}>
-                Your last 3 days of charging will appear here.
+              <Typography sx={{ color: UI.text2, mt: 0.5, fontSize: { xs: 13, sm: 14 } }}>
+                Your last 3 days of charging will appear here
               </Typography>
             </Box>
           )}

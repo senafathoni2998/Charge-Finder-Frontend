@@ -43,7 +43,7 @@ describe('CarsCard', () => {
         );
 
         expect(screen.getByText('Your cars')).toBeInTheDocument();
-        expect(screen.getByText('Choose an active car to personalize filters.')).toBeInTheDocument();
+        expect(screen.getByText('Choose an active car to personalize filters')).toBeInTheDocument();
     });
 
     it('should render the Add new car button', () => {
@@ -243,8 +243,8 @@ describe('CarsCard', () => {
             </MemoryRouter>
         );
 
-        expect(screen.getByText('No cars added yet.')).toBeInTheDocument();
-        expect(screen.getByText('Add your first EV to personalize compatible stations.')).toBeInTheDocument();
+        expect(screen.getByText('No cars added yet')).toBeInTheDocument();
+        expect(screen.getByText('Add your first EV to personalize compatible stations')).toBeInTheDocument();
     });
 
     it('should display no connectors message when car has no connectors', () => {
