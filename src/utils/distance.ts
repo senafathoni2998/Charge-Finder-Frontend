@@ -76,6 +76,9 @@ export function filterStations(stations, filters, userCenter) {
       return { ...s, distanceKm };
     })
     .filter((s) => {
+      // Always show stations where user is currently charging
+      if (s.isChargingHere) return true;
+
       const matchesQ = !filters.q
         ? true
         : s.name.toLowerCase().includes(lower) ||
