@@ -139,8 +139,8 @@ export default function CarsCard({
                   >
                     <Stack spacing={{ xs: 0.75, sm: 1, md: 1.25 }}>
                       <Stack
-                        direction={{ xs: "column", sm: "row" }}
-                        alignItems={{ sm: "center" }}
+                        direction="row"
+                        alignItems="center"
                         spacing={{ xs: 0.5, sm: 0.75, md: 1 }}
                       >
                         <Typography
