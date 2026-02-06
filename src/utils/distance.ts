@@ -109,9 +109,18 @@ export function filterStations(stations, filters, userCenter) {
       );
     })
     .sort((a, b) => {
-      const chargingDelta =
-        Number(Boolean(b.isChargingHere)) - Number(Boolean(a.isChargingHere));
-      if (chargingDelta !== 0) return chargingDelta;
+      // Priority: charging > available > busy > offline
+      const getStatusPriority = (station) => {
+        if (station.isChargingHere) return 0;
+        if (station.status === "AVAILABLE") return 1;
+        if (station.status === "BUSY") return 2;
+        return 3; // OFFLINE or unknown
+      };
+
+      const priorityDelta = getStatusPriority(a) - getStatusPriority(b);
+      if (priorityDelta !== 0) return priorityDelta;
+
+      // Within same priority, sort by distance
       return a.distanceKm - b.distanceKm;
     });
 }
