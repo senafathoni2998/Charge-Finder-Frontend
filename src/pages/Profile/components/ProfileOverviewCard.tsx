@@ -56,9 +56,9 @@ export default function ProfileOverviewCard({
       <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
         <Stack spacing={{ xs: 1.5, sm: 2, md: 2.5 }}>
           <Stack
-            direction={{ xs: "column", sm: "row" }}
+            direction="row"
             spacing={{ xs: 1, sm: 1.5, md: 2 }}
-            alignItems={{ sm: "center" }}
+            alignItems="center"
           >
             <Avatar
               src={avatarUrl ?? undefined}
