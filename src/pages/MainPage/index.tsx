@@ -18,7 +18,7 @@ import FiltersPanel from "./components/FiltersPanel";
 import MapPanel from "./components/MapPanel";
 
 const CHARGING_STATION_REFRESH_MS = 60000;
-const STATION_RADIUS_KM = 5;
+const STATION_RADIUS_KM = 20;
 
 export default function MainPage() {
   // Filters are local state (canvas-safe). In your real app, sync them to URL query.
