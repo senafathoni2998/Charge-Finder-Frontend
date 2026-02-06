@@ -79,7 +79,9 @@ describe('StationOverviewSection', () => {
 
     it('should render loading state', () => {
         render(<StationOverviewSection {...mockProps} loading={true} />);
-        expect(screen.getByText('Loading…')).toBeInTheDocument();
+        expect(screen.getByText('Loading')).toBeInTheDocument();
+        // Should render skeleton loaders instead of actual content
+        expect(document.querySelectorAll('.MuiSkeleton-root').length).toBeGreaterThan(0);
     });
 
     it('should render station name and address', () => {

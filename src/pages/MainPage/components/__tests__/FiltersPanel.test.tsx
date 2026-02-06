@@ -1,6 +1,11 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import FiltersPanel from '../FiltersPanel';
+import FiltersPanel, {
+    type FiltersPanelActions,
+    type FiltersPanelAuthState,
+    type FiltersPanelCarState,
+    type FiltersPanelValues,
+} from '../FiltersPanel';
 import type { StationWithDistance, FilterStatus } from '../../types';
 import type { UserCar } from '../../../features/auth/authSlice';
 
@@ -13,7 +18,7 @@ const mockStations: StationWithDistance[] = [
         lng: -74.006,
         status: 'AVAILABLE',
         isChargingHere: false,
-        connectors: [{ type: 'CCS2', powerKW: 150 }],
+        connectors: [{ type: 'CCS2', powerKW: 150, ports: 1, availablePorts: 1 }],
         distanceKm: 5.5,
         lastUpdatedISO: new Date().toISOString(),
     },
@@ -35,29 +40,49 @@ vi.mock('../StationsList', () => ({
 }));
 
 describe('FiltersPanel', () => {
-    const defaultProps = {
+    const createFilterValues = (overrides?: Partial<FiltersPanelValues>): FiltersPanelValues => ({
         query: '',
         status: '' as FilterStatus,
         connectorSet: new Set<string>(),
         minKW: 0,
-        effectiveMinKW: 0,
         radiusKm: 5,
         useCarFilter: false,
-        isAuthenticated: false,
-        activeCarId: null,
-        activeCar: null,
-        cars: [],
-        stations: mockStations,
-        selectedId: null,
+        ...overrides,
+    });
+
+    const createFilterActions = (overrides?: Partial<FiltersPanelActions>): FiltersPanelActions => ({
         onQueryChange: vi.fn(),
         onStatusChange: vi.fn(),
         onToggleConnector: vi.fn(),
         onMinKWChange: vi.fn(),
         onRadiusKmChange: vi.fn(),
-        onSelectCar: vi.fn(),
         onToggleUseCarFilter: vi.fn(),
+        ...overrides,
+    });
+
+    const createAuthState = (overrides?: Partial<FiltersPanelAuthState>): FiltersPanelAuthState => ({
+        isAuthenticated: false,
         onLogin: vi.fn(),
         onAddCar: vi.fn(),
+        ...overrides,
+    });
+
+    const createCarState = (overrides?: Partial<FiltersPanelCarState>): FiltersPanelCarState => ({
+        activeCarId: null,
+        activeCar: null,
+        cars: [],
+        onSelectCar: vi.fn(),
+        ...overrides,
+    });
+
+    const defaultProps = {
+        filterValues: createFilterValues(),
+        filterActions: createFilterActions(),
+        authState: createAuthState(),
+        carState: createCarState(),
+        effectiveMinKW: 0,
+        stations: mockStations,
+        selectedId: null,
         onFocusStation: vi.fn(),
     };
 
@@ -68,7 +93,12 @@ describe('FiltersPanel', () => {
 
     it('should call onQueryChange when search input changes', () => {
         const onQueryChange = vi.fn();
-        render(<FiltersPanel {...defaultProps} onQueryChange={onQueryChange} />);
+        render(
+            <FiltersPanel
+                {...defaultProps}
+                filterActions={createFilterActions({ onQueryChange })}
+            />
+        );
 
         const searchInput = screen.getByPlaceholderText(/Search station or area/);
         fireEvent.change(searchInput, { target: { value: 'test query' } });
@@ -82,14 +112,19 @@ describe('FiltersPanel', () => {
     });
 
     it('should render guest mode message when not authenticated', () => {
-        render(<FiltersPanel {...defaultProps} isAuthenticated={false} />);
+        render(<FiltersPanel {...defaultProps} authState={createAuthState({ isAuthenticated: false })} />);
         expect(screen.getByText('Guest mode')).toBeInTheDocument();
         expect(screen.getByText('Log in to save cars and personalize filters.')).toBeInTheDocument();
     });
 
     it('should render login button when not authenticated', () => {
         const onLogin = vi.fn();
-        render(<FiltersPanel {...defaultProps} isAuthenticated={false} onLogin={onLogin} />);
+        render(
+            <FiltersPanel
+                {...defaultProps}
+                authState={createAuthState({ isAuthenticated: false, onLogin })}
+            />
+        );
 
         const loginButton = screen.getByText('Log in');
         expect(loginButton).toBeInTheDocument();
@@ -97,7 +132,12 @@ describe('FiltersPanel', () => {
 
     it('should call onLogin when login button is clicked', () => {
         const onLogin = vi.fn();
-        render(<FiltersPanel {...defaultProps} isAuthenticated={false} onLogin={onLogin} />);
+        render(
+            <FiltersPanel
+                {...defaultProps}
+                authState={createAuthState({ isAuthenticated: false, onLogin })}
+            />
+        );
 
         const loginButton = screen.getByText('Log in');
         fireEvent.click(loginButton);
@@ -106,7 +146,7 @@ describe('FiltersPanel', () => {
     });
 
     it('should not render guest mode when authenticated', () => {
-        render(<FiltersPanel {...defaultProps} isAuthenticated={true} />);
+        render(<FiltersPanel {...defaultProps} authState={createAuthState({ isAuthenticated: true })} />);
         expect(screen.queryByText('Guest mode')).not.toBeInTheDocument();
     });
 
@@ -119,13 +159,23 @@ describe('FiltersPanel', () => {
     });
 
     it('should render distance slider', () => {
-        render(<FiltersPanel {...defaultProps} radiusKm={10} />);
+        render(
+            <FiltersPanel
+                {...defaultProps}
+                filterValues={createFilterValues({ radiusKm: 10 })}
+            />
+        );
         expect(screen.getByText('10 km')).toBeInTheDocument();
     });
 
     it('should call onRadiusKmChange when distance slider changes', () => {
         const onRadiusKmChange = vi.fn();
-        render(<FiltersPanel {...defaultProps} onRadiusKmChange={onRadiusKmChange} />);
+        render(
+            <FiltersPanel
+                {...defaultProps}
+                filterActions={createFilterActions({ onRadiusKmChange })}
+            />
+        );
 
         const sliders = screen.getAllByRole('slider');
         const distanceSlider = sliders[0];
@@ -139,10 +189,12 @@ describe('FiltersPanel', () => {
         const { container } = render(
             <FiltersPanel
                 {...defaultProps}
-                isAuthenticated={true}
-                activeCarId="car-1"
-                activeCar={activeCar}
-                cars={mockCars}
+                authState={createAuthState({ isAuthenticated: true })}
+                carState={createCarState({
+                    activeCarId: 'car-1',
+                    activeCar,
+                    cars: mockCars,
+                })}
             />
         );
 
@@ -154,11 +206,12 @@ describe('FiltersPanel', () => {
         render(
             <FiltersPanel
                 {...defaultProps}
-                isAuthenticated={true}
-                activeCarId={null}
-                activeCar={null}
-                cars={[]}
-                onAddCar={onAddCar}
+                authState={createAuthState({ isAuthenticated: true, onAddCar })}
+                carState={createCarState({
+                    activeCarId: null,
+                    activeCar: null,
+                    cars: [],
+                })}
             />
         );
 
@@ -171,11 +224,12 @@ describe('FiltersPanel', () => {
         render(
             <FiltersPanel
                 {...defaultProps}
-                isAuthenticated={true}
-                activeCarId={null}
-                activeCar={null}
-                cars={[]}
-                onAddCar={onAddCar}
+                authState={createAuthState({ isAuthenticated: true, onAddCar })}
+                carState={createCarState({
+                    activeCarId: null,
+                    activeCar: null,
+                    cars: [],
+                })}
             />
         );
 
@@ -194,7 +248,12 @@ describe('FiltersPanel', () => {
 
     it('should call onToggleConnector when connector chip is clicked', () => {
         const onToggleConnector = vi.fn();
-        render(<FiltersPanel {...defaultProps} onToggleConnector={onToggleConnector} />);
+        render(
+            <FiltersPanel
+                {...defaultProps}
+                filterActions={createFilterActions({ onToggleConnector })}
+            />
+        );
 
         const ccs2Chip = screen.getByText('CCS2');
         fireEvent.click(ccs2Chip);
@@ -210,7 +269,12 @@ describe('FiltersPanel', () => {
 
     it('should call onMinKWChange when min power slider changes', () => {
         const onMinKWChange = vi.fn();
-        render(<FiltersPanel {...defaultProps} onMinKWChange={onMinKWChange} />);
+        render(
+            <FiltersPanel
+                {...defaultProps}
+                filterActions={createFilterActions({ onMinKWChange })}
+            />
+        );
 
         const slider = screen.getAllByRole('slider')[1];
         fireEvent.change(slider, { target: { value: 100 } });
@@ -222,11 +286,13 @@ describe('FiltersPanel', () => {
         render(
             <FiltersPanel
                 {...defaultProps}
-                isAuthenticated={true}
-                activeCarId="car-1"
-                activeCar={mockCars[0]}
-                cars={mockCars}
-                useCarFilter={true}
+                authState={createAuthState({ isAuthenticated: true })}
+                carState={createCarState({
+                    activeCarId: 'car-1',
+                    activeCar: mockCars[0],
+                    cars: mockCars,
+                })}
+                filterValues={createFilterValues({ useCarFilter: true })}
             />
         );
 
@@ -238,11 +304,13 @@ describe('FiltersPanel', () => {
         render(
             <FiltersPanel
                 {...defaultProps}
-                isAuthenticated={true}
-                activeCarId="car-1"
-                activeCar={mockCars[0]}
-                cars={mockCars}
-                useCarFilter={true}
+                authState={createAuthState({ isAuthenticated: true })}
+                carState={createCarState({
+                    activeCarId: 'car-1',
+                    activeCar: mockCars[0],
+                    cars: mockCars,
+                })}
+                filterValues={createFilterValues({ useCarFilter: true })}
             />
         );
 
@@ -251,7 +319,12 @@ describe('FiltersPanel', () => {
 
     it('should call onStatusChange when availability button is clicked', () => {
         const onStatusChange = vi.fn();
-        render(<FiltersPanel {...defaultProps} onStatusChange={onStatusChange} />);
+        render(
+            <FiltersPanel
+                {...defaultProps}
+                filterActions={createFilterActions({ onStatusChange })}
+            />
+        );
 
         const availableButton = screen.getByText('Available');
         fireEvent.click(availableButton);
@@ -263,10 +336,12 @@ describe('FiltersPanel', () => {
         render(
             <FiltersPanel
                 {...defaultProps}
-                isAuthenticated={true}
-                activeCarId="car-1"
-                activeCar={mockCars[0]}
-                cars={mockCars}
+                authState={createAuthState({ isAuthenticated: true })}
+                carState={createCarState({
+                    activeCarId: 'car-1',
+                    activeCar: mockCars[0],
+                    cars: mockCars,
+                })}
             />
         );
 
@@ -278,11 +353,13 @@ describe('FiltersPanel', () => {
         render(
             <FiltersPanel
                 {...defaultProps}
-                isAuthenticated={true}
-                activeCarId="car-1"
-                activeCar={mockCars[0]}
-                cars={mockCars}
-                onSelectCar={onSelectCar}
+                authState={createAuthState({ isAuthenticated: true })}
+                carState={createCarState({
+                    activeCarId: 'car-1',
+                    activeCar: mockCars[0],
+                    cars: mockCars,
+                    onSelectCar,
+                })}
             />
         );
 

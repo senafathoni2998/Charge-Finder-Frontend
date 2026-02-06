@@ -1,6 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import MapPanel from '../MapPanel';
+import MapPanel, {
+    type MapPanelActions,
+    type MapPanelStationData,
+    type MapPanelViewState,
+} from '../MapPanel';
 import type { StationWithDistance, StationBounds } from '../../types';
 
 const mockStations: StationWithDistance[] = [
@@ -12,7 +16,7 @@ const mockStations: StationWithDistance[] = [
         lng: -74.006,
         status: 'AVAILABLE',
         isChargingHere: false,
-        connectors: [{ type: 'CCS2', powerKW: 150 }],
+        connectors: [{ type: 'CCS2', powerKW: 150, ports: 1, availablePorts: 1 }],
         distanceKm: 5.5,
         lastUpdatedISO: new Date().toISOString(),
     },
@@ -56,25 +60,38 @@ vi.mock('../SelectedStationCard', () => ({
 }));
 
 describe('MapPanel', () => {
+    const createStationData = (
+        overrides?: Partial<MapPanelStationData>
+    ): MapPanelStationData => ({
+        stations: mockStations,
+        bounds: mockBounds,
+        selectedId: null,
+        selectedStation: null,
+        onSelectStation: vi.fn(),
+        ...overrides,
+    });
+
+    const createMapActions = (overrides?: Partial<MapPanelActions>): MapPanelActions => ({
+        onViewDetails: vi.fn(),
+        onOpenMaps: vi.fn(),
+        ...overrides,
+    });
+
+    const createViewState = (overrides?: Partial<MapPanelViewState>): MapPanelViewState => ({
+        isMdUp: true,
+        onRequestLocation: vi.fn(),
+        locationLoading: false,
+        userLoc: mockUserLoc,
+        ...overrides,
+    });
+
     it('should render map canvas', () => {
         const onSelectStation = vi.fn();
-        const onViewDetails = vi.fn();
-        const onOpenMaps = vi.fn();
-        const onRequestLocation = vi.fn();
-
         const { container } = render(
             <MapPanel
-                stations={mockStations}
-                bounds={mockBounds}
-                selectedId={null}
-                onSelectStation={onSelectStation}
-                userLoc={mockUserLoc}
-                selectedStation={null}
-                onViewDetails={onViewDetails}
-                onOpenMaps={onOpenMaps}
-                isMdUp={true}
-                onRequestLocation={onRequestLocation}
-                locationLoading={false}
+                stationData={createStationData({ onSelectStation })}
+                mapActions={createMapActions()}
+                viewState={createViewState()}
             />
         );
 
@@ -82,24 +99,13 @@ describe('MapPanel', () => {
     });
 
     it('should render location button', () => {
-        const onSelectStation = vi.fn();
-        const onViewDetails = vi.fn();
-        const onOpenMaps = vi.fn();
         const onRequestLocation = vi.fn();
 
         render(
             <MapPanel
-                stations={mockStations}
-                bounds={mockBounds}
-                selectedId={null}
-                onSelectStation={onSelectStation}
-                userLoc={mockUserLoc}
-                selectedStation={null}
-                onViewDetails={onViewDetails}
-                onOpenMaps={onOpenMaps}
-                isMdUp={true}
-                onRequestLocation={onRequestLocation}
-                locationLoading={false}
+                stationData={createStationData()}
+                mapActions={createMapActions()}
+                viewState={createViewState({ onRequestLocation })}
             />
         );
 
@@ -108,24 +114,13 @@ describe('MapPanel', () => {
     });
 
     it('should call onRequestLocation when location button is clicked', () => {
-        const onSelectStation = vi.fn();
-        const onViewDetails = vi.fn();
-        const onOpenMaps = vi.fn();
         const onRequestLocation = vi.fn();
 
         render(
             <MapPanel
-                stations={mockStations}
-                bounds={mockBounds}
-                selectedId={null}
-                onSelectStation={onSelectStation}
-                userLoc={mockUserLoc}
-                selectedStation={null}
-                onViewDetails={onViewDetails}
-                onOpenMaps={onOpenMaps}
-                isMdUp={true}
-                onRequestLocation={onRequestLocation}
-                locationLoading={false}
+                stationData={createStationData()}
+                mapActions={createMapActions()}
+                viewState={createViewState({ onRequestLocation })}
             />
         );
 
@@ -136,24 +131,13 @@ describe('MapPanel', () => {
     });
 
     it('should disable location button when loading', () => {
-        const onSelectStation = vi.fn();
-        const onViewDetails = vi.fn();
-        const onOpenMaps = vi.fn();
         const onRequestLocation = vi.fn();
 
         render(
             <MapPanel
-                stations={mockStations}
-                bounds={mockBounds}
-                selectedId={null}
-                onSelectStation={onSelectStation}
-                userLoc={mockUserLoc}
-                selectedStation={null}
-                onViewDetails={onViewDetails}
-                onOpenMaps={onOpenMaps}
-                isMdUp={true}
-                onRequestLocation={onRequestLocation}
-                locationLoading={true}
+                stationData={createStationData()}
+                mapActions={createMapActions()}
+                viewState={createViewState({ onRequestLocation, locationLoading: true })}
             />
         );
 
@@ -162,28 +146,18 @@ describe('MapPanel', () => {
     });
 
     it('should render selected station card when station is selected', () => {
-        const onSelectStation = vi.fn();
-        const onViewDetails = vi.fn();
-        const onOpenMaps = vi.fn();
-        const onRequestLocation = vi.fn();
-
         const selectedStation: StationWithDistance = {
             ...mockStations[0],
         };
 
         render(
             <MapPanel
-                stations={mockStations}
-                bounds={mockBounds}
-                selectedId="station-1"
-                onSelectStation={onSelectStation}
-                userLoc={mockUserLoc}
-                selectedStation={selectedStation}
-                onViewDetails={onViewDetails}
-                onOpenMaps={onOpenMaps}
-                isMdUp={true}
-                onRequestLocation={onRequestLocation}
-                locationLoading={false}
+                stationData={createStationData({
+                    selectedId: 'station-1',
+                    selectedStation,
+                })}
+                mapActions={createMapActions()}
+                viewState={createViewState()}
             />
         );
 
@@ -192,24 +166,11 @@ describe('MapPanel', () => {
     });
 
     it('should not render selected station card when no station is selected', () => {
-        const onSelectStation = vi.fn();
-        const onViewDetails = vi.fn();
-        const onOpenMaps = vi.fn();
-        const onRequestLocation = vi.fn();
-
         render(
             <MapPanel
-                stations={mockStations}
-                bounds={mockBounds}
-                selectedId={null}
-                onSelectStation={onSelectStation}
-                userLoc={mockUserLoc}
-                selectedStation={null}
-                onViewDetails={onViewDetails}
-                onOpenMaps={onOpenMaps}
-                isMdUp={true}
-                onRequestLocation={onRequestLocation}
-                locationLoading={false}
+                stationData={createStationData()}
+                mapActions={createMapActions()}
+                viewState={createViewState()}
             />
         );
 
@@ -217,28 +178,19 @@ describe('MapPanel', () => {
     });
 
     it('should call onViewDetails with station id when View Details is clicked', () => {
-        const onSelectStation = vi.fn();
         const onViewDetails = vi.fn();
-        const onOpenMaps = vi.fn();
-        const onRequestLocation = vi.fn();
-
         const selectedStation: StationWithDistance = {
             ...mockStations[0],
         };
 
         render(
             <MapPanel
-                stations={mockStations}
-                bounds={mockBounds}
-                selectedId="station-1"
-                onSelectStation={onSelectStation}
-                userLoc={mockUserLoc}
-                selectedStation={selectedStation}
-                onViewDetails={onViewDetails}
-                onOpenMaps={onOpenMaps}
-                isMdUp={true}
-                onRequestLocation={onRequestLocation}
-                locationLoading={false}
+                stationData={createStationData({
+                    selectedId: 'station-1',
+                    selectedStation,
+                })}
+                mapActions={createMapActions({ onViewDetails })}
+                viewState={createViewState()}
             />
         );
 
@@ -249,28 +201,19 @@ describe('MapPanel', () => {
     });
 
     it('should call onOpenMaps with station when Open Maps is clicked', () => {
-        const onSelectStation = vi.fn();
-        const onViewDetails = vi.fn();
         const onOpenMaps = vi.fn();
-        const onRequestLocation = vi.fn();
-
         const selectedStation: StationWithDistance = {
             ...mockStations[0],
         };
 
         render(
             <MapPanel
-                stations={mockStations}
-                bounds={mockBounds}
-                selectedId="station-1"
-                onSelectStation={onSelectStation}
-                userLoc={mockUserLoc}
-                selectedStation={selectedStation}
-                onViewDetails={onViewDetails}
-                onOpenMaps={onOpenMaps}
-                isMdUp={true}
-                onRequestLocation={onRequestLocation}
-                locationLoading={false}
+                stationData={createStationData({
+                    selectedId: 'station-1',
+                    selectedStation,
+                })}
+                mapActions={createMapActions({ onOpenMaps })}
+                viewState={createViewState()}
             />
         );
 
@@ -281,24 +224,14 @@ describe('MapPanel', () => {
     });
 
     it('should handle empty stations array', () => {
-        const onSelectStation = vi.fn();
-        const onViewDetails = vi.fn();
-        const onOpenMaps = vi.fn();
-        const onRequestLocation = vi.fn();
-
         const { container } = render(
             <MapPanel
-                stations={[]}
-                bounds={mockBounds}
-                selectedId={null}
-                onSelectStation={onSelectStation}
-                userLoc={mockUserLoc}
-                selectedStation={null}
-                onViewDetails={onViewDetails}
-                onOpenMaps={onOpenMaps}
-                isMdUp={false}
-                onRequestLocation={onRequestLocation}
-                locationLoading={false}
+                stationData={createStationData({
+                    stations: [],
+                    selectedStation: null,
+                })}
+                mapActions={createMapActions()}
+                viewState={createViewState({ isMdUp: false })}
             />
         );
 

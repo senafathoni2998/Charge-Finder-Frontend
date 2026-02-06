@@ -14,8 +14,17 @@ import type { FilterStatus, Station, StationWithDistance } from "./types";
 import { persistActiveCarId } from "./mainPageStorage";
 import { buildMapsUrl } from "./utils";
 import { DRAWER_WIDTH } from "./constants";
-import FiltersPanel from "./components/FiltersPanel";
-import MapPanel from "./components/MapPanel";
+import FiltersPanel, {
+  type FiltersPanelActions,
+  type FiltersPanelAuthState,
+  type FiltersPanelCarState,
+  type FiltersPanelValues,
+} from "./components/FiltersPanel";
+import MapPanel, {
+  type MapPanelActions,
+  type MapPanelStationData,
+  type MapPanelViewState,
+} from "./components/MapPanel";
 
 const CHARGING_STATION_REFRESH_MS = 60000;
 const STATION_RADIUS_KM = 20;
@@ -261,28 +270,44 @@ export default function MainPage() {
           }}
         >
           <FiltersPanel
-            query={q}
-            status={status}
-            connectorSet={connectorSet}
-            minKW={minKW}
+            filterValues={
+              {
+                query: q,
+                status,
+                connectorSet,
+                minKW,
+                radiusKm,
+                useCarFilter,
+              } satisfies FiltersPanelValues
+            }
+            filterActions={
+              {
+                onQueryChange: setQ,
+                onStatusChange: setStatus,
+                onToggleConnector: handleToggleConnector,
+                onMinKWChange: setMinKW,
+                onRadiusKmChange: setRadiusKm,
+                onToggleUseCarFilter: handleToggleUseCarFilter,
+              } satisfies FiltersPanelActions
+            }
+            authState={
+              {
+                isAuthenticated,
+                onLogin: handleLogin,
+                onAddCar: handleAddCar,
+              } satisfies FiltersPanelAuthState
+            }
+            carState={
+              {
+                activeCarId,
+                activeCar,
+                cars,
+                onSelectCar: handleSelectCar,
+              } satisfies FiltersPanelCarState
+            }
             effectiveMinKW={effectiveMinKW}
-            radiusKm={radiusKm}
-            useCarFilter={useCarFilter}
-            isAuthenticated={isAuthenticated}
-            activeCarId={activeCarId}
-            activeCar={activeCar}
-            cars={cars}
             stations={filtered}
             selectedId={selectedId}
-            onQueryChange={setQ}
-            onStatusChange={setStatus}
-            onToggleConnector={handleToggleConnector}
-            onMinKWChange={setMinKW}
-            onRadiusKmChange={setRadiusKm}
-            onSelectCar={handleSelectCar}
-            onToggleUseCarFilter={handleToggleUseCarFilter}
-            onLogin={handleLogin}
-            onAddCar={handleAddCar}
             onFocusStation={handleFocusStation}
           />
         </Box>
@@ -300,45 +325,73 @@ export default function MainPage() {
           }}
         >
           <FiltersPanel
-            query={q}
-            status={status}
-            connectorSet={connectorSet}
-            minKW={minKW}
+            filterValues={
+              {
+                query: q,
+                status,
+                connectorSet,
+                minKW,
+                radiusKm,
+                useCarFilter,
+              } satisfies FiltersPanelValues
+            }
+            filterActions={
+              {
+                onQueryChange: setQ,
+                onStatusChange: setStatus,
+                onToggleConnector: handleToggleConnector,
+                onMinKWChange: setMinKW,
+                onRadiusKmChange: setRadiusKm,
+                onToggleUseCarFilter: handleToggleUseCarFilter,
+              } satisfies FiltersPanelActions
+            }
+            authState={
+              {
+                isAuthenticated,
+                onLogin: handleLogin,
+                onAddCar: handleAddCar,
+              } satisfies FiltersPanelAuthState
+            }
+            carState={
+              {
+                activeCarId,
+                activeCar,
+                cars,
+                onSelectCar: handleSelectCar,
+              } satisfies FiltersPanelCarState
+            }
             effectiveMinKW={effectiveMinKW}
-            radiusKm={radiusKm}
-            useCarFilter={useCarFilter}
-            isAuthenticated={isAuthenticated}
-            activeCarId={activeCarId}
-            activeCar={activeCar}
-            cars={cars}
             stations={filtered}
             selectedId={selectedId}
-            onQueryChange={setQ}
-            onStatusChange={setStatus}
-            onToggleConnector={handleToggleConnector}
-            onMinKWChange={setMinKW}
-            onRadiusKmChange={setRadiusKm}
-            onSelectCar={handleSelectCar}
-            onToggleUseCarFilter={handleToggleUseCarFilter}
-            onLogin={handleLogin}
-            onAddCar={handleAddCar}
             onFocusStation={handleFocusStation}
           />
         </Drawer>
       )}
 
       <MapPanel
-        stations={filtered}
-        bounds={bounds}
-        selectedId={selectedId}
-        onSelectStation={setSelectedId}
-        userLoc={geo.loc}
-        selectedStation={selectedStation}
-        onViewDetails={(stationId) => navigate(`/station/${stationId}`)}
-        onOpenMaps={openGoogleMaps}
-        isMdUp={isMdUp}
-        onRequestLocation={handleRequestLocation}
-        locationLoading={geo.loading}
+        stationData={
+          {
+            stations: filtered,
+            bounds,
+            selectedId,
+            selectedStation,
+            onSelectStation: setSelectedId,
+          } satisfies MapPanelStationData
+        }
+        mapActions={
+          {
+            onViewDetails: (stationId) => navigate(`/station/${stationId}`),
+            onOpenMaps: openGoogleMaps,
+          } satisfies MapPanelActions
+        }
+        viewState={
+          {
+            isMdUp,
+            onRequestLocation: handleRequestLocation,
+            locationLoading: geo.loading,
+            userLoc: geo.loc,
+          } satisfies MapPanelViewState
+        }
       />
     </Box>
   );

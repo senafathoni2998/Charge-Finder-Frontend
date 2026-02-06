@@ -42,8 +42,16 @@ import AmenitiesSection from "./components/AmenitiesSection";
 import ActionsCard from "./components/ActionsCard";
 import PricingSection from "./components/PricingSection";
 import CoordinatesSection from "./components/CoordinatesSection";
-import PaymentDialog from "./components/PaymentDialog";
-import ChargingDialog from "./components/ChargingDialog";
+import PaymentDialog, {
+  type PaymentDialogState,
+  type PaymentPricing,
+  type PaymentSelection,
+  type PaymentTicketConfig,
+} from "./components/PaymentDialog";
+import ChargingDialog, {
+  type ChargingDialogState,
+  type ChargingProgressData,
+} from "./components/ChargingDialog";
 import ReportDialog from "./components/ReportDialog";
 import ShareDialog from "./components/ShareDialog";
 import { checkSessionStatus } from "../../utils/session";
@@ -1151,41 +1159,65 @@ export default function StationDetailPage() {
       </Box>
 
       <PaymentDialog
-        open={paymentOpen && isAuthenticated}
-        onClose={handleClosePayment}
-        ticketKwh={ticketKwh}
-        ticketKwhInput={ticketKwhInput}
-        ticketKwhSuggested={defaultTicketKwh}
-        ticketKwhValid={isTicketKwhValid}
-        onTicketKwhChange={handleTicketKwhChange}
-        chargingSpeed={chargingSpeed}
-        onChargingSpeedChange={handleChargingSpeedChange}
-        pricePerKwh={ticketPricePerKwh}
-        currency={station?.pricing?.currency ?? null}
-        ticketPriceLabel={ticketPriceLabel}
-        selectedPaymentId={selectedPaymentId}
-        onPaymentChange={setSelectedPaymentId}
-        paymentMethods={PAYMENT_METHODS}
-        onConfirm={handleBuyTicket}
-        canSubmit={!!station && isAuthenticated && isTicketKwhValid}
-        hasTicket={!!ticket}
-        submitError={ticketRequestError}
-        isSubmitting={ticketRequestLoading}
+        dialogState={
+          {
+            open: paymentOpen && isAuthenticated,
+            onClose: handleClosePayment,
+            onConfirm: handleBuyTicket,
+            canSubmit: !!station && isAuthenticated && isTicketKwhValid,
+            hasTicket: !!ticket,
+            submitError: ticketRequestError,
+            isSubmitting: ticketRequestLoading,
+          } satisfies PaymentDialogState
+        }
+        ticketConfig={
+          {
+            ticketKwh,
+            ticketKwhInput,
+            ticketKwhSuggested: defaultTicketKwh,
+            ticketKwhValid: isTicketKwhValid,
+            onTicketKwhChange: handleTicketKwhChange,
+            chargingSpeed,
+            onChargingSpeedChange: handleChargingSpeedChange,
+          } satisfies PaymentTicketConfig
+        }
+        pricing={
+          {
+            pricePerKwh: ticketPricePerKwh,
+            currency: station?.pricing?.currency ?? null,
+            ticketPriceLabel,
+          } satisfies PaymentPricing
+        }
+        paymentSelection={
+          {
+            selectedPaymentId,
+            onPaymentChange: setSelectedPaymentId,
+            paymentMethods: PAYMENT_METHODS,
+          } satisfies PaymentSelection
+        }
       />
 
       <ChargingDialog
-        open={chargingOpen}
-        onClose={handleCloseCharging}
-        onStop={handleStopCharging}
-        chargingStatus={chargingStatus}
-        chargingCancelled={chargingCancelled}
-        chargingProgress={chargingProgress}
-        displayProgress={displayChargingPercent}
-        ticket={ticket}
-        ticketKwh={ticketKwh}
-        deliveredKwh={deliveredKwh}
-        remainingMinutes={remainingMinutes}
-        estimatedRemainingMinutes={estimatedRemainingMinutes}
+        dialogState={
+          {
+            open: chargingOpen,
+            onClose: handleCloseCharging,
+            onStop: handleStopCharging,
+          } satisfies ChargingDialogState
+        }
+        chargingProgress={
+          {
+            status: chargingStatus,
+            cancelled: chargingCancelled,
+            progress: chargingProgress,
+            displayProgress: displayChargingPercent,
+            ticket,
+            ticketKwh,
+            deliveredKwh,
+            remainingMinutes,
+            estimatedRemainingMinutes,
+          } satisfies ChargingProgressData
+        }
       />
 
       <StartChargingDialog

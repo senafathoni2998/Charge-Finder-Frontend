@@ -15,64 +15,86 @@ vi.mock('../InfoRow', () => ({
     ),
 }));
 
-describe('PaymentDialog', () => {
+// Helper function to create default props
+function createMockProps(overrides = {}) {
     const mockPaymentMethods: PaymentMethod[] = [
         { id: 'pm1', label: 'Visa •••• 4242', helper: 'Expires 12/25' },
         { id: 'pm2', label: 'Mastercard •••• 8888', helper: 'Expires 06/26' },
     ];
 
-    const mockProps = {
-        open: true,
-        onClose: vi.fn(),
-        ticketKwh: 50,
-        ticketKwhInput: '50',
-        ticketKwhSuggested: 45,
-        ticketKwhValid: true,
-        onTicketKwhChange: vi.fn(),
-        chargingSpeed: 'FAST' as ChargingSpeed,
-        onChargingSpeedChange: vi.fn(),
-        pricePerKwh: 0.35,
-        currency: 'GBP',
-        ticketPriceLabel: '£17.50',
-        selectedPaymentId: 'pm1',
-        onPaymentChange: vi.fn(),
-        paymentMethods: mockPaymentMethods,
-        onConfirm: vi.fn(),
-        canSubmit: true,
-        hasTicket: false,
-        isSubmitting: false,
+    const defaultProps = {
+        dialogState: {
+            open: true,
+            onClose: vi.fn(),
+            onConfirm: vi.fn(),
+            canSubmit: true,
+            hasTicket: false,
+            submitError: null as string | null,
+            isSubmitting: false,
+        },
+        ticketConfig: {
+            ticketKwh: 50,
+            ticketKwhInput: '50',
+            ticketKwhSuggested: 45,
+            ticketKwhValid: true,
+            onTicketKwhChange: vi.fn(),
+            chargingSpeed: 'FAST' as ChargingSpeed,
+            onChargingSpeedChange: vi.fn(),
+        },
+        pricing: {
+            pricePerKwh: 0.35,
+            currency: 'GBP',
+            ticketPriceLabel: '£17.50',
+        },
+        paymentSelection: {
+            selectedPaymentId: 'pm1',
+            onPaymentChange: vi.fn(),
+            paymentMethods: mockPaymentMethods,
+        },
     };
 
+    return { ...defaultProps, ...overrides };
+}
+
+describe('PaymentDialog', () => {
     it('should render without crashing', () => {
-        render(<PaymentDialog {...mockProps} />);
+        const props = createMockProps();
+        render(<PaymentDialog {...props} />);
         expect(screen.getByText('Charging ticket')).toBeInTheDocument();
     });
 
     it('should not render when open is false', () => {
-        render(<PaymentDialog {...mockProps} open={false} />);
+        const props = createMockProps({
+            dialogState: { ...createMockProps().dialogState, open: false },
+        });
+        render(<PaymentDialog {...props} />);
         expect(screen.queryByText('Charging ticket')).not.toBeInTheDocument();
     });
 
     it('should render ticket size input', () => {
-        render(<PaymentDialog {...mockProps} />);
+        const props = createMockProps();
+        render(<PaymentDialog {...props} />);
         expect(screen.getByLabelText('Ticket size (kWh)')).toBeInTheDocument();
     });
 
     it('should render charging speed options', () => {
-        render(<PaymentDialog {...mockProps} />);
+        const props = createMockProps();
+        render(<PaymentDialog {...props} />);
         expect(screen.getAllByText('Normal').length).toBeGreaterThan(0);
         expect(screen.getAllByText('Fast').length).toBeGreaterThan(0);
         expect(screen.getAllByText('Ultra fast').length).toBeGreaterThan(0);
     });
 
     it('should render payment methods', () => {
-        render(<PaymentDialog {...mockProps} />);
+        const props = createMockProps();
+        render(<PaymentDialog {...props} />);
         expect(screen.getByText('Visa •••• 4242')).toBeInTheDocument();
         expect(screen.getByText('Mastercard •••• 8888')).toBeInTheDocument();
     });
 
     it('should render ticket details', () => {
-        render(<PaymentDialog {...mockProps} />);
+        const props = createMockProps();
+        render(<PaymentDialog {...props} />);
         expect(screen.getByText('Ticket size:')).toBeInTheDocument();
         expect(screen.getByText('Speed:')).toBeInTheDocument();
         expect(screen.getByText('Per kWh:')).toBeInTheDocument();
@@ -80,105 +102,141 @@ describe('PaymentDialog', () => {
     });
 
     it('should render cancel and confirm buttons', () => {
-        render(<PaymentDialog {...mockProps} />);
+        const props = createMockProps();
+        render(<PaymentDialog {...props} />);
         expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Buy ticket' })).toBeInTheDocument();
     });
 
     it('should render update payment button when has ticket', () => {
-        render(<PaymentDialog {...mockProps} hasTicket={true} />);
+        const props = createMockProps({
+            dialogState: { ...createMockProps().dialogState, hasTicket: true },
+        });
+        render(<PaymentDialog {...props} />);
         expect(screen.getByRole('button', { name: 'Update payment' })).toBeInTheDocument();
     });
 
     it('should render processing button when isSubmitting', () => {
-        render(<PaymentDialog {...mockProps} isSubmitting={true} />);
+        const props = createMockProps({
+            dialogState: { ...createMockProps().dialogState, isSubmitting: true },
+        });
+        render(<PaymentDialog {...props} />);
         expect(screen.getByRole('button', { name: 'Processing...' })).toBeInTheDocument();
     });
 
     it('should disable confirm button when cannot submit', () => {
-        render(<PaymentDialog {...mockProps} canSubmit={false} />);
+        const props = createMockProps({
+            dialogState: { ...createMockProps().dialogState, canSubmit: false },
+        });
+        render(<PaymentDialog {...props} />);
         const button = screen.getByRole('button', { name: 'Buy ticket' });
         expect(button).toBeDisabled();
     });
 
     it('should disable confirm button when ticketKwh is invalid', () => {
-        render(<PaymentDialog {...mockProps} ticketKwhValid={false} />);
+        const props = createMockProps({
+            ticketConfig: { ...createMockProps().ticketConfig, ticketKwhValid: false },
+        });
+        render(<PaymentDialog {...props} />);
         const button = screen.getByRole('button', { name: 'Buy ticket' });
         expect(button).toBeDisabled();
     });
 
     it('should call onTicketKwhChange when input changes', () => {
-        render(<PaymentDialog {...mockProps} />);
+        const props = createMockProps();
+        render(<PaymentDialog {...props} />);
         const input = screen.getByLabelText('Ticket size (kWh)');
         fireEvent.change(input, { target: { value: '60' } });
-        expect(mockProps.onTicketKwhChange).toHaveBeenCalledWith('60');
+        expect(props.ticketConfig.onTicketKwhChange).toHaveBeenCalledWith('60');
     });
 
     it('should call onChargingSpeedChange when speed is changed', () => {
-        render(<PaymentDialog {...mockProps} />);
+        const props = createMockProps();
+        render(<PaymentDialog {...props} />);
         fireEvent.click(screen.getAllByText('Normal')[0]);
-        expect(mockProps.onChargingSpeedChange).toHaveBeenCalledWith('NORMAL');
+        expect(props.ticketConfig.onChargingSpeedChange).toHaveBeenCalledWith('NORMAL');
     });
 
     it('should call onPaymentChange when payment method is changed', () => {
-        render(<PaymentDialog {...mockProps} />);
+        const props = createMockProps();
+        render(<PaymentDialog {...props} />);
         fireEvent.click(screen.getAllByText('Mastercard •••• 8888')[0]);
-        expect(mockProps.onPaymentChange).toHaveBeenCalledWith('pm2');
+        expect(props.paymentSelection.onPaymentChange).toHaveBeenCalledWith('pm2');
     });
 
     it('should call onClose when cancel button is clicked', () => {
-        render(<PaymentDialog {...mockProps} />);
+        const props = createMockProps();
+        render(<PaymentDialog {...props} />);
         fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-        expect(mockProps.onClose).toHaveBeenCalled();
+        expect(props.dialogState.onClose).toHaveBeenCalled();
     });
 
     it('should call onConfirm when confirm button is clicked', () => {
-        render(<PaymentDialog {...mockProps} />);
+        const props = createMockProps();
+        render(<PaymentDialog {...props} />);
         fireEvent.click(screen.getByRole('button', { name: 'Buy ticket' }));
-        expect(mockProps.onConfirm).toHaveBeenCalled();
+        expect(props.dialogState.onConfirm).toHaveBeenCalled();
     });
 
     it('should show helper text when input is empty', () => {
-        render(<PaymentDialog {...mockProps} ticketKwhInput="" />);
+        const props = createMockProps({
+            ticketConfig: { ...createMockProps().ticketConfig, ticketKwhInput: '' },
+        });
+        render(<PaymentDialog {...props} />);
         expect(screen.getByText(/Suggested: 45 kWh/)).toBeInTheDocument();
     });
 
     it('should show error message when ticketKwh is invalid', () => {
-        render(<PaymentDialog {...mockProps} ticketKwhValid={false} />);
+        const props = createMockProps({
+            ticketConfig: { ...createMockProps().ticketConfig, ticketKwhValid: false },
+        });
+        render(<PaymentDialog {...props} />);
         expect(screen.getByText('Enter a valid kWh amount.')).toBeInTheDocument();
     });
 
     it('should render submit error when present', () => {
-        render(<PaymentDialog {...mockProps} submitError="Payment failed" />);
+        const props = createMockProps({
+            dialogState: { ...createMockProps().dialogState, submitError: 'Payment failed' },
+        });
+        render(<PaymentDialog {...props} />);
         expect(screen.getByText('Payment failed')).toBeInTheDocument();
     });
 
     it('should render price breakdown', () => {
-        render(<PaymentDialog {...mockProps} />);
+        const props = createMockProps();
+        render(<PaymentDialog {...props} />);
         expect(screen.getByText('£0.35')).toBeInTheDocument();
         expect(screen.getByText('£17.50')).toBeInTheDocument();
     });
 
     it('should render dash when pricePerKwh is null', () => {
-        render(<PaymentDialog {...mockProps} pricePerKwh={null} />);
+        const props = createMockProps({
+            pricing: { ...createMockProps().pricing, pricePerKwh: null },
+        });
+        render(<PaymentDialog {...props} />);
         expect(screen.getByText('Per kWh:')).toBeInTheDocument();
         expect(screen.getByText('—')).toBeInTheDocument();
     });
 
     it('should render dash when currency is null', () => {
-        render(<PaymentDialog {...mockProps} currency={null} />);
+        const props = createMockProps({
+            pricing: { ...createMockProps().pricing, currency: null },
+        });
+        render(<PaymentDialog {...props} />);
         expect(screen.getByText('—')).toBeInTheDocument();
     });
 
     it('should render helper text for charging speeds', () => {
-        render(<PaymentDialog {...mockProps} />);
+        const props = createMockProps();
+        render(<PaymentDialog {...props} />);
         expect(screen.getByText('Standard charging speed.')).toBeInTheDocument();
         expect(screen.getByText('Higher power delivery.')).toBeInTheDocument();
         expect(screen.getByText('Highest power option.')).toBeInTheDocument();
     });
 
     it('should render helper text for payment methods', () => {
-        render(<PaymentDialog {...mockProps} />);
+        const props = createMockProps();
+        render(<PaymentDialog {...props} />);
         expect(screen.getByText('Expires 12/25')).toBeInTheDocument();
         expect(screen.getByText('Expires 06/26')).toBeInTheDocument();
     });

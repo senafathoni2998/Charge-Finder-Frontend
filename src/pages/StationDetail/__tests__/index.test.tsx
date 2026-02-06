@@ -119,19 +119,19 @@ vi.mock('../components/CoordinatesSection', () => ({
 }));
 
 vi.mock('../components/PaymentDialog', () => ({
-    default: ({ open, onClose }: any) =>
-        open ? (
+    default: ({ dialogState }: any) =>
+        dialogState?.open ? (
             <div data-testid="payment-dialog">
-                <button onClick={onClose}>Close payment</button>
+                <button onClick={dialogState.onClose}>Close payment</button>
             </div>
         ) : null,
 }));
 
 vi.mock('../components/ChargingDialog', () => ({
-    default: ({ open, onClose }: any) =>
-        open ? (
+    default: ({ dialogState }: any) =>
+        dialogState?.open ? (
             <div data-testid="charging-dialog">
-                <button onClick={onClose}>Close charging</button>
+                <button onClick={dialogState.onClose}>Close charging</button>
             </div>
         ) : null,
 }));

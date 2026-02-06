@@ -58,7 +58,11 @@ vi.mock('../mainPageStorage', () => ({
 
 // Mock child components
 vi.mock('../components/FiltersPanel', () => ({
-    default: ({ query, onQueryChange, onLogin, onAddCar }: any) => (
+    default: ({
+        filterValues: { query },
+        filterActions: { onQueryChange },
+        authState: { onLogin, onAddCar },
+    }: any) => (
         <div data-testid="filters-panel-mock">
             <div>Query: {query}</div>
             <button onClick={() => onQueryChange('test')}>Change Query</button>
@@ -69,12 +73,12 @@ vi.mock('../components/FiltersPanel', () => ({
 }));
 
 vi.mock('../components/MapPanel', () => ({
-    default: ({ stations, selectedId, onSelectStation, onRequestLocation }: any) => (
+    default: ({ stationData, mapActions, viewState }: any) => (
         <div data-testid="map-panel-mock">
-            <div>Stations: {stations.length}</div>
-            <div>Selected: {selectedId || 'none'}</div>
-            <button onClick={() => onSelectStation('station-1')}>Select Station</button>
-            <button onClick={onRequestLocation}>Request Location</button>
+            <div>Stations: {stationData?.stations?.length || 0}</div>
+            <div>Selected: {stationData?.selectedId || 'none'}</div>
+            <button onClick={() => stationData?.onSelectStation?.('station-1')}>Select Station</button>
+            <button onClick={viewState?.onRequestLocation}>Request Location</button>
         </div>
     ),
 }));

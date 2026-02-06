@@ -128,8 +128,10 @@ describe('distance utils', () => {
         const userCenter = { lat: 10, lng: 10 };
         
         it('should filter by query (name/address)', () => {
+            // Create test stations without isChargingHere to test query filtering in isolation
+            const testStations = stations.map(s => ({ ...s, isChargingHere: false }));
             const filters = { q: 'main', connectorSet: new Set(), minKW: 0, radiusKm: 1000 };
-            const result = filterStations(stations, filters, userCenter);
+            const result = filterStations(testStations, filters, userCenter);
             expect(result).toHaveLength(1);
             expect(result[0].name).toBe('Station A');
         });
