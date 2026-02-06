@@ -63,7 +63,7 @@ export default function CarsCard({
     <Card
       variant="outlined"
       sx={{
-        borderRadius: { xs: 4, sm: 5 },
+        borderRadius: { xs: 3.5, sm: 4, md: 5 },
         borderColor: UI.border2,
         background: UI.surface,
         boxShadow: "0 20px 60px rgba(10,10,16,0.08)",
@@ -74,9 +74,9 @@ export default function CarsCard({
         },
       }}
     >
-      <Box sx={{ height: { xs: 6, sm: 8 }, background: UI.brandGradStrong }} />
-      <CardContent sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
-        <Stack spacing={{ xs: 2, sm: 2.5 }}>
+      <Box sx={{ height: { xs: 5, sm: 6, md: 8 }, background: UI.brandGradStrong }} />
+      <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
+        <Stack spacing={{ xs: 1.5, sm: 2, md: 2.5 }}>
           <Box>
             <Stack
               direction={{ xs: "column", sm: "row" }}
@@ -84,10 +84,10 @@ export default function CarsCard({
               spacing={{ xs: 1, sm: 2 }}
             >
               <Box sx={{ flex: 1 }}>
-                <Typography sx={{ fontWeight: 900, color: UI.text, fontSize: { xs: 17, sm: 18 } }}>
+                <Typography sx={{ fontWeight: 900, color: UI.text, fontSize: { xs: 16, sm: 17, md: 18 } }}>
                   Your cars
                 </Typography>
-                <Typography sx={{ color: UI.text2, fontSize: { xs: 13, sm: 14 } }}>
+                <Typography sx={{ color: UI.text2, fontSize: { xs: 12, sm: 13, md: 14 } }}>
                   Choose an active car to personalize filters
                 </Typography>
               </Box>
@@ -99,7 +99,9 @@ export default function CarsCard({
                   borderRadius: 3,
                   background: UI.brandGradStrong,
                   color: "white",
-                  px: { xs: 1.5, sm: 2 },
+                  px: { xs: 1, sm: 1.5, md: 2 },
+                  py: { xs: 0.75, sm: 1 },
+                  fontSize: { xs: 13, sm: 14 },
                 }}
               >
                 Add new car
@@ -108,7 +110,7 @@ export default function CarsCard({
           </Box>
 
           {hasCars ? (
-            <Stack spacing={{ xs: 1.25, sm: 1.5 }}>
+            <Stack spacing={{ xs: 1, sm: 1.5, md: 1.5 }}>
               {cars.map((car) => {
                 const isActive = car.id === activeCarId;
                 const isCharging =
@@ -121,8 +123,8 @@ export default function CarsCard({
                   <Box
                     key={car.id}
                     sx={{
-                      p: { xs: 1.25, sm: 1.5 },
-                      borderRadius: { xs: 3, sm: 4 },
+                      p: { xs: 1, sm: 1.25, md: 1.5 },
+                      borderRadius: { xs: 2.5, sm: 3, md: 4 },
                       border: `1.5px solid ${isActive ? "rgba(124,92,255,0.4)" : UI.border2}`,
                       backgroundColor: isActive
                         ? "rgba(124,92,255,0.08)"
@@ -135,17 +137,17 @@ export default function CarsCard({
                       },
                     }}
                   >
-                    <Stack spacing={{ xs: 1, sm: 1.25 }}>
+                    <Stack spacing={{ xs: 0.75, sm: 1, md: 1.25 }}>
                       <Stack
                         direction={{ xs: "column", sm: "row" }}
                         alignItems={{ sm: "center" }}
-                        spacing={{ xs: 0.75, sm: 1 }}
+                        spacing={{ xs: 0.5, sm: 0.75, md: 1 }}
                       >
                         <Typography
                           sx={{
                             fontWeight: 900,
                             color: UI.text,
-                            fontSize: { xs: 15, sm: 16 },
+                            fontSize: { xs: 14, sm: 15, md: 16 },
                           }}
                         >
                           {car.name}
@@ -160,7 +162,8 @@ export default function CarsCard({
                               border: "1px solid rgba(0,200,83,0.35)",
                               color: UI.text,
                               fontWeight: 700,
-                              height: { xs: 24, sm: 26 },
+                              height: { xs: 20, sm: 22, md: 26 },
+                              fontSize: { xs: 11, sm: 12 },
                             }}
                           />
                         ) : null}
@@ -174,7 +177,8 @@ export default function CarsCard({
                               border: "1px solid rgba(0,200,83,0.35)",
                               color: UI.text,
                               fontWeight: 800,
-                              height: { xs: 24, sm: 26 },
+                              height: { xs: 20, sm: 22, md: 26 },
+                              fontSize: { xs: 11, sm: 12 },
                             }}
                           />
                         ) : null}
@@ -189,7 +193,8 @@ export default function CarsCard({
                               border: "1px solid rgba(0,229,255,0.3)",
                               color: UI.text,
                               fontWeight: 800,
-                              height: { xs: 24, sm: 26 },
+                              height: { xs: 20, sm: 22, md: 26 },
+                              fontSize: { xs: 11, sm: 12 },
                             }}
                           />
                         ) : null}
@@ -207,7 +212,7 @@ export default function CarsCard({
                         </IconButton>
                       </Stack>
 
-                      <Stack direction="row" spacing={0.75} sx={{ flexWrap: "wrap" }}>
+                      <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap" }}>
                         {car.connectorTypes?.map((c) => (
                           <Chip
                             key={c}
@@ -219,23 +224,24 @@ export default function CarsCard({
                               borderColor: "rgba(124,92,255,0.35)",
                               color: UI.text,
                               fontWeight: 700,
-                              height: { xs: 24, sm: 26 },
+                              height: { xs: 20, sm: 22, md: 26 },
+                              fontSize: { xs: 11, sm: 12 },
                             }}
                           />
                         ))}
                         {!car.connectorTypes?.length ? (
-                          <Typography variant="caption" sx={{ color: UI.text3 }}>
+                          <Typography variant="caption" sx={{ color: UI.text3, fontSize: { xs: 11, sm: 12 } }}>
                             No connectors selected
                           </Typography>
                         ) : null}
                       </Stack>
 
-                      <Stack spacing={0.25}>
-                        <Typography variant="caption" sx={{ color: UI.text2, fontSize: { xs: 11, sm: 12 } }}>
+                      <Stack spacing={0}>
+                        <Typography variant="caption" sx={{ color: UI.text2, fontSize: { xs: 10, sm: 11, md: 12 } }}>
                           Preferred minimum power: {car.minKW || 0} kW
                         </Typography>
                         {hasBatteryCapacity ? (
-                          <Typography variant="caption" sx={{ color: UI.text2, fontSize: { xs: 11, sm: 12 } }}>
+                          <Typography variant="caption" sx={{ color: UI.text2, fontSize: { xs: 10, sm: 11, md: 12 } }}>
                             Battery capacity: {car.batteryCapacity} kWh
                           </Typography>
                         ) : null}
@@ -248,8 +254,8 @@ export default function CarsCard({
           ) : (
             <Box
               sx={{
-                p: { xs: 1.75, sm: 2 },
-                borderRadius: { xs: 3, sm: 4 },
+                p: { xs: 1.5, sm: 2 },
+                borderRadius: { xs: 2.5, sm: 3, md: 4 },
                 border: `1.5px dashed ${UI.border}`,
                 backgroundColor: "rgba(10,10,16,0.02)",
               }}

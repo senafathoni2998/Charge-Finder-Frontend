@@ -79,7 +79,7 @@ export default function ChargingHistoryCard({
     <Card
       variant="outlined"
       sx={{
-        borderRadius: { xs: 4, sm: 5 },
+        borderRadius: { xs: 3.5, sm: 4, md: 5 },
         borderColor: UI.border2,
         background: UI.surface,
         boxShadow: "0 20px 60px rgba(10,10,16,0.08)",
@@ -90,28 +90,28 @@ export default function ChargingHistoryCard({
         },
       }}
     >
-      <Box sx={{ height: { xs: 6, sm: 8 }, background: UI.brandGradStrong }} />
-      <CardContent sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
-        <Stack spacing={{ xs: 2, sm: 2.5 }}>
+      <Box sx={{ height: { xs: 5, sm: 6, md: 8 }, background: UI.brandGradStrong }} />
+      <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
+        <Stack spacing={{ xs: 1.5, sm: 2, md: 2.5 }}>
           <Box>
-            <Typography sx={{ fontWeight: 900, color: UI.text, fontSize: { xs: 17, sm: 18 } }}>
+            <Typography sx={{ fontWeight: 900, color: UI.text, fontSize: { xs: 16, sm: 17, md: 18 } }}>
               Charging history
             </Typography>
-            <Typography sx={{ color: UI.text2, fontSize: { xs: 13, sm: 14 } }}>
+            <Typography sx={{ color: UI.text2, fontSize: { xs: 12, sm: 13, md: 14 } }}>
               Sessions from the last 3 days
             </Typography>
           </Box>
 
           {loading ? (
-            <Stack spacing={{ xs: 1.25, sm: 1.5 }}>
-              <Skeleton variant="rounded" height={{ xs: 68, sm: 72 }} />
-              <Skeleton variant="rounded" height={{ xs: 68, sm: 72 }} />
+            <Stack spacing={{ xs: 1, sm: 1.5 }}>
+              <Skeleton variant="rounded" height={{ xs: 60, sm: 68, md: 72 }} />
+              <Skeleton variant="rounded" height={{ xs: 60, sm: 68, md: 72 }} />
             </Stack>
           ) : error ? (
             <Box
               sx={{
-                p: { xs: 1.75, sm: 2 },
-                borderRadius: { xs: 3, sm: 4 },
+                p: { xs: 1.5, sm: 2 },
+                borderRadius: { xs: 2.5, sm: 3, md: 4 },
                 border: `1.5px dashed ${UI.border}`,
                 backgroundColor: "rgba(10,10,16,0.02)",
               }}
@@ -124,7 +124,7 @@ export default function ChargingHistoryCard({
               </Typography>
             </Box>
           ) : hasItems ? (
-            <Stack spacing={{ xs: 1.25, sm: 1.5 }}>
+            <Stack spacing={{ xs: 1, sm: 1.5 }}>
               {items.map((item) => {
                 const progressLabel =
                   item.progressPercent != null
@@ -146,8 +146,8 @@ export default function ChargingHistoryCard({
                   <Box
                     key={item.id}
                     sx={{
-                      p: { xs: 1.25, sm: 1.5 },
-                      borderRadius: { xs: 3, sm: 4 },
+                      p: { xs: 1, sm: 1.25, md: 1.5 },
+                      borderRadius: { xs: 2.5, sm: 3, md: 4 },
                       border: `1px solid ${UI.border2}`,
                       backgroundColor: "rgba(10,10,16,0.01)",
                       transition: "all 0.2s ease",
@@ -156,13 +156,13 @@ export default function ChargingHistoryCard({
                       },
                     }}
                   >
-                    <Stack spacing={{ xs: 0.75, sm: 1 }}>
+                    <Stack spacing={{ xs: 0.5, sm: 0.75, md: 1 }}>
                       <Stack
                         direction={{ xs: "column", sm: "row" }}
                         alignItems={{ sm: "center" }}
-                        spacing={{ xs: 0.75, sm: 1 }}
+                        spacing={{ xs: 0.5, sm: 0.75, md: 1 }}
                       >
-                        <Typography sx={{ fontWeight: 900, color: UI.text, fontSize: { xs: 15, sm: 16 } }}>
+                        <Typography sx={{ fontWeight: 900, color: UI.text, fontSize: { xs: 14, sm: 15, md: 16 } }}>
                           {item.stationName || "Charging session"}
                         </Typography>
                         <Chip
@@ -174,21 +174,22 @@ export default function ChargingHistoryCard({
                             backgroundColor: chipStyle.backgroundColor,
                             color: UI.text,
                             fontWeight: 800,
-                            height: { xs: 24, sm: 26 },
+                            height: { xs: 20, sm: 22, md: 26 },
+                            fontSize: { xs: 11, sm: 12 },
                           }}
                         />
                         <Box sx={{ flex: 1 }} />
-                        <Typography variant="caption" sx={{ color: UI.text3, fontSize: { xs: 11, sm: 12 } }}>
+                        <Typography variant="caption" sx={{ color: UI.text3, fontSize: { xs: 10, sm: 11, md: 12 } }}>
                           {formatHistoryTime(item.endedAt)}
                         </Typography>
                       </Stack>
                       {item.stationAddress ? (
-                        <Typography variant="body2" sx={{ color: UI.text2, fontSize: { xs: 13, sm: 14 } }}>
+                        <Typography variant="body2" sx={{ color: UI.text2, fontSize: { xs: 12, sm: 13, md: 14 } }}>
                           {item.stationAddress}
                         </Typography>
                       ) : null}
                       {metaLabels.length ? (
-                        <Stack direction="row" spacing={0.75} sx={{ flexWrap: "wrap" }}>
+                        <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap" }}>
                           {metaLabels.map((meta) => (
                             <Chip
                               key={meta}
@@ -200,8 +201,8 @@ export default function ChargingHistoryCard({
                                 border: `1px solid ${UI.border2}`,
                                 color: UI.text,
                                 fontWeight: 700,
-                                height: { xs: 22, sm: 24 },
-                                fontSize: { xs: 11, sm: 12 },
+                                height: { xs: 18, sm: 20, md: 24 },
+                                fontSize: { xs: 10, sm: 11, md: 12 },
                               }}
                             />
                           ))}
@@ -215,8 +216,8 @@ export default function ChargingHistoryCard({
           ) : (
             <Box
               sx={{
-                p: { xs: 1.75, sm: 2 },
-                borderRadius: { xs: 3, sm: 4 },
+                p: { xs: 1.5, sm: 2 },
+                borderRadius: { xs: 2.5, sm: 3, md: 4 },
                 border: `1.5px dashed ${UI.border}`,
                 backgroundColor: "rgba(10,10,16,0.02)",
               }}

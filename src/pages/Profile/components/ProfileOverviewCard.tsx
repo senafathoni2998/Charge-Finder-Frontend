@@ -41,7 +41,7 @@ export default function ProfileOverviewCard({
     <Card
       variant="outlined"
       sx={{
-        borderRadius: { xs: 4, sm: 5 },
+        borderRadius: { xs: 3.5, sm: 4, md: 5 },
         borderColor: UI.border2,
         background: UI.surface,
         boxShadow: "0 20px 60px rgba(10,10,16,0.08)",
@@ -52,33 +52,33 @@ export default function ProfileOverviewCard({
         },
       }}
     >
-      <Box sx={{ height: { xs: 6, sm: 8 }, background: UI.brandGradStrong }} />
-      <CardContent sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
-        <Stack spacing={{ xs: 2, sm: 2.5 }}>
+      <Box sx={{ height: { xs: 5, sm: 6, md: 8 }, background: UI.brandGradStrong }} />
+      <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
+        <Stack spacing={{ xs: 1.5, sm: 2, md: 2.5 }}>
           <Stack
             direction={{ xs: "column", sm: "row" }}
-            spacing={{ xs: 1.5, sm: 2 }}
+            spacing={{ xs: 1, sm: 1.5, md: 2 }}
             alignItems={{ sm: "center" }}
           >
             <Avatar
               src={avatarUrl ?? undefined}
               sx={{
-                width: { xs: 56, sm: 64 },
-                height: { xs: 56, sm: 64 },
+                width: { xs: 48, sm: 56, md: 64 },
+                height: { xs: 48, sm: 56, md: 64 },
                 background: UI.brandGrad,
                 color: "white",
                 fontWeight: 900,
-                fontSize: { xs: 22, sm: 24 },
+                fontSize: { xs: 20, sm: 22, md: 24 },
                 boxShadow: "0 12px 30px rgba(124,92,255,0.2)",
               }}
             >
               {initials}
             </Avatar>
             <Box sx={{ minWidth: 0, flex: 1 }}>
-              <Typography sx={{ fontWeight: 900, color: UI.text, fontSize: { xs: 18, sm: 20 } }}>
+              <Typography sx={{ fontWeight: 900, color: UI.text, fontSize: { xs: 16, sm: 18, md: 20 } }}>
                 {displayName}
               </Typography>
-              <Typography sx={{ color: UI.text2, fontSize: { xs: 13, sm: 14 } }}>
+              <Typography sx={{ color: UI.text2, fontSize: { xs: 12, sm: 13, md: 14 } }}>
                 {emailLabel}
               </Typography>
             </Box>
@@ -91,7 +91,8 @@ export default function ProfileOverviewCard({
                 border: "1px solid rgba(0,229,255,0.3)",
                 color: UI.text,
                 fontWeight: 800,
-                height: { xs: 26, sm: 28 },
+                height: { xs: 22, sm: 24, md: 28 },
+                fontSize: { xs: 11, sm: 12 },
               }}
             />
           </Stack>
@@ -102,38 +103,38 @@ export default function ProfileOverviewCard({
             sx={{
               display: "grid",
               gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)" },
-              gap: { xs: 1.5, sm: 2 },
+              gap: { xs: 1, sm: 1.5, md: 2 },
             }}
           >
             <Box>
-              <Typography sx={{ color: UI.text3, fontSize: { xs: 12, sm: 13 }, mb: 0.25 }}>
+              <Typography sx={{ color: UI.text3, fontSize: { xs: 11, sm: 12, md: 13 }, mb: 0.25 }}>
                 Name
               </Typography>
-              <Typography sx={{ color: UI.text, fontWeight: 700, fontSize: { xs: 14, sm: 15 } }}>
+              <Typography sx={{ color: UI.text, fontWeight: 700, fontSize: { xs: 13, sm: 14, md: 15 } }}>
                 {displayName}
               </Typography>
             </Box>
             <Box>
-              <Typography sx={{ color: UI.text3, fontSize: { xs: 12, sm: 13 }, mb: 0.25 }}>
+              <Typography sx={{ color: UI.text3, fontSize: { xs: 11, sm: 12, md: 13 }, mb: 0.25 }}>
                 Email
               </Typography>
-              <Typography sx={{ color: UI.text, fontWeight: 700, fontSize: { xs: 14, sm: 15 } }}>
+              <Typography sx={{ color: UI.text, fontWeight: 700, fontSize: { xs: 13, sm: 14, md: 15 } }}>
                 {emailLabel}
               </Typography>
             </Box>
             <Box>
-              <Typography sx={{ color: UI.text3, fontSize: { xs: 12, sm: 13 }, mb: 0.25 }}>
+              <Typography sx={{ color: UI.text3, fontSize: { xs: 11, sm: 12, md: 13 }, mb: 0.25 }}>
                 Plan
               </Typography>
-              <Typography sx={{ color: UI.text, fontWeight: 700, fontSize: { xs: 14, sm: 15 } }}>
+              <Typography sx={{ color: UI.text, fontWeight: 700, fontSize: { xs: 13, sm: 14, md: 15 } }}>
                 {"Driver \u2022 Free"}
               </Typography>
             </Box>
             <Box>
-              <Typography sx={{ color: UI.text3, fontSize: { xs: 12, sm: 13 }, mb: 0.25 }}>
+              <Typography sx={{ color: UI.text3, fontSize: { xs: 11, sm: 12, md: 13 }, mb: 0.25 }}>
                 Region
               </Typography>
-              <Typography sx={{ color: UI.text, fontWeight: 700, fontSize: { xs: 14, sm: 15 } }}>
+              <Typography sx={{ color: UI.text, fontWeight: 700, fontSize: { xs: 13, sm: 14, md: 15 } }}>
                 {regionLabel}
               </Typography>
             </Box>
@@ -143,8 +144,10 @@ export default function ProfileOverviewCard({
 
           <Stack
             direction={{ xs: "column", sm: "row" }}
-            spacing={{ xs: 1, sm: 1.5 }}
+            spacing={{ xs: 0.75, sm: 1, md: 1.5 }}
             alignItems={{ sm: "center" }}
+            flexWrap="wrap"
+            useFlexGap
           >
             <Button
               variant="outlined"
@@ -156,7 +159,9 @@ export default function ProfileOverviewCard({
                 borderColor: UI.border,
                 color: UI.text,
                 backgroundColor: "rgba(10,10,16,0.01)",
-                px: { xs: 1.5, sm: 2 },
+                px: { xs: 1, sm: 1.5, md: 2 },
+                py: { xs: 0.75, sm: 1 },
+                fontSize: { xs: 13, sm: 14 },
               }}
             >
               Edit profile
@@ -171,7 +176,9 @@ export default function ProfileOverviewCard({
                 borderColor: UI.border,
                 color: UI.text,
                 backgroundColor: "rgba(10,10,16,0.01)",
-                px: { xs: 1.5, sm: 2 },
+                px: { xs: 1, sm: 1.5, md: 2 },
+                py: { xs: 0.75, sm: 1 },
+                fontSize: { xs: 13, sm: 14 },
               }}
             >
               Change password
@@ -190,7 +197,9 @@ export default function ProfileOverviewCard({
                   "&:hover": {
                     backgroundColor: "rgba(244,67,54,1)",
                   },
-                  px: { xs: 1.5, sm: 2 },
+                  px: { xs: 1, sm: 1.5, md: 2 },
+                  py: { xs: 0.75, sm: 1 },
+                  fontSize: { xs: 13, sm: 14 },
                 }}
               >
                 Sign out
