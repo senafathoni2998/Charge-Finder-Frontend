@@ -189,7 +189,7 @@ export default function ChargingHistoryCard({
                         </Typography>
                       ) : null}
                       {metaLabels.length ? (
-                        <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap" }}>
+                        <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
                           {metaLabels.map((meta) => (
                             <Chip
                               key={meta}
