@@ -84,11 +84,11 @@ export default function ChargeFinderLoginPage() {
       <Box
         sx={{
           width: "100%",
-          height: { xs: "auto", md: "calc(100dvh - 65px)" },
+          height: { xs: "calc(100dvh - 65px)" },
           position: "relative",
           display: "flex",
           flexDirection: "column",
-          justifyContent: { xs: "flex-start", md: "center" },
+          justifyContent: { xs: "center" },
           alignItems: "center",
           px: { xs: 2, md: 3 },
           py: { xs: 2.5, md: 4 },
