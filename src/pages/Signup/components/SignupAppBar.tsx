@@ -1,4 +1,4 @@
-import { AppBar, Box, Chip, Toolbar, Typography } from "@mui/material";
+import { AppBar, Box, Toolbar, Typography } from "@mui/material";
 import ElectricBoltIcon from "@mui/icons-material/ElectricBolt";
 import { UI } from "../../../theme/theme";
 
@@ -40,17 +40,6 @@ export default function SignupAppBar() {
           </Typography>
         </Box>
         <Box sx={{ flex: 1 }} />
-        <Chip
-          size="small"
-          label="Light mode"
-          sx={{
-            borderRadius: 999,
-            backgroundColor: "rgba(10,10,16,0.04)",
-            border: `1px solid ${UI.border2}`,
-            color: UI.text2,
-            fontWeight: 750,
-          }}
-        />
       </Toolbar>
     </AppBar>
   );
