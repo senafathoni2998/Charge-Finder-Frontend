@@ -38,7 +38,7 @@ export default function MainPage() {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<FilterStatus>("");
   const [connectorSet, setConnectorSet] = useState<Set<ConnectorType>>(
-    new Set()
+    new Set(),
   );
   const [minKW, setMinKW] = useState(0);
   const [radiusKm, setRadiusKm] = useState(STATION_RADIUS_KM);
@@ -106,7 +106,7 @@ export default function MainPage() {
 
   const carConnectorSet = useMemo(
     () => new Set(activeCar?.connectorTypes ?? []),
-    [activeCar]
+    [activeCar],
   );
 
   const effectiveConnectorSet = useMemo(() => {
@@ -132,7 +132,7 @@ export default function MainPage() {
         minKW: effectiveMinKW,
         radiusKm,
       },
-      userCenter
+      userCenter,
     );
   }, [
     stations,
@@ -146,16 +146,16 @@ export default function MainPage() {
 
   const selectedStation = useMemo(
     () => filtered.find((station) => station.id === selectedId) || null,
-    [filtered, selectedId]
+    [filtered, selectedId],
   );
 
   const bounds = useMemo(
     () => boundsFromStations(filtered.length ? filtered : stations),
-    [filtered, stations]
+    [filtered, stations],
   );
   const activeChargingStationId = useMemo(
     () => stations.find((station) => station.isChargingHere)?.id ?? null,
-    [stations]
+    [stations],
   );
 
   useEffect(() => {
@@ -171,14 +171,14 @@ export default function MainPage() {
       controller = nextController;
       const result = await fetchStationById(
         activeChargingStationId,
-        nextController.signal
+        nextController.signal,
       );
       if (!active) return;
       if (result.ok && result.station) {
         setStations((prev) =>
           prev.map((station) =>
-            station.id === result.station?.id ? result.station : station
-          )
+            station.id === result.station?.id ? result.station : station,
+          ),
         );
       }
       isLoading = false;
@@ -187,7 +187,7 @@ export default function MainPage() {
     refreshChargingStation();
     const intervalId = window.setInterval(
       refreshChargingStation,
-      CHARGING_STATION_REFRESH_MS
+      CHARGING_STATION_REFRESH_MS,
     );
     return () => {
       active = false;
@@ -237,7 +237,7 @@ export default function MainPage() {
 
   const handleLogin = () => {
     const next = encodeURIComponent(
-      `${location.pathname}${location.search}${location.hash}`
+      `${location.pathname}${location.search}${location.hash}`,
     );
     navigate(`/login?next=${next}`);
   };
@@ -248,7 +248,7 @@ export default function MainPage() {
 
   const handleRequestLocation = () => {
     geo.request();
-    if (!isMdUp) dispatch(setSidebarOpen(true));
+    // if (!isMdUp) dispatch(setSidebarOpen(true));
   };
 
   const openGoogleMaps = (station: StationWithDistance) => {
