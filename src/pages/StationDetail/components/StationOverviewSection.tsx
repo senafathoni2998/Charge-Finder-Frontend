@@ -1,4 +1,5 @@
-import { Box, Button, Chip, Skeleton, Stack, Typography } from "@mui/material";
+import { useState } from "react";
+import { Box, Button, Chip, Skeleton, Stack, Typography, useMediaQuery } from "@mui/material";
 import LaunchIcon from "@mui/icons-material/Launch";
 import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import { UI } from "../../../theme/theme";
@@ -28,8 +29,21 @@ export default function StationOverviewSection({
   distanceKm,
   onReportIssue,
 }: StationOverviewSectionProps) {
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+  const isMobile = useMediaQuery("(max-width: 600px)");
   const title = loading ? `Loading` : (station?.name ?? "Station");
   const subtitle = loading ? "" : station?.address;
+
+  const photos = station?.photos ?? [];
+  const photoCount = photos.length || 3;
+
+  const handlePrevious = () => {
+    setCurrentPhotoIndex((prev) => (prev === 0 ? photoCount - 1 : prev - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentPhotoIndex((prev) => (prev === photoCount - 1 ? 0 : prev + 1));
+  };
 
   return (
     <SectionCard
@@ -74,20 +88,58 @@ export default function StationOverviewSection({
         </Stack>
       ) : (
         <Stack spacing={1.25}>
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25}>
-            <MiniPhoto
-              label={station.photos[0]?.label ?? "Photo"}
-              gradient={station.photos[0]?.gradient ?? UI.brandGrad}
-            />
-            <MiniPhoto
-              label={station.photos[1]?.label ?? "Photo"}
-              gradient={station.photos[1]?.gradient ?? UI.brandGrad}
-            />
-            <MiniPhoto
-              label={station.photos[2]?.label ?? "Photo"}
-              gradient={station.photos[2]?.gradient ?? UI.brandGrad}
-            />
-          </Stack>
+          {isMobile ? (
+            <Box sx={{ position: "relative" }}>
+              <MiniPhoto
+                key={currentPhotoIndex}
+                label={photos[currentPhotoIndex]?.label ?? "Photo"}
+                gradient={photos[currentPhotoIndex]?.gradient ?? UI.brandGrad}
+              />
+              {/* Navigation dots */}
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{
+                  position: "absolute",
+                  bottom: 10,
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                }}
+              >
+                {Array.from({ length: photoCount }).map((_, index) => (
+                  <Box
+                    key={index}
+                    onClick={() => setCurrentPhotoIndex(index)}
+                    sx={{
+                      width: currentPhotoIndex === index ? 24 : 8,
+                      height: 8,
+                      borderRadius: 999,
+                      backgroundColor: currentPhotoIndex === index
+                        ? "rgba(255,255,255,0.95)"
+                        : "rgba(255,255,255,0.45)",
+                      cursor: "pointer",
+                      transition: "width 200ms ease, background-color 200ms ease",
+                    }}
+                  />
+                ))}
+              </Stack>
+            </Box>
+          ) : (
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25}>
+              <MiniPhoto
+                label={photos[0]?.label ?? "Photo"}
+                gradient={photos[0]?.gradient ?? UI.brandGrad}
+              />
+              <MiniPhoto
+                label={photos[1]?.label ?? "Photo"}
+                gradient={photos[1]?.gradient ?? UI.brandGrad}
+              />
+              <MiniPhoto
+                label={photos[2]?.label ?? "Photo"}
+                gradient={photos[2]?.gradient ?? UI.brandGrad}
+              />
+            </Stack>
+          )}
 
           <Stack
             direction={{ xs: "column", sm: "row" }}
