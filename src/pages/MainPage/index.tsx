@@ -394,6 +394,7 @@ export default function MainPage() {
             onRequestLocation: handleRequestLocation,
             locationLoading: geo.loading,
             userLoc: geo.loc,
+            drawerOpen,
           } satisfies MapPanelViewState
         }
       />

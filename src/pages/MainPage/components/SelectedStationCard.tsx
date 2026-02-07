@@ -17,6 +17,8 @@ type SelectedStationCardProps = {
   station: StationWithDistance;
   onViewDetails: () => void;
   onOpenMaps: () => void;
+  isMdUp: boolean;
+  drawerOpen: boolean;
 };
 
 // Renders the selected station summary over the map.
@@ -24,12 +26,14 @@ export default function SelectedStationCard({
   station,
   onViewDetails,
   onOpenMaps,
+  isMdUp,
+  drawerOpen,
 }: SelectedStationCardProps) {
   return (
     <Card
       elevation={0}
       sx={{
-        zIndex: 9999,
+        zIndex: !isMdUp && drawerOpen ? 1100 : 9999,
         position: "absolute",
         left: 14,
         bottom: 14,

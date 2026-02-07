@@ -249,6 +249,9 @@ export default function MapCanvas({
           backgroundColor: "rgba(255,255,255,0.82)",
           backdropFilter: "blur(10px)",
           boxShadow: "0 10px 24px rgba(10,10,16,0.08)",
+          "@media (max-width: 900px)": {
+            top: selectedId ? 12 : 60,
+          },
         }}
       >
         <Stack spacing={0.75}>
@@ -264,37 +267,43 @@ export default function MapCanvas({
       </Box>
 
       {/* Hint overlay */}
-      <Box
-        sx={{
-          position: "absolute",
-          top: 12,
-          left: 12,
-          right: 12,
-          zIndex: 1000,
-          display: "flex",
-          justifyContent: "center",
-          pointerEvents: "none",
-        }}
-      >
+      {!selectedId && (
         <Box
           sx={{
-            px: 1.5,
-            py: 0.75,
-            borderRadius: 999,
-            border: `1px solid ${UI.border}`,
-            backgroundColor: "rgba(255,255,255,0.70)",
-            backdropFilter: "blur(10px)",
-            boxShadow: "0 10px 24px rgba(10,10,16,0.06)",
+            position: "absolute",
+            top: 12,
+            left: 12,
+            right: 12,
+            zIndex: 1000,
+            display: "flex",
+            justifyContent: "center",
+            pointerEvents: "none",
+            "@media (max-width: 900px)": {
+              left: 8,
+              right: 72,
+            },
           }}
         >
-          <Typography
-            variant="caption"
-            sx={{ color: UI.text2, fontWeight: 650 }}
+          <Box
+            sx={{
+              px: 1.5,
+              py: 0.75,
+              borderRadius: 999,
+              border: `1px solid ${UI.border}`,
+              backgroundColor: "rgba(255,255,255,0.70)",
+              backdropFilter: "blur(10px)",
+              boxShadow: "0 10px 24px rgba(10,10,16,0.06)",
+            }}
           >
-            Click a marker to preview a station
-          </Typography>
+            <Typography
+              variant="caption"
+              sx={{ color: UI.text2, fontWeight: 650 }}
+            >
+              Click a marker to preview a station
+            </Typography>
+          </Box>
         </Box>
-      </Box>
+      )}
     </Box>
   );
 }

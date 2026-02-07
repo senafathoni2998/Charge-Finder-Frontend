@@ -47,6 +47,7 @@ export interface MapPanelViewState {
   onRequestLocation: () => void;
   locationLoading: boolean;
   userLoc: { lat: number; lng: number } | null;
+  drawerOpen: boolean;
 }
 
 /**
@@ -109,7 +110,7 @@ export default function MapPanel(props: MapPanelProps) {
   const { onViewDetails, onOpenMaps } = mapActions;
 
   // View state
-  const { isMdUp, onRequestLocation, locationLoading, userLoc } = viewState;
+  const { isMdUp, onRequestLocation, locationLoading, userLoc, drawerOpen } = viewState;
 
   return (
     <Box sx={{ position: "relative" }}>
@@ -140,6 +141,8 @@ export default function MapPanel(props: MapPanelProps) {
           station={selectedStation}
           onViewDetails={() => onViewDetails(selectedStation.id)}
           onOpenMaps={() => onOpenMaps(selectedStation)}
+          isMdUp={isMdUp}
+          drawerOpen={drawerOpen}
         />
       )}
     </Box>
