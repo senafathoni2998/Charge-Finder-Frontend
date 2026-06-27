@@ -1,4 +1,5 @@
 import type { ChargingSpeed, ConnectorType } from "../models/model";
+import { apiRequest } from "./client";
 
 type RequestChargingTicketParams = {
   stationId: string;
@@ -20,6 +21,8 @@ type FetchActiveTicketResult = {
   error?: string;
 };
 
+type TicketResponse = { ticket?: Record<string, unknown> | null };
+
 export const requestChargingTicket = async ({
   stationId,
   connectorType,
@@ -27,11 +30,6 @@ export const requestChargingTicket = async ({
   ticketKwh,
   signal,
 }: RequestChargingTicketParams): Promise<RequestChargingTicketResult> => {
-  const baseUrl = import.meta.env.VITE_APP_BACKEND_URL;
-  if (!baseUrl) {
-    return { ok: false, error: "Backend URL is not configured." };
-  }
-
   if (!stationId) {
     return { ok: false, error: "Station is missing." };
   }
@@ -41,9 +39,7 @@ export const requestChargingTicket = async ({
     connectorType?: ConnectorType;
     chargingSpeed?: ChargingSpeed;
     ticketKwh?: number;
-  } = {
-    stationId,
-  };
+  } = { stationId };
   if (connectorType) {
     payload.connectorType = connectorType;
   }
@@ -54,66 +50,32 @@ export const requestChargingTicket = async ({
     payload.ticketKwh = Number(ticketKwh);
   }
 
-  try {
-    const response = await fetch(`${baseUrl}/stations/request-ticket`, {
-      method: "POST",
-      body: JSON.stringify(payload),
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      signal,
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      return {
-        ok: false,
-        error: data.message || "Could not request ticket.",
-      };
-    }
-
-    return { ok: true, ticket: data?.ticket ?? null };
-  } catch (err) {
-    return {
-      ok: false,
-      error: err instanceof Error ? err.message : "Could not request ticket.",
-    };
+  const res = await apiRequest<TicketResponse>("/stations/request-ticket", {
+    method: "POST",
+    body: payload,
+    signal,
+    fallbackError: "Could not request ticket.",
+  });
+  if (!res.ok) {
+    return { ok: false, error: res.error };
   }
+  return { ok: true, ticket: res.data?.ticket ?? null };
 };
 
 export const fetchActiveTicketForStation = async (
   stationId: string,
   signal?: AbortSignal
 ): Promise<FetchActiveTicketResult> => {
-  const baseUrl = import.meta.env.VITE_APP_BACKEND_URL;
-  if (!baseUrl) {
-    return { ok: false, error: "Backend URL is not configured." };
-  }
-
   if (!stationId) {
     return { ok: false, error: "Station is missing." };
   }
 
-  try {
-    const response = await fetch(
-      `${baseUrl}/stations/${stationId}/active-ticket`,
-      {
-        method: "GET",
-        credentials: "include",
-        signal,
-      }
-    );
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      return {
-        ok: false,
-        error: data.message || "Could not load active ticket.",
-      };
-    }
-
-    return { ok: true, ticket: data?.ticket ?? null };
-  } catch (err) {
-    return {
-      ok: false,
-      error: err instanceof Error ? err.message : "Could not load active ticket.",
-    };
+  const res = await apiRequest<TicketResponse>(
+    `/stations/${stationId}/active-ticket`,
+    { method: "GET", signal, fallbackError: "Could not load active ticket." }
+  );
+  if (!res.ok) {
+    return { ok: false, error: res.error };
   }
+  return { ok: true, ticket: res.data?.ticket ?? null };
 };

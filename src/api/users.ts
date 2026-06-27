@@ -1,3 +1,5 @@
+import { apiRequest } from "./client";
+
 type FetchUsersResult = {
   ok: boolean;
   users: unknown[];
@@ -40,35 +42,16 @@ type PatchUserPayload = {
 export const fetchUsers = async (
   signal?: AbortSignal
 ): Promise<FetchUsersResult> => {
-  const baseUrl = import.meta.env.VITE_APP_BACKEND_URL;
-  if (!baseUrl) {
-    return { ok: false, users: [], error: "Backend URL is not configured." };
+  const res = await apiRequest<{ users?: unknown[] }>("/admin/users", {
+    method: "GET",
+    signal,
+    fallbackError: "Could not load users.",
+  });
+  if (!res.ok) {
+    return { ok: false, users: [], error: res.error };
   }
-
-  try {
-    const response = await fetch(`${baseUrl}/admin/users`, {
-      method: "GET",
-      credentials: "include",
-      signal,
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      return {
-        ok: false,
-        users: [],
-        error: data.message || "Could not load users.",
-      };
-    }
-
-    const users = Array.isArray(data?.users) ? data.users : [];
-    return { ok: true, users };
-  } catch (err) {
-    return {
-      ok: false,
-      users: [],
-      error: err instanceof Error ? err.message : "Could not load users.",
-    };
-  }
+  const users = Array.isArray(res.data?.users) ? res.data.users : [];
+  return { ok: true, users };
 };
 
 // Updates a user using admin credentials.
@@ -77,41 +60,18 @@ export const patchUser = async ({
   data,
   signal,
 }: PatchUserPayload): Promise<PatchUserResult> => {
-  const baseUrl = import.meta.env.VITE_APP_BACKEND_URL;
-  if (!baseUrl) {
-    return { ok: false, user: null, error: "Backend URL is not configured." };
-  }
-
   if (!userId) {
     return { ok: false, user: null, error: "User ID is missing." };
   }
 
-  try {
-    const response = await fetch(`${baseUrl}/admin/users/${userId}`, {
-      method: "PATCH",
-      credentials: "include",
-      signal,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    const responseData = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      return {
-        ok: false,
-        user: null,
-        error: responseData.message || "Could not update user.",
-      };
-    }
-
-    const user = responseData?.user ?? responseData?.updatedUser ?? null;
-    return { ok: true, user };
-  } catch (err) {
-    return {
-      ok: false,
-      user: null,
-      error: err instanceof Error ? err.message : "Could not update user.",
-    };
+  const res = await apiRequest<{ user?: unknown; updatedUser?: unknown }>(
+    `/admin/users/${userId}`,
+    { method: "PATCH", body: data, signal, fallbackError: "Could not update user." }
+  );
+  if (!res.ok) {
+    return { ok: false, user: null, error: res.error };
   }
+  return { ok: true, user: res.data?.user ?? res.data?.updatedUser ?? null };
 };
 
 // Deletes a user using admin credentials.
@@ -119,35 +79,19 @@ export const deleteUser = async (
   userId: string,
   signal?: AbortSignal
 ): Promise<DeleteUserResult> => {
-  const baseUrl = import.meta.env.VITE_APP_BACKEND_URL;
-  if (!baseUrl) {
-    return { ok: false, error: "Backend URL is not configured." };
-  }
-
   if (!userId) {
     return { ok: false, error: "User ID is missing." };
   }
 
-  try {
-    const response = await fetch(`${baseUrl}/admin/users/${userId}`, {
-      method: "DELETE",
-      credentials: "include",
-      signal,
-    });
-    const responseData = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      return {
-        ok: false,
-        error: responseData.message || "Could not delete user.",
-      };
-    }
-    return { ok: true };
-  } catch (err) {
-    return {
-      ok: false,
-      error: err instanceof Error ? err.message : "Could not delete user.",
-    };
+  const res = await apiRequest(`/admin/users/${userId}`, {
+    method: "DELETE",
+    signal,
+    fallbackError: "Could not delete user.",
+  });
+  if (!res.ok) {
+    return { ok: false, error: res.error };
   }
+  return { ok: true };
 };
 
 // Creates a user using admin credentials.
@@ -159,41 +103,17 @@ export const createUser = async ({
   region,
   signal,
 }: CreateUserPayload): Promise<CreateUserResult> => {
-  const baseUrl = import.meta.env.VITE_APP_BACKEND_URL;
-  if (!baseUrl) {
-    return { ok: false, user: null, error: "Backend URL is not configured." };
-  }
-
-  try {
-    const response = await fetch(`${baseUrl}/admin/users`, {
+  const res = await apiRequest<{ user?: unknown; createdUser?: unknown }>(
+    "/admin/users",
+    {
       method: "POST",
-      credentials: "include",
+      body: { name, email, role, password, region },
       signal,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name,
-        email,
-        role,
-        password,
-        region,
-      }),
-    });
-    const responseData = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      return {
-        ok: false,
-        user: null,
-        error: responseData.message || "Could not create user.",
-      };
+      fallbackError: "Could not create user.",
     }
-
-    const user = responseData?.user ?? responseData?.createdUser ?? null;
-    return { ok: true, user };
-  } catch (err) {
-    return {
-      ok: false,
-      user: null,
-      error: err instanceof Error ? err.message : "Could not create user.",
-    };
+  );
+  if (!res.ok) {
+    return { ok: false, user: null, error: res.error };
   }
+  return { ok: true, user: res.data?.user ?? res.data?.createdUser ?? null };
 };

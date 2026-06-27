@@ -1,4 +1,5 @@
 import type { ConnectorType } from "../models/model";
+import { apiRequest } from "./client";
 
 type ChargingRequestParams = {
   stationId: string;
@@ -26,6 +27,12 @@ type ChargingProgressResult = {
   error?: string;
 };
 
+type TicketResponse = {
+  ticket?: Record<string, unknown> | null;
+  completedTicket?: Record<string, unknown> | null;
+  cancelledTicket?: Record<string, unknown> | null;
+};
+
 // Starts a charging session for the user's active ticket.
 export const startChargingSession = async ({
   stationId,
@@ -33,41 +40,24 @@ export const startChargingSession = async ({
   vehicleId,
   signal,
 }: ChargingRequestParams): Promise<ChargingRequestResult> => {
-  const baseUrl = import.meta.env.VITE_APP_BACKEND_URL;
-  if (!baseUrl) {
-    return { ok: false, error: "Backend URL is not configured." };
-  }
-
   if (!stationId) {
     return { ok: false, error: "Station is missing." };
   }
 
-  try {
-    const payload: Record<string, unknown> = { stationId };
-    if (connectorType) payload.connectorType = connectorType;
-    if (vehicleId) payload.vehicleId = vehicleId;
-    const response = await fetch(`${baseUrl}/stations/start-charging`, {
-      method: "POST",
-      body: JSON.stringify(payload),
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      signal,
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      return {
-        ok: false,
-        error: data.message || "Could not start charging.",
-      };
-    }
+  const payload: Record<string, unknown> = { stationId };
+  if (connectorType) payload.connectorType = connectorType;
+  if (vehicleId) payload.vehicleId = vehicleId;
 
-    return { ok: true, ticket: data?.ticket ?? null };
-  } catch (err) {
-    return {
-      ok: false,
-      error: err instanceof Error ? err.message : "Could not start charging.",
-    };
+  const res = await apiRequest<TicketResponse>("/stations/start-charging", {
+    method: "POST",
+    body: payload,
+    signal,
+    fallbackError: "Could not start charging.",
+  });
+  if (!res.ok) {
+    return { ok: false, error: res.error };
   }
+  return { ok: true, ticket: res.data?.ticket ?? null };
 };
 
 // Updates charging progress for the user's active ticket.
@@ -76,11 +66,6 @@ export const updateChargingProgress = async ({
   progressPercent,
   signal,
 }: ChargingProgressParams): Promise<ChargingProgressResult> => {
-  const baseUrl = import.meta.env.VITE_APP_BACKEND_URL;
-  if (!baseUrl) {
-    return { ok: false, error: "Backend URL is not configured." };
-  }
-
   if (!stationId) {
     return { ok: false, error: "Station is missing." };
   }
@@ -89,30 +74,16 @@ export const updateChargingProgress = async ({
     return { ok: false, error: "Progress percent is invalid." };
   }
 
-  try {
-    const response = await fetch(`${baseUrl}/stations/charging-progress`, {
-      method: "PATCH",
-      body: JSON.stringify({ stationId, progressPercent }),
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      signal,
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      return {
-        ok: false,
-        error: data.message || "Could not update charging progress.",
-      };
-    }
-
-    return { ok: true, ticket: data?.ticket ?? null };
-  } catch (err) {
-    return {
-      ok: false,
-      error:
-        err instanceof Error ? err.message : "Could not update charging progress.",
-    };
+  const res = await apiRequest<TicketResponse>("/stations/charging-progress", {
+    method: "PATCH",
+    body: { stationId, progressPercent },
+    signal,
+    fallbackError: "Could not update charging progress.",
+  });
+  if (!res.ok) {
+    return { ok: false, error: res.error };
   }
+  return { ok: true, ticket: res.data?.ticket ?? null };
 };
 
 // Completes the charging session and clears the active ticket.
@@ -121,42 +92,29 @@ export const completeChargingSession = async ({
   cancel,
   signal,
 }: ChargingRequestParams): Promise<ChargingRequestResult> => {
-  const baseUrl = import.meta.env.VITE_APP_BACKEND_URL;
-  if (!baseUrl) {
-    return { ok: false, error: "Backend URL is not configured." };
-  }
-
   if (!stationId) {
     return { ok: false, error: "Station is missing." };
   }
 
-  try {
-    const payload = cancel ? { stationId, cancel: true } : { stationId };
-    const response = await fetch(`${baseUrl}/stations/complete-charging`, {
-      method: "POST",
-      body: JSON.stringify(payload),
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      signal,
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      return {
-        ok: false,
-        error: data.message || "Could not complete charging.",
-      };
-    }
+  const payload = cancel ? { stationId, cancel: true } : { stationId };
 
-    return {
-      ok: true,
-      ticket: data?.completedTicket ?? data?.cancelledTicket ?? data?.ticket ?? null,
-    };
-  } catch (err) {
-    return {
-      ok: false,
-      error: err instanceof Error ? err.message : "Could not complete charging.",
-    };
+  const res = await apiRequest<TicketResponse>("/stations/complete-charging", {
+    method: "POST",
+    body: payload,
+    signal,
+    fallbackError: "Could not complete charging.",
+  });
+  if (!res.ok) {
+    return { ok: false, error: res.error };
   }
+  return {
+    ok: true,
+    ticket:
+      res.data?.completedTicket ??
+      res.data?.cancelledTicket ??
+      res.data?.ticket ??
+      null,
+  };
 };
 
 // Cancels the charging session and keeps current progress.
@@ -164,39 +122,18 @@ export const cancelChargingSession = async ({
   stationId,
   signal,
 }: ChargingRequestParams): Promise<ChargingRequestResult> => {
-  const baseUrl = import.meta.env.VITE_APP_BACKEND_URL;
-  if (!baseUrl) {
-    return { ok: false, error: "Backend URL is not configured." };
-  }
-
   if (!stationId) {
     return { ok: false, error: "Station is missing." };
   }
 
-  try {
-    const response = await fetch(`${baseUrl}/stations/cancel-charging`, {
-      method: "POST",
-      body: JSON.stringify({ stationId }),
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      signal,
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      return {
-        ok: false,
-        error: data.message || "Could not cancel charging.",
-      };
-    }
-
-    return {
-      ok: true,
-      ticket: data?.cancelledTicket ?? data?.ticket ?? null,
-    };
-  } catch (err) {
-    return {
-      ok: false,
-      error: err instanceof Error ? err.message : "Could not cancel charging.",
-    };
+  const res = await apiRequest<TicketResponse>("/stations/cancel-charging", {
+    method: "POST",
+    body: { stationId },
+    signal,
+    fallbackError: "Could not cancel charging.",
+  });
+  if (!res.ok) {
+    return { ok: false, error: res.error };
   }
+  return { ok: true, ticket: res.data?.cancelledTicket ?? res.data?.ticket ?? null };
 };

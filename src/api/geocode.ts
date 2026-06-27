@@ -1,3 +1,5 @@
+import { apiRequest } from "./client";
+
 type ReverseGeocodeResult = {
   ok: boolean;
   address: string | null;
@@ -21,31 +23,23 @@ export const reverseGeocode = async (
   url.searchParams.set("zoom", "18");
   url.searchParams.set("addressdetails", "1");
 
-  try {
-    const response = await fetch(url.toString(), {
-      method: "GET",
-      signal,
-      headers: { Accept: "application/json" },
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      return {
-        ok: false,
-        address: null,
-        error: data.message || "Could not resolve address.",
-      };
-    }
-    const address =
-      typeof data?.display_name === "string" ? data.display_name.trim() : "";
-    if (!address) {
-      return { ok: false, address: null, error: "No address found." };
-    }
-    return { ok: true, address };
-  } catch (err) {
-    return {
-      ok: false,
-      address: null,
-      error: err instanceof Error ? err.message : "Could not resolve address.",
-    };
+  const res = await apiRequest<{ display_name?: string }>(url.toString(), {
+    method: "GET",
+    absolute: true,
+    headers: { Accept: "application/json" },
+    signal,
+    fallbackError: "Could not resolve address.",
+  });
+  if (!res.ok) {
+    return { ok: false, address: null, error: res.error };
   }
+
+  const address =
+    typeof res.data?.display_name === "string"
+      ? res.data.display_name.trim()
+      : "";
+  if (!address) {
+    return { ok: false, address: null, error: "No address found." };
+  }
+  return { ok: true, address };
 };
