@@ -55,7 +55,7 @@ describe('EditCar utils', () => {
             const result = getCarFormDefaults(mockCar);
             expect(result).toEqual({
                 name: 'Tesla Model 3',
-                connectors: new Set(['Type2', 'CCS2']),
+                connectorTypes: ['Type2', 'CCS2'],
                 minKW: 22,
                 batteryCapacity: '75',
             });
@@ -65,7 +65,7 @@ describe('EditCar utils', () => {
             const result = getCarFormDefaults(null);
             expect(result).toEqual({
                 name: '',
-                connectors: new Set([]),
+                connectorTypes: [],
                 minKW: 0,
                 batteryCapacity: '',
             });
@@ -80,7 +80,7 @@ describe('EditCar utils', () => {
                 batteryCapacity: 50,
             };
             const result = getCarFormDefaults(carNoConnectors);
-            expect(result.connectors).toEqual(new Set([]));
+            expect(result.connectorTypes).toEqual([]);
         });
 
         it('should handle car with NaN minKW', () => {

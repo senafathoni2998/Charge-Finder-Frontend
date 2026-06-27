@@ -1,43 +1,46 @@
-import { redirect } from "react-router";
+import type { ConnectorType } from "../../models/model";
 import { persistActiveCarId } from "./addCarStorage";
 
-// Handles add-car submissions and persists the active selection.
-export async function addCarAction({ request }: { request: Request }) {
-  const formData = await request.formData();
+export type CarRequestResult = { ok: true } | { ok: false; error: string };
+
+// Mirrors the legacy action's batteryCapacity handling: a non-empty numeric
+// string -> number, anything else -> null.
+export const coerceBatteryCapacity = (raw: string): number | null => {
+  const value = raw.trim() ? Number(raw) : null;
+  return Number.isFinite(value) ? value : null;
+};
+
+/**
+ * Creates a vehicle. Connector validation is handled by the form via
+ * zodResolver(carFormSchema); navigation is the caller's responsibility.
+ */
+export async function createCarRequest({
+  userId,
+  email,
+  name,
+  connectorTypes,
+  minKW,
+  batteryCapacity,
+}: {
+  userId: string;
+  email: string;
+  name: string;
+  connectorTypes: ConnectorType[];
+  minKW: number;
+  batteryCapacity: string;
+}): Promise<CarRequestResult> {
   const baseUrl = import.meta.env.VITE_APP_BACKEND_URL;
   if (!baseUrl) {
-    return { error: "Backend URL is not configured." };
-  }
-
-  const email = String(formData.get("email") || "").trim();
-  const userId = String(formData.get("userId") || "").trim();
-  const nameRaw = String(formData.get("name") || "").trim();
-  const name = nameRaw || "My EV";
-  const connectorTypes = formData
-    .getAll("connectorTypes")
-    .map((value) => String(value))
-    .filter((value) => value);
-  const minKW = Number.isFinite(Number(formData.get("minKW")))
-    ? Number(formData.get("minKW"))
-    : 0;
-  const batteryCapacityRaw = formData.get("batteryCapacity");
-  const batteryCapacityValue =
-    typeof batteryCapacityRaw === "string" && batteryCapacityRaw.trim()
-      ? Number(batteryCapacityRaw)
-      : null;
-  const batteryCapacity = Number.isFinite(batteryCapacityValue)
-    ? batteryCapacityValue
-    : null;
-
-  if (!connectorTypes.length) {
-    return { error: "Select at least one connector type." };
+    return { ok: false, error: "Backend URL is not configured." };
   }
   if (!email) {
-    return { error: "Email is required." };
+    return { ok: false, error: "Email is required." };
   }
   if (!userId) {
-    return { error: "User session is missing." };
+    return { ok: false, error: "User session is missing." };
   }
+
+  const battery = coerceBatteryCapacity(batteryCapacity);
 
   try {
     const response = await fetch(`${baseUrl}/vehicles/add-vehicle`, {
@@ -45,24 +48,24 @@ export async function addCarAction({ request }: { request: Request }) {
       body: JSON.stringify({
         userId,
         email,
-        name,
+        name: name.trim() || "My EV",
         connector_type: connectorTypes,
         min_power: minKW,
-        ...(batteryCapacity != null ? { batteryCapacity } : {}),
+        ...(battery != null ? { batteryCapacity: battery } : {}),
       }),
       headers: { "Content-Type": "application/json" },
       credentials: "include",
     });
     const vehicle = await response.json().catch(() => ({}));
     if (!response.ok) {
-      return { error: vehicle.message || "Could not save car." };
+      return { ok: false, error: vehicle.message || "Could not save car." };
     }
 
     persistActiveCarId(vehicle?.id);
-
-    return redirect("/profile");
+    return { ok: true };
   } catch (err) {
     return {
+      ok: false,
       error: err instanceof Error ? err.message : "Could not save car.",
     };
   }

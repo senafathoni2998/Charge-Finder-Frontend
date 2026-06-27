@@ -1,62 +1,65 @@
-import { type FormEvent } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, Card, CardContent, Divider, Stack, TextField } from "@mui/material";
-import { Form } from "react-router";
 import { UI } from "../../../theme/theme";
 import type { ConnectorType } from "../../../models/model";
+import { carFormSchema, type CarFormValues } from "../../../forms/schemas";
 import ConnectorTypePicker from "./ConnectorTypePicker";
 import PowerSliderField from "./PowerSliderField";
 import AddCarActions from "./AddCarActions";
 
-type AddCarFormValues = {
-  name: string;
-  connectors: Set<ConnectorType>;
-  minKW: number;
-  batteryCapacity: string;
-};
-
-type AddCarFormHandlers = {
-  onNameChange: (value: string) => void;
-  onToggleConnector: (connector: ConnectorType) => void;
-  onMinKWChange: (value: number) => void;
-  onBatteryCapacityChange: (value: string) => void;
-};
-
 type AddCarFormCardProps = {
-  values: AddCarFormValues;
-  handlers: AddCarFormHandlers;
+  defaultValues?: Partial<CarFormValues>;
   connectorOptions: ConnectorType[];
-  submitError: string | null;
-  isSubmitting: boolean;
-  onSubmit: (event: FormEvent) => void;
+  minPower: { min: number; max: number; step: number };
+  serverError: string | null;
+  onDismissError?: () => void;
+  onSubmit: (values: CarFormValues) => void | Promise<void>;
   onCancel: () => void;
-  userId: string;
-  email: string;
-  vehicleId?: string | null;
   submitLabel?: string;
   submittingLabel?: string;
-  minPower: {
-    min: number;
-    max: number;
-    step: number;
-  };
 };
 
-// Renders the car form card with inputs and connector selections.
+// Shared car form card (AddCar + EditCar). Owns the form via react-hook-form +
+// zodResolver; the page provides the submit handler and any server error.
 export default function AddCarFormCard({
-  values,
-  handlers,
+  defaultValues,
   connectorOptions,
-  submitError,
-  isSubmitting,
+  minPower,
+  serverError,
   onSubmit,
   onCancel,
-  userId,
-  email,
-  vehicleId,
   submitLabel,
   submittingLabel,
-  minPower,
 }: AddCarFormCardProps) {
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors, isSubmitting },
+  } = useForm<CarFormValues>({
+    resolver: zodResolver(carFormSchema),
+    defaultValues: {
+      name: "",
+      connectorTypes: [],
+      minKW: 0,
+      batteryCapacity: "",
+      ...defaultValues,
+    },
+  });
+
+  const { ref: nameRef, ...nameField } = register("name");
+  const { ref: batteryRef, ...batteryField } = register("batteryCapacity");
+
+  const submit = handleSubmit((values) => onSubmit(values));
+
+  const inputSx = {
+    "& .MuiOutlinedInput-root": {
+      borderRadius: 3,
+      backgroundColor: "rgba(10,10,16,0.02)",
+    },
+  };
+
   return (
     <Card
       variant="outlined"
@@ -70,74 +73,66 @@ export default function AddCarFormCard({
     >
       <Box sx={{ height: 8, background: UI.brandGradStrong }} />
       <CardContent sx={{ p: { xs: 2.25, sm: 3 } }}>
-        <Box component={Form} method="post" onSubmit={onSubmit} noValidate>
-          <input type="hidden" name="userId" value={userId} />
-          <input type="hidden" name="email" value={email} />
-          {vehicleId ? (
-            <input type="hidden" name="vehicleId" value={vehicleId} />
-          ) : null}
-          {Array.from(values.connectors).map((connector) => (
-            <input
-              key={connector}
-              type="hidden"
-              name="connectorTypes"
-              value={connector}
-            />
-          ))}
-          <input
-            type="hidden"
-            name="minKW"
-            value={Number.isFinite(values.minKW) ? values.minKW : 0}
-          />
+        <Box component="form" onSubmit={submit} noValidate>
           <Stack spacing={2}>
             <TextField
               label="Car name"
-              name="name"
-              value={values.name}
-              onChange={(event) => handlers.onNameChange(event.target.value)}
+              inputRef={nameRef}
+              {...nameField}
               placeholder="e.g. Hyundai Ioniq 5"
               fullWidth
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 3,
-                  backgroundColor: "rgba(10,10,16,0.02)",
-                },
-              }}
+              sx={inputSx}
             />
 
-            <ConnectorTypePicker
-              options={connectorOptions}
-              selected={values.connectors}
-              onToggle={handlers.onToggleConnector}
-              error={submitError}
+            <Controller
+              name="connectorTypes"
+              control={control}
+              render={({ field }) => (
+                <ConnectorTypePicker
+                  options={connectorOptions}
+                  selected={new Set(field.value)}
+                  onToggle={(connector) =>
+                    field.onChange(
+                      field.value.includes(connector)
+                        ? field.value.filter((c) => c !== connector)
+                        : [...field.value, connector],
+                    )
+                  }
+                  error={errors.connectorTypes?.message ?? null}
+                />
+              )}
             />
 
-            <PowerSliderField
-              value={values.minKW}
-              onChange={handlers.onMinKWChange}
-              min={minPower.min}
-              max={minPower.max}
-              step={minPower.step}
+            <Controller
+              name="minKW"
+              control={control}
+              render={({ field }) => (
+                <PowerSliderField
+                  value={field.value}
+                  onChange={field.onChange}
+                  min={minPower.min}
+                  max={minPower.max}
+                  step={minPower.step}
+                />
+              )}
             />
 
             <TextField
               label="Battery capacity (kWh)"
-              name="batteryCapacity"
               type="number"
-              value={values.batteryCapacity}
-              onChange={(event) =>
-                handlers.onBatteryCapacityChange(event.target.value)
-              }
+              inputRef={batteryRef}
+              {...batteryField}
               placeholder="e.g. 58"
               fullWidth
               inputProps={{ min: 0, step: 1 }}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 3,
-                  backgroundColor: "rgba(10,10,16,0.02)",
-                },
-              }}
+              sx={inputSx}
             />
+
+            {serverError ? (
+              <Box sx={{ color: "rgba(244,67,54,0.9)", fontSize: 13 }}>
+                {serverError}
+              </Box>
+            ) : null}
 
             <Divider sx={{ borderColor: UI.border2 }} />
 

@@ -1,4 +1,3 @@
-import type { FormEvent } from "react";
 import AddCarFormCard from "../../AddCar/components/AddCarFormCard";
 import {
   CONNECTOR_OPTIONS,
@@ -6,50 +5,38 @@ import {
   POWER_MIN,
   POWER_STEP,
 } from "../../AddCar/constants";
-import type { EditCarFormHandlers, EditCarFormValues } from "../types";
+import type { CarFormValues } from "../../../forms/schemas";
 import EditCarHeader from "./EditCarHeader";
 
 type EditCarFormSectionProps = {
-  values: EditCarFormValues;
-  handlers: EditCarFormHandlers;
-  submitError: string | null;
-  isSubmitting: boolean;
-  onSubmit: (event: FormEvent) => void;
+  defaultValues: CarFormValues;
+  serverError: string | null;
+  onDismissError: () => void;
+  onSubmit: (values: CarFormValues) => void | Promise<void>;
   onCancel: () => void;
-  userId: string;
-  email: string;
-  vehicleId: string;
 };
 
-// Renders the edit-car header with the shared form card.
+// Renders the edit-car header with the shared (react-hook-form) car form card.
 export default function EditCarFormSection({
-  values,
-  handlers,
-  submitError,
-  isSubmitting,
+  defaultValues,
+  serverError,
+  onDismissError,
   onSubmit,
   onCancel,
-  userId,
-  email,
-  vehicleId,
 }: EditCarFormSectionProps) {
   return (
     <>
       <EditCarHeader />
       <AddCarFormCard
-        values={values}
-        handlers={handlers}
+        defaultValues={defaultValues}
         connectorOptions={CONNECTOR_OPTIONS}
-        submitError={submitError}
-        isSubmitting={isSubmitting}
+        minPower={{ min: POWER_MIN, max: POWER_MAX, step: POWER_STEP }}
+        serverError={serverError}
+        onDismissError={onDismissError}
         onSubmit={onSubmit}
         onCancel={onCancel}
-        userId={userId}
-        email={email}
-        vehicleId={vehicleId}
         submitLabel="Update car"
         submittingLabel="Updating..."
-        minPower={{ min: POWER_MIN, max: POWER_MAX, step: POWER_STEP }}
       />
     </>
   );

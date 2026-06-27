@@ -1,42 +1,26 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import AddCarFormCard from '../AddCarFormCard';
 import type { ConnectorType } from '../../../../models/model';
 
-// Mock React Router Form
-vi.mock('react-router', async () => {
-    return {
-        Form: ({ children, onSubmit, ...props }: any) => (
-            <form onSubmit={onSubmit} {...props}>{children}</form>
-        ),
+type Overrides = Partial<React.ComponentProps<typeof AddCarFormCard>>;
+
+function renderCard(overrides: Overrides = {}) {
+    const props = {
+        connectorOptions: ['Type2', 'CCS2'] as ConnectorType[],
+        minPower: { min: 0, max: 200, step: 10 },
+        serverError: null,
+        onSubmit: vi.fn(),
+        onCancel: vi.fn(),
+        ...overrides,
     };
-});
+    render(<AddCarFormCard {...props} />);
+    return props;
+}
 
 describe('AddCarFormCard', () => {
-    const mockHandlers = {
-            onNameChange: vi.fn(),
-            onToggleConnector: vi.fn(),
-            onMinKWChange: vi.fn(),
-            onBatteryCapacityChange: vi.fn(),
-    };
-    const mockSubmit = vi.fn((e) => e.preventDefault());
-    const mockCancel = vi.fn();
-    const baseProps = {
-        values: { name: '', connectors: new Set<ConnectorType>(), minKW: 0, batteryCapacity: '' },
-        handlers: mockHandlers,
-        connectorOptions: ['Type2', 'CCS2'] as ConnectorType[],
-        submitError: null,
-        isSubmitting: false,
-        onSubmit: mockSubmit,
-        onCancel: mockCancel,
-        userId: 'user1',
-        email: 'user@test.com',
-        minPower: { min: 0, max: 200, step: 10 },
-    };
-
-    it('should render form fields correctly', () => {
-        render(<AddCarFormCard {...baseProps} />);
-        
+    it('renders the fields + actions', () => {
+        renderCard();
         expect(screen.getByLabelText('Car name')).toBeInTheDocument();
         expect(screen.getByLabelText('Battery capacity (kWh)')).toBeInTheDocument();
         expect(screen.getByText('Connector types')).toBeInTheDocument();
@@ -45,40 +29,41 @@ describe('AddCarFormCard', () => {
         expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
     });
 
-    it('should handle field changes', () => {
-        render(<AddCarFormCard {...baseProps} />);
-        
-        const nameInput = screen.getByLabelText('Car name');
-        fireEvent.change(nameInput, { target: { value: 'Test Car' } });
-        expect(mockHandlers.onNameChange).toHaveBeenCalledWith('Test Car');
-
-        const battInput = screen.getByLabelText('Battery capacity (kWh)');
-        fireEvent.change(battInput, { target: { value: '80' } });
-        expect(mockHandlers.onBatteryCapacityChange).toHaveBeenCalledWith('80');
-    });
-
-    it('should submit form', () => {
-        render(<AddCarFormCard {...baseProps} />);
-        
-        const saveBtn = screen.getByRole('button', { name: 'Save car' });
-        fireEvent.click(saveBtn); // Button inside form with type="submit" triggers submit
-        expect(mockSubmit).toHaveBeenCalled();
-    });
-
-    it('should show error alert if provided', () => {
-        render(<AddCarFormCard {...baseProps} submitError="Something went wrong" />);
-        // Wait, AddCarFormCard passes error to ConnectorTypePicker? 
-        // Or renders it somewhere?
-        // AddCarFormCard.tsx:112: error={submitError} -> passed to ConnectorTypePicker
+    it('shows the server error', () => {
+        renderCard({ serverError: 'Something went wrong' });
         expect(screen.getByText('Something went wrong')).toBeInTheDocument();
     });
 
-    it('should populate hidden fields', () => {
-        render(<AddCarFormCard {...baseProps} userId="u1" email="e1" />);
-        
-        // Hidden inputs are hard to query by role, use selectors
-        // Or checking container
-        const form = screen.getByLabelText('Car name').closest('form');
-        expect(form).toHaveFormValues({ userId: 'u1', email: 'e1' });
+    it('calls onCancel', () => {
+        const props = renderCard();
+        fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+        expect(props.onCancel).toHaveBeenCalled();
+    });
+
+    it('submits the values once a connector is selected', async () => {
+        const props = renderCard();
+        fireEvent.change(screen.getByLabelText('Car name'), {
+            target: { value: 'Test Car' },
+        });
+        fireEvent.click(screen.getByText('Type2'));
+        fireEvent.click(screen.getByRole('button', { name: 'Save car' }));
+
+        await waitFor(() =>
+            expect(props.onSubmit).toHaveBeenCalledWith(
+                expect.objectContaining({ name: 'Test Car', connectorTypes: ['Type2'] })
+            )
+        );
+    });
+
+    it('blocks submit + shows the connector error when none selected', async () => {
+        const props = renderCard();
+        fireEvent.click(screen.getByRole('button', { name: 'Save car' }));
+
+        await waitFor(() =>
+            expect(
+                screen.getByText('Select at least one connector type.')
+            ).toBeInTheDocument()
+        );
+        expect(props.onSubmit).not.toHaveBeenCalled();
     });
 });

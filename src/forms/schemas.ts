@@ -121,11 +121,23 @@ export const addUserFormSchema = z.object({
   region: z.string().trim().min(1, "Region is required."),
 });
 
+// Car form (AddCar + EditCar, react-hook-form). connectorTypes must have >=1;
+// batteryCapacity stays a raw string here (coerced to number|null in the request).
+export const carFormSchema = z.object({
+  name: z.string(),
+  connectorTypes: z
+    .array(z.enum(["CCS2", "Type2", "CHAdeMO"]))
+    .min(1, "Select at least one connector type."),
+  minKW: z.number(),
+  batteryCapacity: z.string(),
+});
+
 export type LoginValues = z.infer<typeof loginSchema>;
 export type SignupFormValues = z.infer<typeof signupFormSchema>;
 export type EditProfileValues = z.infer<typeof editProfileFormSchema>;
 export type ChangePasswordValues = z.infer<typeof changePasswordFormSchema>;
 export type AddUserFormValues = z.infer<typeof addUserFormSchema>;
+export type CarFormValues = z.infer<typeof carFormSchema>;
 
 /** First validation message for a field schema, or null when valid. */
 export function firstIssue(schema: z.ZodTypeAny, value: unknown): string | null {

@@ -27,12 +27,12 @@ const lazyProfile = async () => {
 
 const lazyAddCar = async () => {
   const module = await import("../pages/AddCar");
-  return { Component: module.default, action: module.addCarAction };
+  return { Component: module.default };
 };
 
 const lazyEditCar = async () => {
   const module = await import("../pages/EditCar");
-  return { Component: module.default, action: module.editCarAction };
+  return { Component: module.default };
 };
 
 const lazyAdmin = async () => {

@@ -1,143 +1,86 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { editCarAction } from '../editCarRoute';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { editCarRequest } from '../editCarRoute';
 
-describe('editCarRoute', () => {
+// Connector validation is handled by the form via zodResolver(carFormSchema)
+// before editCarRequest runs.
+describe('editCarRequest', () => {
+    const base = {
+        vehicleId: 'car1',
+        userId: 'user1',
+        name: 'My Tesla',
+        connectorTypes: ['Type2', 'CCS2'] as any,
+        minKW: 22,
+        batteryCapacity: '75',
+    };
+
     beforeEach(() => {
         vi.clearAllMocks();
-        global.fetch = vi.fn();
+        vi.stubGlobal('fetch', vi.fn());
         vi.stubEnv('VITE_APP_BACKEND_URL', 'http://localhost:8000');
     });
 
-    it('should return error when vehicleId is missing', async () => {
-        const formData = new FormData();
-        formData.append('userId', 'user1');
-        formData.append('name', 'Test Car');
-        formData.append('connectorTypes', 'Type2');
+    afterEach(() => {
+        vi.restoreAllMocks();
+        vi.unstubAllGlobals();
+    });
 
-        const request = new Request('http://localhost:3000', {
-            method: 'POST',
-            body: formData,
+    it('requires a vehicleId', async () => {
+        const result = await editCarRequest({ ...base, vehicleId: '' });
+        expect(result).toEqual({ ok: false, error: 'Vehicle is missing.' });
+    });
+
+    it('requires a userId', async () => {
+        const result = await editCarRequest({ ...base, userId: '' });
+        expect(result).toEqual({ ok: false, error: 'User session is missing.' });
+    });
+
+    it('PATCHes the payload and returns ok', async () => {
+        vi.mocked(fetch).mockResolvedValue({ ok: true, json: async () => ({}) } as Response);
+
+        const result = await editCarRequest(base);
+
+        expect(fetch).toHaveBeenCalledWith(
+            expect.stringContaining('/vehicles/update-vehicle'),
+            expect.objectContaining({ method: 'PATCH' })
+        );
+        const body = JSON.parse(vi.mocked(fetch).mock.calls[0][1]!.body as string);
+        expect(body).toEqual({
+            vehicleId: 'car1',
+            userId: 'user1',
+            name: 'My Tesla',
+            connector_type: ['Type2', 'CCS2'],
+            min_power: 22,
+            batteryCapacity: 75,
         });
-
-        const result = await editCarAction({ request });
-        expect(result).toEqual({ error: 'Vehicle is missing.' });
+        expect(result).toEqual({ ok: true });
     });
 
-    it('should return error when connector types are empty', async () => {
-        const formData = new FormData();
-        formData.append('vehicleId', 'car1');
-        formData.append('userId', 'user1');
-        formData.append('name', 'Test Car');
+    it('defaults the name and omits an empty battery capacity', async () => {
+        vi.mocked(fetch).mockResolvedValue({ ok: true, json: async () => ({}) } as Response);
 
-        const request = new Request('http://localhost:3000', {
-            method: 'POST',
-            body: formData,
-        });
+        await editCarRequest({ ...base, name: '', batteryCapacity: '' });
 
-        const result = await editCarAction({ request });
-        expect(result).toEqual({ error: 'Select at least one connector type.' });
+        const body = JSON.parse(vi.mocked(fetch).mock.calls[0][1]!.body as string);
+        expect(body.name).toBe('My EV');
+        expect(body).not.toHaveProperty('batteryCapacity');
     });
 
-    it('should return error when userId is missing', async () => {
-        const formData = new FormData();
-        formData.append('vehicleId', 'car1');
-        formData.append('name', 'Test Car');
-        formData.append('connectorTypes', 'Type2');
+    it('returns the API error', async () => {
+        vi.mocked(fetch).mockResolvedValue({
+            ok: false,
+            json: async () => ({ message: 'Update failed' }),
+        } as Response);
 
-        const request = new Request('http://localhost:3000', {
-            method: 'POST',
-            body: formData,
-        });
+        const result = await editCarRequest(base);
 
-        const result = await editCarAction({ request });
-        expect(result).toEqual({ error: 'User session is missing.' });
+        expect(result).toEqual({ ok: false, error: 'Update failed' });
     });
 
-    it('should handle multiple connector types', async () => {
-        const formData = new FormData();
-        formData.append('vehicleId', 'car1');
-        formData.append('userId', 'user1');
-        formData.append('name', 'Test Car');
-        formData.append('connectorTypes', 'Type2');
-        formData.append('connectorTypes', 'CCS2');
-        formData.append('minKW', '22');
+    it('handles network errors', async () => {
+        vi.mocked(fetch).mockRejectedValue(new TypeError('Network fail'));
 
-        const request = new Request('http://localhost:3000', {
-            method: 'POST',
-            body: formData,
-        });
+        const result = await editCarRequest(base);
 
-        const connectorTypes = formData.getAll('connectorTypes');
-        expect(connectorTypes).toEqual(['Type2', 'CCS2']);
-    });
-
-    it('should handle empty battery capacity string', async () => {
-        const formData = new FormData();
-        formData.append('vehicleId', 'car1');
-        formData.append('userId', 'user1');
-        formData.append('name', 'Test Car');
-        formData.append('connectorTypes', 'Type2');
-        formData.append('batteryCapacity', '');
-
-        const batteryCapacityRaw = formData.get('batteryCapacity');
-        const batteryCapacityValue =
-            typeof batteryCapacityRaw === 'string' && batteryCapacityRaw.trim()
-                ? Number(batteryCapacityRaw)
-                : null;
-        expect(batteryCapacityValue).toBeNull();
-    });
-
-    it('should handle valid battery capacity', async () => {
-        const formData = new FormData();
-        formData.append('vehicleId', 'car1');
-        formData.append('userId', 'user1');
-        formData.append('name', 'Test Car');
-        formData.append('connectorTypes', 'Type2');
-        formData.append('batteryCapacity', '75');
-
-        const batteryCapacityRaw = formData.get('batteryCapacity');
-        const batteryCapacityValue =
-            typeof batteryCapacityRaw === 'string' && batteryCapacityRaw.trim()
-                ? Number(batteryCapacityRaw)
-                : null;
-        expect(batteryCapacityValue).toBe(75);
-    });
-
-    it('should handle invalid minKW', async () => {
-        const formData = new FormData();
-        formData.append('minKW', 'invalid');
-
-        const minKW = Number.isFinite(Number(formData.get('minKW')))
-            ? Number(formData.get('minKW'))
-            : 0;
-        expect(minKW).toBe(0);
-    });
-
-    it('should handle valid minKW', async () => {
-        const formData = new FormData();
-        formData.append('minKW', '22');
-
-        const minKW = Number.isFinite(Number(formData.get('minKW')))
-            ? Number(formData.get('minKW'))
-            : 0;
-        expect(minKW).toBe(22);
-    });
-
-    it('should default name when empty', async () => {
-        const formData = new FormData();
-        formData.append('name', '');
-
-        const nameRaw = String(formData.get('name') || '').trim();
-        const name = nameRaw || 'My EV';
-        expect(name).toBe('My EV');
-    });
-
-    it('should use provided name', async () => {
-        const formData = new FormData();
-        formData.append('name', 'My Tesla');
-
-        const nameRaw = String(formData.get('name') || '').trim();
-        const name = nameRaw || 'My EV';
-        expect(name).toBe('My Tesla');
+        expect(result).toEqual({ ok: false, error: 'Network fail' });
     });
 });

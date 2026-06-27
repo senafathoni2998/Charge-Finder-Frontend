@@ -1,59 +1,57 @@
-import { useMemo } from "react";
-import {
-  useActionData,
-  useNavigate,
-  useNavigation,
-  useParams,
-} from "react-router";
+import { useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router";
 import { useAppSelector } from "../../app/hooks";
-import type { EditCarActionData } from "./types";
+import type { CarFormValues } from "../../forms/schemas";
 import EditCarFormSection from "./components/EditCarFormSection";
 import EditCarLayout from "./components/EditCarLayout";
 import EditCarNotFound from "./components/EditCarNotFound";
-import useEditCarFormState from "./hooks/useEditCarFormState";
-import { findCarById } from "./utils";
+import { editCarRequest } from "./editCarRoute";
+import { findCarById, getCarFormDefaults } from "./utils";
 
-export { editCarAction } from "./editCarRoute";
-
-// Edit car page container that wires form state and layout components.
+// Edit car page container. The form state lives in the shared AddCarFormCard
+// (react-hook-form); this page loads the car from Redux and owns the submit
+// side-effect + navigation.
 export default function EditCarPage() {
   const navigate = useNavigate();
-  const navigation = useNavigation();
-  const actionData = useActionData() as EditCarActionData | undefined;
   const { carId } = useParams();
-  const email = useAppSelector((state) => state.auth.email) || "";
   const userId = useAppSelector((state) => state.auth.userId) || "";
   const cars = useAppSelector((state) => state.auth.cars);
 
-  const car = useMemo(
-    () => findCarById(cars, carId),
-    [cars, carId]
-  );
+  const car = useMemo(() => findCarById(cars, carId), [cars, carId]);
+  const [serverError, setServerError] = useState<string | null>(null);
 
-  const { values, handlers, onSubmit, clientError } =
-    useEditCarFormState(car);
-
-  const submitError = clientError || actionData?.error || null;
-  const isSubmitting = navigation.state === "submitting";
-
-  // Sends the user back to their profile when cancelling.
   const handleBackToProfile = () => {
     navigate("/profile");
+  };
+
+  const handleSubmit = async (values: CarFormValues) => {
+    if (!car) return;
+    setServerError(null);
+    const result = await editCarRequest({
+      vehicleId: car.id,
+      userId,
+      name: values.name,
+      connectorTypes: values.connectorTypes,
+      minKW: values.minKW,
+      batteryCapacity: values.batteryCapacity,
+    });
+    if (result.ok) {
+      navigate("/profile");
+    } else {
+      setServerError(result.error);
+    }
   };
 
   return (
     <EditCarLayout>
       {car ? (
         <EditCarFormSection
-          values={values}
-          handlers={handlers}
-          submitError={submitError}
-          isSubmitting={isSubmitting}
-          onSubmit={onSubmit}
+          key={car.id}
+          defaultValues={getCarFormDefaults(car)}
+          serverError={serverError}
+          onDismissError={() => setServerError(null)}
+          onSubmit={handleSubmit}
           onCancel={handleBackToProfile}
-          userId={userId}
-          email={email}
-          vehicleId={car.id}
         />
       ) : (
         <EditCarNotFound onBack={handleBackToProfile} />

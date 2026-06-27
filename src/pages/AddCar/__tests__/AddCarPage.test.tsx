@@ -1,98 +1,79 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import AddCarPage from '../index';
-import * as router from 'react-router';
 import * as reduxHooks from '../../../app/hooks';
+import { createCarRequest } from '../addCarRoute';
 
-// Mock dependencies
+const mockNavigate = vi.fn();
+
 vi.mock('react-router', async () => {
     const actual = await vi.importActual('react-router');
-    return {
-        ...actual,
-        useNavigate: vi.fn(),
-        useActionData: vi.fn(),
-        useNavigation: vi.fn(),
-         // Mock Form to avoid needing DataRouter context
-        Form: ({ children, onSubmit, ...props }: any) => (
-            <form onSubmit={onSubmit} {...props}>{children}</form>
-        ),
-    };
+    return { ...actual, useNavigate: () => mockNavigate };
 });
 
-vi.mock('../../../app/hooks', () => ({
-    useAppSelector: vi.fn(),
-}));
-
-// Mock child components to simplify testing (optional, but integration is better)
-// Keeping components real to verify integration, but mocking Form helped.
+vi.mock('../../../app/hooks', () => ({ useAppSelector: vi.fn() }));
+vi.mock('../addCarRoute', () => ({ createCarRequest: vi.fn() }));
 
 describe('AddCarPage', () => {
-    const mockNavigate = vi.fn();
-    
     beforeEach(() => {
         vi.clearAllMocks();
-        (router.useNavigate as any).mockReturnValue(mockNavigate);
-        (router.useNavigation as any).mockReturnValue({ state: 'idle' });
-        (router.useActionData as any).mockReturnValue(undefined);
-        (reduxHooks.useAppSelector as any).mockImplementation((selector: any) => {
-            const state = {
-                auth: { email: 'test@test.com', userId: 'user123' }
-            };
-            return selector(state);
-        });
+        (reduxHooks.useAppSelector as any).mockImplementation((selector: any) =>
+            selector({ auth: { email: 'test@test.com', userId: 'user123' } })
+        );
     });
 
-    it('should render page title', () => {
+    it('renders the page title', () => {
         render(<AddCarPage />);
-        // Header title
         expect(screen.getByText('Add a car')).toBeInTheDocument();
     });
 
-    it('should show validation error if submitting without connectors', () => {
+    it('blocks submit + shows an error when no connector is selected', async () => {
         render(<AddCarPage />);
-        
-        // Connectors are empty by default
-        const saveBtn = screen.getByRole('button', { name: 'Save car' });
-        fireEvent.click(saveBtn); // Triggers form submit -> handleSubmit
-
-        expect(screen.getByText('Select at least one connector type.')).toBeInTheDocument();
-    });
-
-    it('should clear validation error when referencing connectors', () => {
-        render(<AddCarPage />);
-        
-        // Trigger error
         fireEvent.click(screen.getByRole('button', { name: 'Save car' }));
-        expect(screen.getByText('Select at least one connector type.')).toBeInTheDocument();
 
-        // Select a connector
-        const type2 = screen.getByText('Type2');
-        fireEvent.click(type2);
-        
-        expect(screen.queryByText('Select at least one connector type.')).not.toBeInTheDocument();
+        await waitFor(() =>
+            expect(
+                screen.getByText('Select at least one connector type.')
+            ).toBeInTheDocument()
+        );
+        expect(createCarRequest).not.toHaveBeenCalled();
     });
 
-    it('should display action error from router', () => {
-        (router.useActionData as any).mockReturnValue({ error: 'Server error' });
+    it('creates the car + navigates on a valid submit', async () => {
+        vi.mocked(createCarRequest).mockResolvedValue({ ok: true });
         render(<AddCarPage />);
-        
-        expect(screen.getByText('Server error')).toBeInTheDocument();
-    });
 
-    it('should navigate back on cancel', () => {
-        render(<AddCarPage />);
-        
-        const cancelBtn = screen.getByRole('button', { name: 'Cancel' });
-        fireEvent.click(cancelBtn);
-        
+        fireEvent.click(screen.getByText('Type2'));
+        fireEvent.click(screen.getByRole('button', { name: 'Save car' }));
+
+        await waitFor(() =>
+            expect(createCarRequest).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    userId: 'user123',
+                    email: 'test@test.com',
+                    connectorTypes: ['Type2'],
+                })
+            )
+        );
         expect(mockNavigate).toHaveBeenCalledWith('/profile');
     });
 
-    it('should show loading state', () => {
-        (router.useNavigation as any).mockReturnValue({ state: 'submitting' });
+    it('shows the server error on failure', async () => {
+        vi.mocked(createCarRequest).mockResolvedValue({ ok: false, error: 'Server error' });
         render(<AddCarPage />);
-        
-        expect(screen.getByText('Saving...')).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: 'Saving...' })).toBeDisabled();
+
+        fireEvent.click(screen.getByText('CCS2'));
+        fireEvent.click(screen.getByRole('button', { name: 'Save car' }));
+
+        await waitFor(() =>
+            expect(screen.getByText('Server error')).toBeInTheDocument()
+        );
+        expect(mockNavigate).not.toHaveBeenCalled();
+    });
+
+    it('navigates back on cancel', () => {
+        render(<AddCarPage />);
+        fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+        expect(mockNavigate).toHaveBeenCalledWith('/profile');
     });
 });

@@ -1,42 +1,40 @@
-import { redirect } from "react-router";
+import type { ConnectorType } from "../../models/model";
+import {
+  coerceBatteryCapacity,
+  type CarRequestResult,
+} from "../AddCar/addCarRoute";
 
-// Handles edit-car submissions.
-export async function editCarAction({ request }: { request: Request }) {
-  const formData = await request.formData();
+/**
+ * Updates a vehicle. Connector validation is handled by the form via
+ * zodResolver(carFormSchema); navigation is the caller's responsibility.
+ */
+export async function editCarRequest({
+  vehicleId,
+  userId,
+  name,
+  connectorTypes,
+  minKW,
+  batteryCapacity,
+}: {
+  vehicleId: string;
+  userId: string;
+  name: string;
+  connectorTypes: ConnectorType[];
+  minKW: number;
+  batteryCapacity: string;
+}): Promise<CarRequestResult> {
   const baseUrl = import.meta.env.VITE_APP_BACKEND_URL;
   if (!baseUrl) {
-    return { error: "Backend URL is not configured." };
+    return { ok: false, error: "Backend URL is not configured." };
   }
-
-  const vehicleId = String(formData.get("vehicleId") || "").trim();
-  const userId = String(formData.get("userId") || "").trim();
-  const nameRaw = String(formData.get("name") || "").trim();
-  const name = nameRaw || "My EV";
-  const connectorTypes = formData
-    .getAll("connectorTypes")
-    .map((value) => String(value))
-    .filter((value) => value);
-  const minKW = Number.isFinite(Number(formData.get("minKW")))
-    ? Number(formData.get("minKW"))
-    : 0;
-  const batteryCapacityRaw = formData.get("batteryCapacity");
-  const batteryCapacityValue =
-    typeof batteryCapacityRaw === "string" && batteryCapacityRaw.trim()
-      ? Number(batteryCapacityRaw)
-      : null;
-  const batteryCapacity = Number.isFinite(batteryCapacityValue)
-    ? batteryCapacityValue
-    : null;
-
   if (!vehicleId) {
-    return { error: "Vehicle is missing." };
-  }
-  if (!connectorTypes.length) {
-    return { error: "Select at least one connector type." };
+    return { ok: false, error: "Vehicle is missing." };
   }
   if (!userId) {
-    return { error: "User session is missing." };
+    return { ok: false, error: "User session is missing." };
   }
+
+  const battery = coerceBatteryCapacity(batteryCapacity);
 
   try {
     const response = await fetch(`${baseUrl}/vehicles/update-vehicle`, {
@@ -44,22 +42,22 @@ export async function editCarAction({ request }: { request: Request }) {
       body: JSON.stringify({
         vehicleId,
         userId,
-        name,
+        name: name.trim() || "My EV",
         connector_type: connectorTypes,
         min_power: minKW,
-        ...(batteryCapacity != null ? { batteryCapacity } : {}),
+        ...(battery != null ? { batteryCapacity: battery } : {}),
       }),
       headers: { "Content-Type": "application/json" },
       credentials: "include",
     });
     const vehicle = await response.json().catch(() => ({}));
     if (!response.ok) {
-      return { error: vehicle.message || "Could not update car." };
+      return { ok: false, error: vehicle.message || "Could not update car." };
     }
-
-    return redirect("/profile");
+    return { ok: true };
   } catch (err) {
     return {
+      ok: false,
       error: err instanceof Error ? err.message : "Could not update car.",
     };
   }

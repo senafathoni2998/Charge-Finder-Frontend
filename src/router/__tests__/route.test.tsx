@@ -121,13 +121,14 @@ describe('Router Configuration', () => {
         const addCar = findRoute(protectedWrapper.children, 'profile/cars/new');
         const addCarLoaded = await addCar.lazy();
         expect(addCarLoaded.Component()).toBe('AddCar');
-        expect(addCarLoaded.action()).toBe('addCarAction');
+        // Car forms are now client-side react-hook-form forms — no route actions.
+        expect(addCarLoaded.action).toBeUndefined();
 
         // Edit Car
         const editCar = findRoute(protectedWrapper.children, 'profile/cars/:carId/edit');
         const editCarLoaded = await editCar.lazy();
         expect(editCarLoaded.Component()).toBe('EditCar');
-        expect(editCarLoaded.action()).toBe('editCarAction');
+        expect(editCarLoaded.action).toBeUndefined();
     });
 
     it('should configure admin routes properly', async () => {
