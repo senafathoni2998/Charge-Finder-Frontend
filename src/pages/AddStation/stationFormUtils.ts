@@ -4,6 +4,7 @@ import type {
   StationPricing,
   StationPhoto,
 } from "../../models/model";
+import type { StationFormValues } from "../../forms/schemas";
 
 type StationConnectorPayload = {
   type: ConnectorType;
@@ -178,5 +179,68 @@ export const parseStationFormData = (
       notes: notes || null,
       lastUpdatedISO: new Date().toISOString(),
     },
+  };
+};
+
+// Builds the API payload from typed (string-draft) react-hook-form values.
+// Mirrors parseStationFormData's value-shaping; validation is the zod schema's job.
+export const buildStationPayload = (
+  values: StationFormValues
+): StationFormPayload => {
+  const connectors = values.connectors
+    .map((c) => {
+      const powerKW = Number(c.powerKW);
+      const ports = Number(c.ports);
+      const availablePorts = Number(c.availablePorts);
+      if (
+        !VALID_CONNECTORS.has(c.type) ||
+        !Number.isFinite(powerKW) ||
+        !Number.isFinite(ports) ||
+        !Number.isFinite(availablePorts)
+      ) {
+        return null;
+      }
+      if (ports <= 0 || powerKW <= 0 || availablePorts < 0) return null;
+      return {
+        type: c.type,
+        powerKW,
+        ports,
+        availablePorts: Math.min(availablePorts, ports),
+      };
+    })
+    .filter(Boolean) as StationConnectorPayload[];
+
+  const perKwh = Number(values.pricing.perKwh);
+  const perMinute = values.pricing.perMinute.trim()
+    ? Number(values.pricing.perMinute)
+    : null;
+  const parkingFee = values.pricing.parkingFee.trim() || undefined;
+
+  const amenities = values.amenities
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  const photos = values.photos
+    .map((p) => ({ label: p.label.trim(), gradient: p.gradient.trim() }))
+    .filter((p) => p.label && p.gradient);
+
+  return {
+    name: values.name.trim(),
+    address: values.address.trim(),
+    status: values.status,
+    lat: Number(values.lat),
+    lng: Number(values.lng),
+    connectors,
+    pricing: {
+      currency: values.pricing.currency.trim(),
+      perKwh,
+      ...(perMinute && perMinute > 0 ? { perMinute } : {}),
+      ...(parkingFee ? { parkingFee } : {}),
+    },
+    amenities,
+    photos,
+    notes: values.notes.trim() || null,
+    lastUpdatedISO: new Date().toISOString(),
   };
 };

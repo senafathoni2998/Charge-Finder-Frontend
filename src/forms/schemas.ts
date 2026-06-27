@@ -132,12 +132,84 @@ export const carFormSchema = z.object({
   batteryCapacity: z.string(),
 });
 
+// Admin station form (AddStation + EditStation, react-hook-form). All inputs are
+// strings/drafts (numbers coerced in buildStationPayload); connectors/photos are
+// field arrays. Messages mirror the legacy validateStationForm/parseStationFormData.
+const isFiniteStr = (v: string) => v.trim() !== "" && Number.isFinite(Number(v));
+
+const stationConnectorDraftSchema = z.object({
+  id: z.string(),
+  type: z.enum(["CCS2", "Type2", "CHAdeMO"]),
+  powerKW: z.string(),
+  ports: z.string(),
+  availablePorts: z.string(),
+});
+
+const stationPhotoDraftSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  gradient: z.string(),
+});
+
+export const stationFormSchema = z.object({
+  name: z.string().refine((v) => v.trim().length > 0, "Station name is required."),
+  address: z
+    .string()
+    .refine((v) => v.trim().length > 0, "Address is required."),
+  status: z.enum(["AVAILABLE", "BUSY", "OFFLINE"]),
+  lat: z
+    .string()
+    .refine(isFiniteStr, "Latitude and longitude must be valid numbers."),
+  lng: z
+    .string()
+    .refine(isFiniteStr, "Latitude and longitude must be valid numbers."),
+  connectors: z.array(stationConnectorDraftSchema).refine(
+    (arr) =>
+      arr.length > 0 &&
+      arr.every((c) => {
+        const power = Number(c.powerKW);
+        const ports = Number(c.ports);
+        const available = Number(c.availablePorts);
+        return (
+          Number.isFinite(power) &&
+          power > 0 &&
+          Number.isFinite(ports) &&
+          ports > 0 &&
+          Number.isFinite(available) &&
+          available >= 0
+        );
+      }),
+    "Add at least one valid connector entry.",
+  ),
+  pricing: z
+    .object({
+      currency: z.string(),
+      perKwh: z.string(),
+      perMinute: z.string(),
+      parkingFee: z.string(),
+    })
+    .refine(
+      (p) =>
+        p.currency.trim() !== "" &&
+        p.perKwh.trim() !== "" &&
+        Number.isFinite(Number(p.perKwh)) &&
+        Number(p.perKwh) > 0,
+      { message: "Pricing currency and per kWh are required.", path: ["perKwh"] },
+    ),
+  amenities: z.string(),
+  photos: z.array(stationPhotoDraftSchema),
+  notes: z.string(),
+});
+
 export type LoginValues = z.infer<typeof loginSchema>;
 export type SignupFormValues = z.infer<typeof signupFormSchema>;
 export type EditProfileValues = z.infer<typeof editProfileFormSchema>;
 export type ChangePasswordValues = z.infer<typeof changePasswordFormSchema>;
 export type AddUserFormValues = z.infer<typeof addUserFormSchema>;
 export type CarFormValues = z.infer<typeof carFormSchema>;
+export type StationConnectorDraft = z.infer<typeof stationConnectorDraftSchema>;
+export type StationPhotoDraft = z.infer<typeof stationPhotoDraftSchema>;
+export type StationFormValues = z.infer<typeof stationFormSchema>;
 
 /** First validation message for a field schema, or null when valid. */
 export function firstIssue(schema: z.ZodTypeAny, value: unknown): string | null {
