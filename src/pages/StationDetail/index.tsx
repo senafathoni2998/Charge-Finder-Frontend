@@ -32,7 +32,7 @@ import {
   TICKET_KWH,
   TOTAL_CHARGE_MINUTES,
 } from "./constants";
-import { buildMapsUrl, getSharePayload, getTicketPriceLabel } from "./utils";
+import { getTicketPriceLabel } from "./utils";
 import type { ChargingStatus, Station, Ticket } from "./types";
 import type { ChargingSpeed, ConnectorType } from "../../models/model";
 import StationOverviewSection from "./components/StationOverviewSection";
@@ -65,6 +65,8 @@ import {
   toProgressPercent,
 } from "./parsing";
 import { useStationData } from "./hooks/useStationData";
+import { useReportShare } from "./hooks/useReportShare";
+import { useStartChargingSelection } from "./hooks/useStartChargingSelection";
 
 /**
  * ChargeFinder - Station Detail Page (Canvas-safe) - LIGHT MODE
@@ -91,10 +93,6 @@ export default function StationDetailPage() {
 
   // Demo selector for canvas. In your app, stationId will come from route params.
   //   const [stationId, setStationId] = useState("st-001");
-  const [reportOpen, setReportOpen] = useState(false);
-  const [shareOpen, setShareOpen] = useState(false);
-  const [reportType, setReportType] = useState(REPORT_ISSUE_TYPES[0]);
-  const [reportNote, setReportNote] = useState("");
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [selectedPaymentId, setSelectedPaymentId] = useState(
     PAYMENT_METHODS[0].id
@@ -119,13 +117,6 @@ export default function StationDetailPage() {
   const [chargingBatteryPercent, setChargingBatteryPercent] = useState<
     number | null
   >(null);
-  const [startChargingOpen, setStartChargingOpen] = useState(false);
-  const [selectedConnectorType, setSelectedConnectorType] = useState<
-    ConnectorType | null
-  >(null);
-  const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(
-    activeCarId ?? null
-  );
   const [estimatedCompletionAt, setEstimatedCompletionAt] = useState<
     number | null
   >(null);
@@ -138,6 +129,19 @@ export default function StationDetailPage() {
 
   const { loading, station, loadError, refreshStation } =
     useStationData(stationId);
+
+  const {
+    reportOpen,
+    setReportOpen,
+    shareOpen,
+    setShareOpen,
+    reportType,
+    setReportType,
+    reportNote,
+    setReportNote,
+    openGoogleMaps,
+    submitReport,
+  } = useReportShare(station);
 
   const selectedPayment = useMemo(
     () =>
@@ -182,58 +186,16 @@ export default function StationDetailPage() {
     [cars]
   );
 
-  const preferredConnectorType = useMemo(() => {
-    if (!station) return undefined;
-    const stationConnectorTypes = station.connectors.map(
-      (connector) => connector.type
-    );
-    if (!stationConnectorTypes.length) return undefined;
-    if (activeCar?.connectorTypes?.length) {
-      const match = activeCar.connectorTypes.find((type) =>
-        stationConnectorTypes.includes(type)
-      );
-      if (match) return match;
-    }
-    return stationConnectorTypes[0];
-  }, [station, activeCar]);
-  const availableConnectorTypes = useMemo(() => {
-    if (!station) return [];
-    const types = station.connectors.map((connector) => connector.type);
-    return Array.from(new Set(types));
-  }, [station]);
-
-  useEffect(() => {
-    if (!availableConnectorTypes.length) {
-      setSelectedConnectorType(null);
-      return;
-    }
-    if (
-      selectedConnectorType &&
-      availableConnectorTypes.includes(selectedConnectorType)
-    ) {
-      return;
-    }
-    setSelectedConnectorType(
-      preferredConnectorType ?? availableConnectorTypes[0]
-    );
-  }, [availableConnectorTypes, preferredConnectorType, selectedConnectorType]);
-
-  useEffect(() => {
-    if (!startChargingOpen) return;
-    if (!cars.length) {
-      setSelectedVehicleId(null);
-      return;
-    }
-    const activeCarMatch = activeCarId
-      ? cars.find((car) => car.id === activeCarId)
-      : null;
-    if (activeCarMatch && !isVehicleCharging(activeCarMatch)) {
-      setSelectedVehicleId(activeCarMatch.id);
-      return;
-    }
-    const availableCar = cars.find((car) => !isVehicleCharging(car)) ?? null;
-    setSelectedVehicleId(availableCar ? availableCar.id : null);
-  }, [activeCarId, cars, startChargingOpen]);
+  const {
+    startChargingOpen,
+    setStartChargingOpen,
+    selectedConnectorType,
+    setSelectedConnectorType,
+    selectedVehicleId,
+    setSelectedVehicleId,
+    preferredConnectorType,
+    availableConnectorTypes,
+  } = useStartChargingSelection({ station, activeCar, cars, activeCarId });
 
   const isCompatible = useMemo(() => {
     if (!activeCar || !station || !activeCar.connectorTypes.length) return null;
@@ -866,32 +828,6 @@ export default function StationDetailPage() {
     };
   }, [stationId]);
 
-  const openGoogleMaps = () => {
-    if (!station || typeof window === "undefined") return;
-    window.open(buildMapsUrl(station.lat, station.lng), "_blank", "noopener,noreferrer");
-  };
-
-  const share = async () => {
-    if (!station) return;
-    const payload = getSharePayload(station);
-
-    try {
-      // Prefer native share.
-      if (typeof navigator !== "undefined" && navigator.share) {
-        await navigator.share(payload);
-        return;
-      }
-      setShareOpen(true);
-    } catch {
-      setShareOpen(true);
-    }
-  };
-
-  const submitReport = () => {
-    // Canvas-safe demo: just close and reset.
-    setReportOpen(false);
-    setReportNote("");
-  };
 
   if (!loading && !station) {
     return (
