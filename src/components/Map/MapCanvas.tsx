@@ -29,6 +29,21 @@ const PREFER_CANVAS = (() => {
   }
 })();
 
+// Map tiles: use MapTiler when VITE_MAPTILER_KEY is configured; otherwise fall back
+// to public OpenStreetMap tiles (dev only — OSM's tile policy disallows production
+// scale). Attribution is always shown, as required by both providers.
+const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY;
+const USING_MAPTILER = Boolean(MAPTILER_KEY);
+const TILE_URL = USING_MAPTILER
+  ? `https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`
+  : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+const TILE_ATTRIBUTION = USING_MAPTILER
+  ? '<a href="https://www.maptiler.com/copyright/" target="_blank" rel="noreferrer">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">&copy; OpenStreetMap contributors</a>'
+  : '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors';
+// MapTiler raster tiles are 512px; Leaflet needs tileSize/zoomOffset to render them.
+const TILE_SIZE = USING_MAPTILER ? 512 : 256;
+const TILE_ZOOM_OFFSET = USING_MAPTILER ? -1 : 0;
+
 // Reads the current map view: zoom, bbox (for supercluster), center and an
 // approximate radius (km) covering the viewport — used for viewport-driven fetch.
 function readMapView(map) {
@@ -345,8 +360,10 @@ export default function MapCanvas({
           each — essential when many stations are visible. */}
       <MapContainer bounds={mapBounds} preferCanvas={PREFER_CANVAS}>
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution={TILE_ATTRIBUTION}
+          url={TILE_URL}
+          tileSize={TILE_SIZE}
+          zoomOffset={TILE_ZOOM_OFFSET}
         />
         <FitBounds bounds={bounds} />
         <FocusStation selectedId={selectedId} stations={stations} />
