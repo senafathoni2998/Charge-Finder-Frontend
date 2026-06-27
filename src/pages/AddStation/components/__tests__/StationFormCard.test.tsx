@@ -79,6 +79,34 @@ describe('StationFormCard', () => {
         expect(screen.getByLabelText('Power (kW)')).toHaveValue(50);
     });
 
+    it('hides the remove button when only one connector remains', () => {
+        renderCard();
+        expect(
+            screen.queryByLabelText('Remove connector')
+        ).not.toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'Add connector' }));
+        expect(screen.getAllByLabelText('Remove connector')).toHaveLength(2);
+    });
+
+    it('shows the array-level error when no connector is valid', async () => {
+        const onSubmit = vi.fn();
+        renderCard(
+            {
+                connectors: [
+                    { id: 'c1', type: 'Type2', powerKW: '0', ports: '2', availablePorts: '1' },
+                ],
+            },
+            { onSubmit }
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Save station' }));
+        await waitFor(() =>
+            expect(
+                screen.getByText('Add at least one valid connector entry.')
+            ).toBeInTheDocument()
+        );
+        expect(onSubmit).not.toHaveBeenCalled();
+    });
+
     it('appends a connector when "Add connector" is clicked', () => {
         renderCard();
         expect(screen.queryByText('Connector 2')).not.toBeInTheDocument();
