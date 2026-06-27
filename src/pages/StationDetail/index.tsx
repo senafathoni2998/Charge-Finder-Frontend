@@ -12,7 +12,6 @@ import {
 } from "@mui/material";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { UI } from "../../theme/theme";
-import { fetchStationById } from "../../api/stations";
 import {
   cancelChargingSession,
   completeChargingSession,
@@ -65,6 +64,7 @@ import {
   toDateMs,
   toProgressPercent,
 } from "./parsing";
+import { useStationData } from "./hooks/useStationData";
 
 /**
  * ChargeFinder - Station Detail Page (Canvas-safe) - LIGHT MODE
@@ -136,46 +136,8 @@ export default function StationDetailPage() {
   const geo = useGeoLocation();
   const userCenter = geo.loc ?? { lat: -6.2, lng: 106.8167 };
 
-  const [loading, setLoading] = useState(true);
-  const [station, setStation] = useState<Station | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!stationId) {
-      setStation(null);
-      setLoading(false);
-      setLoadError("Station ID is missing.");
-      return;
-    }
-
-    const controller = new AbortController();
-    let active = true;
-
-    const loadStation = async () => {
-      setLoading(true);
-      setLoadError(null);
-      // Fetch only this station (not the entire stations collection) — see F3.
-      const result = await fetchStationById(stationId, controller.signal);
-      if (!active) return;
-      if (!result.ok) {
-        setStation(null);
-        setLoadError(result.error || "Could not load station data.");
-        setLoading(false);
-        return;
-      }
-      if (!result.station) {
-        setLoadError("Station not found.");
-      }
-      setStation(result.station);
-      setLoading(false);
-    };
-
-    loadStation();
-    return () => {
-      active = false;
-      controller.abort();
-    };
-  }, [stationId]);
+  const { loading, station, loadError, refreshStation } =
+    useStationData(stationId);
 
   const selectedPayment = useMemo(
     () =>
@@ -483,14 +445,6 @@ export default function StationDetailPage() {
     },
     [activeCarId, cars, dispatch]
   );
-
-  const refreshStation = useCallback(async () => {
-    if (!stationId) return;
-    const result = await fetchStationById(stationId);
-    if (result.ok && result.station) {
-      setStation(result.station);
-    }
-  }, [stationId]);
 
   // Creates a charging ticket for the selected payment method.
   const handleBuyTicket = async () => {
