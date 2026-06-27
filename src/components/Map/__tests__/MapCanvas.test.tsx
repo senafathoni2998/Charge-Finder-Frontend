@@ -2,7 +2,21 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import MapCanvas from '../MapCanvas';
 
-// Mock react-leaflet
+// Mock react-leaflet. The map is zoomed in (18) and given a small bbox so that
+// supercluster renders the test stations as individual markers (not clusters).
+const mockMap = {
+  fitBounds: vi.fn(),
+  setView: vi.fn(),
+  getZoom: () => 18,
+  getCenter: () => ({ lat: 1.5, lng: 1.5 }),
+  getBounds: () => ({
+    getWest: () => -10,
+    getSouth: () => -10,
+    getEast: () => 10,
+    getNorth: () => 10,
+  }),
+};
+
 vi.mock('react-leaflet', () => {
   return {
     MapContainer: ({ children }: any) => <div data-testid="map-container">{children}</div>,
@@ -13,11 +27,8 @@ vi.mock('react-leaflet', () => {
       </div>
     ),
     Tooltip: ({ children }: any) => <div data-testid="tooltip">{children}</div>,
-    useMap: () => ({
-      fitBounds: vi.fn(),
-      setView: vi.fn(),
-      getZoom: () => 10,
-    }),
+    useMap: () => mockMap,
+    useMapEvents: () => mockMap,
   };
 });
 

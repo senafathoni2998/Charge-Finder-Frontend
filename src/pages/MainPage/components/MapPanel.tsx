@@ -48,6 +48,8 @@ export interface MapPanelViewState {
   locationLoading: boolean;
   userLoc: { lat: number; lng: number } | null;
   drawerOpen: boolean;
+  /** Fired (debounced) when the user pans/zooms the map — drives viewport fetching. */
+  onViewportChange?: (lat: number, lng: number, radiusKm: number) => void;
 }
 
 /**
@@ -110,7 +112,14 @@ export default function MapPanel(props: MapPanelProps) {
   const { onViewDetails, onOpenMaps } = mapActions;
 
   // View state
-  const { isMdUp, onRequestLocation, locationLoading, userLoc, drawerOpen } = viewState;
+  const {
+    isMdUp,
+    onRequestLocation,
+    locationLoading,
+    userLoc,
+    drawerOpen,
+    onViewportChange,
+  } = viewState;
 
   return (
     <Box sx={{ position: "relative" }}>
@@ -129,6 +138,7 @@ export default function MapPanel(props: MapPanelProps) {
           selectedId={selectedId}
           onSelect={onSelectStation}
           userLoc={userLoc}
+          onViewportChange={onViewportChange}
         />
       </Box>
 

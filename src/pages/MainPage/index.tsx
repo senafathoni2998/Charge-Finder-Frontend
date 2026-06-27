@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 // NOTE: This page uses react-router for navigation in the full app.
 import { Box, Drawer, useMediaQuery } from "@mui/material";
 import { useLocation, useNavigate } from "react-router";
@@ -7,7 +7,11 @@ import { UI } from "../../theme/theme";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { setMdMode, setSidebarOpen } from "../../features/app/appSlice";
 import { setActiveCar } from "../../features/auth/authSlice";
-import { boundsFromStations, filterStations } from "../../utils/distance";
+import {
+  boundsFromStations,
+  filterStations,
+  haversineKm,
+} from "../../utils/distance";
 import { useGeoLocation } from "../../hooks/geolocation-hook";
 import type { ConnectorType } from "../../models/model";
 import type { FilterStatus, Station, StationWithDistance } from "./types";
@@ -64,6 +68,16 @@ export default function MainPage() {
 
   const geo = useGeoLocation();
   const userCenter = geo.loc ?? { lat: -6.2, lng: 106.8167 };
+  // When the user pans the map, fetch + filter around the map view instead of their
+  // location (viewport-driven fetching). Cleared when they re-request their location.
+  const [mapView, setMapView] = useState<{ lat: number; lng: number } | null>(
+    null,
+  );
+  const effectiveCenter = mapView ?? userCenter;
+  const lastFetchRef = useRef({
+    lat: effectiveCenter.lat,
+    lng: effectiveCenter.lng,
+  });
 
   useEffect(() => {
     geo.request();
@@ -74,10 +88,14 @@ export default function MainPage() {
     let active = true;
 
     const loadStations = async () => {
+      lastFetchRef.current = {
+        lat: effectiveCenter.lat,
+        lng: effectiveCenter.lng,
+      };
       const result = await fetchStations({
         signal: controller.signal,
-        lat: userCenter.lat,
-        lng: userCenter.lng,
+        lat: effectiveCenter.lat,
+        lng: effectiveCenter.lng,
         radiusKm,
       });
       if (!active) return;
@@ -89,7 +107,7 @@ export default function MainPage() {
       active = false;
       controller.abort();
     };
-  }, [geo.requestId, userCenter.lat, userCenter.lng, radiusKm]);
+  }, [geo.requestId, effectiveCenter.lat, effectiveCenter.lng, radiusKm]);
   const activeCar = useMemo(() => {
     if (!isAuthenticated) return null;
     return cars.find((c) => c.id === activeCarId) ?? null;
@@ -132,7 +150,7 @@ export default function MainPage() {
         minKW: effectiveMinKW,
         radiusKm,
       },
-      userCenter,
+      effectiveCenter,
     );
   }, [
     stations,
@@ -141,7 +159,7 @@ export default function MainPage() {
     effectiveConnectorSet,
     effectiveMinKW,
     radiusKm,
-    userCenter,
+    effectiveCenter,
   ]);
 
   const selectedStation = useMemo(
@@ -247,9 +265,22 @@ export default function MainPage() {
   };
 
   const handleRequestLocation = () => {
+    setMapView(null);
     geo.request();
     // if (!isMdUp) dispatch(setSidebarOpen(true));
   };
+
+  // F2: refetch around the new map center when the user pans beyond ~40% of the
+  // current radius (a threshold + the debounce in MapCanvas prevent refetch loops).
+  const handleViewportChange = useCallback(
+    (lat: number, lng: number) => {
+      const moved = haversineKm(lastFetchRef.current, { lat, lng });
+      if (moved > Math.max(2, radiusKm * 0.4)) {
+        setMapView({ lat, lng });
+      }
+    },
+    [radiusKm],
+  );
 
   const openGoogleMaps = (station: StationWithDistance) => {
     if (typeof window === "undefined") return;
@@ -395,6 +426,7 @@ export default function MainPage() {
             locationLoading: geo.loading,
             userLoc: geo.loc,
             drawerOpen,
+            onViewportChange: handleViewportChange,
           } satisfies MapPanelViewState
         }
       />

@@ -1,22 +1,64 @@
 import { Box, Stack, Typography } from "@mui/material";
-import { Fragment, useEffect, useMemo, useRef } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import {
   CircleMarker,
   MapContainer,
   TileLayer,
   Tooltip,
   useMap,
+  useMapEvents,
 } from "react-leaflet";
 import type { LatLngBoundsExpression } from "leaflet";
+import Supercluster from "supercluster";
 import LegendRow from "./LegendRow";
 import { UI } from "../../theme/theme";
 import { CHARGING_COLOR, statusColor } from "../../utils/map";
+import { haversineKm } from "../../utils/distance";
 import "leaflet/dist/leaflet.css";
 
+// Use Leaflet's canvas renderer in real browsers (one <canvas> instead of an SVG
+// node per marker). jsdom has no 2D canvas context, so fall back to SVG in tests.
+const PREFER_CANVAS = (() => {
+  try {
+    return (
+      typeof document !== "undefined" &&
+      !!document.createElement("canvas").getContext("2d")
+    );
+  } catch {
+    return false;
+  }
+})();
+
+// Reads the current map view: zoom, bbox (for supercluster), center and an
+// approximate radius (km) covering the viewport — used for viewport-driven fetch.
+function readMapView(map) {
+  const zoom = map.getZoom();
+  const b = map.getBounds();
+  const center = map.getCenter();
+  const west = b.getWest();
+  const south = b.getSouth();
+  const east = b.getEast();
+  const north = b.getNorth();
+  const radiusKm = haversineKm(
+    { lat: center.lat, lng: center.lng },
+    { lat: north, lng: east }
+  );
+  return {
+    zoom,
+    bbox: [west, south, east, north],
+    center: { lat: center.lat, lng: center.lng },
+    radiusKm,
+  };
+}
+
+// Fits the map to the station bounds ONCE (on first valid bounds). After that the
+// view is user-controlled, so viewport-driven refetching can't fight auto-fitting.
 function FitBounds({ bounds }) {
   const map = useMap();
+  const didFitRef = useRef(false);
 
   useEffect(() => {
+    if (didFitRef.current) return;
     if (
       !bounds ||
       !Number.isFinite(bounds.minLat) ||
@@ -32,6 +74,7 @@ function FitBounds({ bounds }) {
       ],
       { padding: [40, 40] }
     );
+    didFitRef.current = true;
   }, [map, bounds]);
 
   return null;
@@ -59,12 +102,171 @@ function FocusStation({ selectedId, stations, zoom = 15 }) {
   return null;
 }
 
+// Renders the (2-3) layered CircleMarkers for a single station.
+function StationMarkers({ station, isActive, onSelect }) {
+  const s = station;
+  const isCharging = Boolean(s.isChargingHere);
+  const color = statusColor(s.status, isCharging);
+  return (
+    <Fragment>
+      {isCharging ? (
+        <CircleMarker
+          center={[s.lat, s.lng]}
+          radius={isActive ? 22 : 18}
+          interactive={false}
+          pathOptions={{
+            color: CHARGING_COLOR,
+            fillColor: CHARGING_COLOR,
+            fillOpacity: 0.18,
+            weight: 2,
+            className: "cf-charging-halo",
+          }}
+        />
+      ) : null}
+      <CircleMarker
+        center={[s.lat, s.lng]}
+        radius={isActive ? 18 : 14}
+        interactive={false}
+        pathOptions={{
+          color,
+          fillColor: color,
+          fillOpacity: isActive ? 0.18 : 0.12,
+          weight: 0,
+          className: `cf-marker-halo ${isActive ? "is-active" : ""}`,
+        }}
+      />
+      <CircleMarker
+        center={[s.lat, s.lng]}
+        radius={isActive ? 9 : 7}
+        pathOptions={{
+          color: "#ffffff",
+          fillColor: color,
+          fillOpacity: 0.95,
+          weight: 2,
+          className: `cf-marker-core ${isActive ? "is-active" : ""}`,
+        }}
+        eventHandlers={{
+          click: () => onSelect?.(s.id),
+        }}
+      >
+        <Tooltip direction="top" offset={[0, -6]} opacity={0.9}>
+          {s.name} • {isCharging ? `Charging • ${s.status}` : s.status}
+        </Tooltip>
+      </CircleMarker>
+    </Fragment>
+  );
+}
+
+// Clusters stations with supercluster and renders cluster bubbles (low zoom) or
+// individual station markers (high zoom). Also reports viewport changes (debounced)
+// for viewport-driven station fetching.
+function StationLayer({ stations, selectedId, onSelect, onViewportChange }) {
+  const map = useMap();
+  const [view, setView] = useState(() => readMapView(map));
+  const debounceRef = useRef(null);
+
+  useMapEvents({
+    moveend: () => {
+      const next = readMapView(map);
+      setView(next);
+      if (onViewportChange) {
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => {
+          onViewportChange(next.center.lat, next.center.lng, next.radiusKm);
+        }, 400);
+      }
+    },
+    zoomend: () => setView(readMapView(map)),
+  });
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
+
+  const index = useMemo(() => {
+    const sc = new Supercluster({ radius: 64, maxZoom: 17 });
+    sc.load(
+      stations
+        .filter(
+          (s) => Number.isFinite(s.lat) && Number.isFinite(s.lng)
+        )
+        .map((s) => ({
+          type: "Feature",
+          properties: { cluster: false, station: s },
+          geometry: { type: "Point", coordinates: [s.lng, s.lat] },
+        }))
+    );
+    return sc;
+  }, [stations]);
+
+  const clusters = useMemo(() => {
+    try {
+      return index.getClusters(view.bbox, Math.round(view.zoom));
+    } catch {
+      return [];
+    }
+  }, [index, view]);
+
+  return (
+    <>
+      {clusters.map((feature) => {
+        const [lng, lat] = feature.geometry.coordinates;
+        const props = feature.properties;
+
+        if (props.cluster) {
+          const count = props.point_count;
+          const size = count < 10 ? 16 : count < 100 ? 22 : 28;
+          return (
+            <CircleMarker
+              key={`cluster-${feature.id}`}
+              center={[lat, lng]}
+              radius={size}
+              pathOptions={{
+                color: "#ffffff",
+                fillColor: "rgba(124,92,255,0.92)",
+                fillOpacity: 0.92,
+                weight: 2,
+              }}
+              eventHandlers={{
+                click: () => {
+                  const expansionZoom = Math.min(
+                    index.getClusterExpansionZoom(feature.id),
+                    18
+                  );
+                  map.setView([lat, lng], expansionZoom, { animate: true });
+                },
+              }}
+            >
+              <Tooltip direction="top" offset={[0, -6]} opacity={0.9}>
+                {count} stations
+              </Tooltip>
+            </CircleMarker>
+          );
+        }
+
+        const station = props.station;
+        return (
+          <StationMarkers
+            key={station.id}
+            station={station}
+            isActive={selectedId === station.id}
+            onSelect={onSelect}
+          />
+        );
+      })}
+    </>
+  );
+}
+
 export default function MapCanvas({
   stations = [],
   bounds,
   selectedId,
   onSelect,
   userLoc,
+  onViewportChange,
 }) {
   const mapBounds = useMemo<LatLngBoundsExpression>(() => {
     if (
@@ -139,67 +341,22 @@ export default function MapCanvas({
         },
       }}
     >
-      <MapContainer bounds={mapBounds}>
+      {/* preferCanvas renders markers on a single <canvas> instead of one SVG node
+          each — essential when many stations are visible. */}
+      <MapContainer bounds={mapBounds} preferCanvas={PREFER_CANVAS}>
         <TileLayer
-          // attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <FitBounds bounds={bounds} />
         <FocusStation selectedId={selectedId} stations={stations} />
 
-        {stations.map((s) => {
-          const isActive = selectedId === s.id;
-          const isCharging = Boolean(s.isChargingHere);
-          const color = statusColor(s.status, isCharging);
-          return (
-            <Fragment key={s.id}>
-              {isCharging ? (
-                <CircleMarker
-                  center={[s.lat, s.lng]}
-                  radius={isActive ? 22 : 18}
-                  interactive={false}
-                  pathOptions={{
-                    color: CHARGING_COLOR,
-                    fillColor: CHARGING_COLOR,
-                    fillOpacity: 0.18,
-                    weight: 2,
-                    className: "cf-charging-halo",
-                  }}
-                />
-              ) : null}
-              <CircleMarker
-                center={[s.lat, s.lng]}
-                radius={isActive ? 18 : 14}
-                interactive={false}
-                pathOptions={{
-                  color,
-                  fillColor: color,
-                  fillOpacity: isActive ? 0.18 : 0.12,
-                  weight: 0,
-                  className: `cf-marker-halo ${isActive ? "is-active" : ""}`,
-                }}
-              />
-              <CircleMarker
-                center={[s.lat, s.lng]}
-                radius={isActive ? 9 : 7}
-                pathOptions={{
-                  color: "#ffffff",
-                  fillColor: color,
-                  fillOpacity: 0.95,
-                  weight: 2,
-                  className: `cf-marker-core ${isActive ? "is-active" : ""}`,
-                }}
-                eventHandlers={{
-                  click: () => onSelect?.(s.id),
-                }}
-              >
-                <Tooltip direction="top" offset={[0, -6]} opacity={0.9}>
-                  {s.name} • {isCharging ? `Charging • ${s.status}` : s.status}
-                </Tooltip>
-              </CircleMarker>
-            </Fragment>
-          );
-        })}
+        <StationLayer
+          stations={stations}
+          selectedId={selectedId}
+          onSelect={onSelect}
+          onViewportChange={onViewportChange}
+        />
 
         {userLoc && (
           <>
