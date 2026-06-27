@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildMapsUrl } from '../utils';
+import { buildMapsUrl, isDemoStation } from '../utils';
 
 describe('buildMapsUrl', () => {
     it('should build a Google Maps URL with correct coordinates', () => {
@@ -35,5 +35,27 @@ describe('buildMapsUrl', () => {
     it('should use search endpoint', () => {
         const url = buildMapsUrl(1, 1);
         expect(url).toContain('/search/');
+    });
+});
+
+describe('isDemoStation', () => {
+    it('detects the demo name marker', () => {
+        expect(isDemoStation({ name: 'Fast Charge Hub (Demo · AVAILABLE)' })).toBe(
+            true
+        );
+    });
+
+    it('detects the demo notes marker', () => {
+        expect(
+            isDemoStation({ name: 'Anything', notes: 'Demo station — shown so…' })
+        ).toBe(true);
+    });
+
+    it('returns false for real stations', () => {
+        expect(isDemoStation({ name: 'Central Plaza', notes: 'Open 24/7' })).toBe(
+            false
+        );
+        expect(isDemoStation({ name: 'Central Plaza' })).toBe(false);
+        expect(isDemoStation({})).toBe(false);
     });
 });

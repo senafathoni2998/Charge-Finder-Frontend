@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { persistActiveCarId } from '../mainPageStorage';
+import {
+    persistActiveCarId,
+    hasSeenDemoHint,
+    markDemoHintSeen,
+} from '../mainPageStorage';
 
 describe('mainPageStorage', () => {
     const originalLocalStorage = globalThis.localStorage;
@@ -108,6 +112,25 @@ describe('mainPageStorage', () => {
             const specialCarId = 'car-123_456.789';
             persistActiveCarId(specialCarId);
             expect(localStorage.getItem('cf_active_car_id')).toBe(specialCarId);
+        });
+    });
+
+    describe('demo hint flag', () => {
+        it('is false until marked, true afterwards', () => {
+            expect(hasSeenDemoHint()).toBe(false);
+            markDemoHintSeen();
+            expect(hasSeenDemoHint()).toBe(true);
+            expect(localStorage.getItem('cf_demo_hint_seen')).toBe('1');
+        });
+
+        it('treats a missing window as already seen (SSR-safe)', () => {
+            const originalWindow = globalThis.window;
+            delete (globalThis as any).window;
+
+            expect(hasSeenDemoHint()).toBe(true);
+            expect(() => markDemoHintSeen()).not.toThrow();
+
+            (globalThis as any).window = originalWindow;
         });
     });
 });

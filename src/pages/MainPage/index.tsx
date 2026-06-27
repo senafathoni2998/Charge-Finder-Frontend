@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 // NOTE: This page uses react-router for navigation in the full app.
-import { Box, Drawer, useMediaQuery } from "@mui/material";
+import { Alert, Box, Drawer, Snackbar, useMediaQuery } from "@mui/material";
 import { useLocation, useNavigate } from "react-router";
 import { fetchStationById, fetchStations } from "../../api/stations";
 import { UI } from "../../theme/theme";
@@ -15,8 +15,12 @@ import {
 import { useGeoLocation } from "../../hooks/geolocation-hook";
 import type { ConnectorType } from "../../models/model";
 import type { FilterStatus, Station, StationWithDistance } from "./types";
-import { persistActiveCarId } from "./mainPageStorage";
-import { buildMapsUrl } from "./utils";
+import {
+  hasSeenDemoHint,
+  markDemoHintSeen,
+  persistActiveCarId,
+} from "./mainPageStorage";
+import { buildMapsUrl, isDemoStation } from "./utils";
 import { DRAWER_WIDTH } from "./constants";
 import FiltersPanel, {
   type FiltersPanelActions,
@@ -50,6 +54,7 @@ export default function MainPage() {
   const [carFilterTouched, setCarFilterTouched] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [stations, setStations] = useState<Station[]>([]);
+  const [showDemoHint, setShowDemoHint] = useState(false);
 
   const drawerOpen = useAppSelector((state) => state.app.isSidebarOpen);
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
@@ -100,6 +105,16 @@ export default function MainPage() {
       });
       if (!active) return;
       setStations(result.ok ? result.stations : []);
+      // First-time UX: if the backend seeded demo stations near a user with nothing
+      // nearby, tell them once so the (Demo) markers don't look like real stations.
+      if (
+        result.ok &&
+        result.stations.some(isDemoStation) &&
+        !hasSeenDemoHint()
+      ) {
+        markDemoHintSeen();
+        setShowDemoHint(true);
+      }
     };
 
     loadStations();
@@ -430,6 +445,26 @@ export default function MainPage() {
           } satisfies MapPanelViewState
         }
       />
+
+      <Snackbar
+        open={showDemoHint}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        onClose={(_, reason) => {
+          if (reason === "clickaway") return;
+          setShowDemoHint(false);
+        }}
+      >
+        <Alert
+          severity="info"
+          variant="filled"
+          onClose={() => setShowDemoHint(false)}
+          sx={{ maxWidth: 460 }}
+        >
+          These are demo stations placed near you — one for each status
+          (Available, Busy, Offline) so you can explore every state. Real
+          stations appear here as they’re added.
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
