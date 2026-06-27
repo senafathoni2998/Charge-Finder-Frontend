@@ -36,13 +36,11 @@ vi.mock('../../pages/EditCar', () => ({
     editCarAction: () => 'editCarAction' 
 }));
 vi.mock('../../pages/Admin', () => ({ default: () => 'Admin' }));
-vi.mock('../../pages/AddStation', () => ({ 
-    default: () => 'AddStation', 
-    addStationAction: () => 'addStationAction' 
+vi.mock('../../pages/AddStation', () => ({
+    default: () => 'AddStation',
 }));
-vi.mock('../../pages/EditStation', () => ({ 
-    default: () => 'EditStation', 
-    editStationAction: () => 'editStationAction' 
+vi.mock('../../pages/EditStation', () => ({
+    default: () => 'EditStation',
 }));
 vi.mock('../../pages/AddUser', () => ({ 
     default: () => 'AddUser', 
@@ -148,13 +146,13 @@ describe('Router Configuration', () => {
         const addStation = findRoute(adminWrapper.children, 'admin/stations/new');
         const addStationLoaded = await addStation.lazy();
         expect(addStationLoaded.Component()).toBe('AddStation');
-        expect(addStationLoaded.action()).toBe('addStationAction');
+        expect(addStationLoaded.action).toBeUndefined();
 
         // Edit Station
         const editStation = findRoute(adminWrapper.children, 'admin/stations/:stationId/edit');
         const editStationLoaded = await editStation.lazy();
         expect(editStationLoaded.Component()).toBe('EditStation');
-        expect(editStationLoaded.action()).toBe('editStationAction');
+        expect(editStationLoaded.action).toBeUndefined();
 
         // Add User
         const addUser = findRoute(adminWrapper.children, 'admin/users/new');

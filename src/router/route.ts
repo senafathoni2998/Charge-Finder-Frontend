@@ -42,12 +42,12 @@ const lazyAdmin = async () => {
 
 const lazyAddStation = async () => {
   const module = await import("../pages/AddStation");
-  return { Component: module.default, action: module.addStationAction };
+  return { Component: module.default };
 };
 
 const lazyEditStation = async () => {
   const module = await import("../pages/EditStation");
-  return { Component: module.default, action: module.editStationAction };
+  return { Component: module.default };
 };
 
 const lazyAddUser = async () => {

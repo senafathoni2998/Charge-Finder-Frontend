@@ -1,14 +1,12 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
     makeId,
     createDefaultConnector,
     createDefaultPhoto,
     buildEditStationDefaults,
     getMapCenter,
-    validateStationForm,
 } from '../utils';
-import type { Station } from '../../models/model';
-import type { StationFormValues } from '../AddStation/components/StationFormCard';
+import type { Station } from '../../../models/model';
 
 describe('EditStation utils', () => {
     describe('makeId', () => {
@@ -42,11 +40,6 @@ describe('EditStation utils', () => {
             expect(connector.ports).toBe('2');
             expect(connector.availablePorts).toBe('2');
             expect(connector.id).toContain('connector-');
-        });
-
-        it('should create connector with Type2', () => {
-            const connector = createDefaultConnector('Type2' as any);
-            expect(connector.type).toBe('Type2');
         });
 
         it('should create connector with CCS2', () => {
@@ -157,166 +150,25 @@ describe('EditStation utils', () => {
 
     describe('getMapCenter', () => {
         it('should return lat/lng when both are valid', () => {
-            const center = getMapCenter('50', '10');
-
-            expect(center).toEqual({ lat: 50, lng: 10 });
+            expect(getMapCenter('50', '10')).toEqual({ lat: 50, lng: 10 });
         });
 
         it('should return fallback when lat is invalid', () => {
             const fallback = { lat: 40, lng: 20 };
-            const center = getMapCenter('', '10', fallback);
-
-            expect(center).toEqual(fallback);
+            expect(getMapCenter('', '10', fallback)).toEqual(fallback);
         });
 
         it('should return fallback when lng is invalid', () => {
             const fallback = { lat: 40, lng: 20 };
-            const center = getMapCenter('50', '', fallback);
-
-            expect(center).toEqual(fallback);
+            expect(getMapCenter('50', '', fallback)).toEqual(fallback);
         });
 
         it('should return default center when no fallback provided', () => {
-            const center = getMapCenter('', '');
-
-            expect(center).toEqual({ lat: -6.2, lng: 106.8167 });
+            expect(getMapCenter('', '')).toEqual({ lat: -6.2, lng: 106.8167 });
         });
 
         it('should parse trimmed whitespace lat/lng', () => {
-            const center = getMapCenter(' 50 ', ' 10 ');
-
-            expect(center).toEqual({ lat: 50, lng: 10 });
-        });
-    });
-
-    describe('validateStationForm', () => {
-        const validForm: StationFormValues = {
-            name: 'Test Station',
-            address: '123 Test St',
-            status: 'AVAILABLE',
-            lat: '50',
-            lng: '10',
-            connectors: [
-                { id: 'c1', type: 'Type2', powerKW: '22', ports: '2', availablePorts: '2' },
-            ],
-            pricing: {
-                currency: 'IDR',
-                perKwh: '10000',
-                perMinute: '',
-                parkingFee: '',
-            },
-            amenities: '',
-            photos: [],
-            notes: '',
-        };
-
-        it('should return null for valid form', () => {
-            const error = validateStationForm(validForm);
-            expect(error).toBeNull();
-        });
-
-        it('should return error when name is empty', () => {
-            const form = { ...validForm, name: '   ' };
-            expect(validateStationForm(form)).toBe('Station name is required.');
-        });
-
-        it('should return error when address is empty', () => {
-            const form = { ...validForm, address: '' };
-            expect(validateStationForm(form)).toBe('Address is required.');
-        });
-
-        it('should return error when lat is empty', () => {
-            const form = { ...validForm, lat: '' };
-            expect(validateStationForm(form)).toBe('Latitude and longitude must be valid numbers.');
-        });
-
-        it('should return error when lng is empty', () => {
-            const form = { ...validForm, lng: '' };
-            expect(validateStationForm(form)).toBe('Latitude and longitude must be valid numbers.');
-        });
-
-        it('should return error when lat is not a number', () => {
-            const form = { ...validForm, lat: 'invalid' };
-            expect(validateStationForm(form)).toBe('Latitude and longitude must be valid numbers.');
-        });
-
-        it('should return error when connectors array is empty', () => {
-            const form = { ...validForm, connectors: [] };
-            expect(validateStationForm(form)).toBe('Add at least one valid connector entry.');
-        });
-
-        it('should return error when connector type is missing', () => {
-            const form = {
-                ...validForm,
-                connectors: [
-                    { id: 'c1', type: '', powerKW: '22', ports: '2', availablePorts: '2' },
-                ],
-            };
-            expect(validateStationForm(form)).toBe('Add at least one valid connector entry.');
-        });
-
-        it('should return error when connector power is invalid', () => {
-            const form = {
-                ...validForm,
-                connectors: [
-                    { id: 'c1', type: 'Type2', powerKW: 'invalid', ports: '2', availablePorts: '2' },
-                ],
-            };
-            expect(validateStationForm(form)).toBe('Add at least one valid connector entry.');
-        });
-
-        it('should return error when connector power is zero', () => {
-            const form = {
-                ...validForm,
-                connectors: [
-                    { id: 'c1', type: 'Type2', powerKW: '0', ports: '2', availablePorts: '2' },
-                ],
-            };
-            expect(validateStationForm(form)).toBe('Add at least one valid connector entry.');
-        });
-
-        it('should return error when connector ports is zero', () => {
-            const form = {
-                ...validForm,
-                connectors: [
-                    { id: 'c1', type: 'Type2', powerKW: '22', ports: '0', availablePorts: '2' },
-                ],
-            };
-            expect(validateStationForm(form)).toBe('Add at least one valid connector entry.');
-        });
-
-        it('should return error when connector availablePorts is negative', () => {
-            const form = {
-                ...validForm,
-                connectors: [
-                    { id: 'c1', type: 'Type2', powerKW: '22', ports: '2', availablePorts: '-1' },
-                ],
-            };
-            expect(validateStationForm(form)).toBe('Add at least one valid connector entry.');
-        });
-
-        it('should return error when pricing currency is empty', () => {
-            const form = {
-                ...validForm,
-                pricing: { ...validForm.pricing, currency: '' },
-            };
-            expect(validateStationForm(form)).toBe('Pricing currency and per kWh are required.');
-        });
-
-        it('should return error when pricing perKwh is empty', () => {
-            const form = {
-                ...validForm,
-                pricing: { ...validForm.pricing, perKwh: '' },
-            };
-            expect(validateStationForm(form)).toBe('Pricing currency and per kWh are required.');
-        });
-
-        it('should return error when pricing perKwh is not a number', () => {
-            const form = {
-                ...validForm,
-                pricing: { ...validForm.pricing, perKwh: 'invalid' },
-            };
-            expect(validateStationForm(form)).toBe('Pricing currency and per kWh are required.');
+            expect(getMapCenter(' 50 ', ' 10 ')).toEqual({ lat: 50, lng: 10 });
         });
     });
 });

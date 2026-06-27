@@ -1,43 +1,39 @@
-import { useActionData, useNavigate, useNavigation, useParams } from "react-router";
-import type { EditStationActionData } from "./types";
+import { useState } from "react";
+import { useNavigate, useParams } from "react-router";
 import { CONNECTOR_OPTIONS } from "../MainPage/constants";
+import type { StationFormValues } from "../../forms/schemas";
+import { updateStationRequest } from "./editStationRoute";
+import { buildEditStationDefaults } from "./utils";
 import EditStationFormSection from "./components/EditStationFormSection";
 import EditStationLayout from "./components/EditStationLayout";
 import EditStationLoadingState from "./components/EditStationLoadingState";
 import EditStationNotFoundState from "./components/EditStationNotFoundState";
-import useEditStationFormState from "./hooks/useEditStationFormState";
 import useEditStationLoader from "./hooks/useEditStationLoader";
 
-export { editStationAction } from "./editStationRoute";
-
-// Edit station page container that wires form state and layout components.
+// Edit station page: loads the station, owns the submit side-effect + navigation.
+// The form state lives in StationFormCard (react-hook-form).
 export default function EditStationPage() {
   const navigate = useNavigate();
-  const navigation = useNavigation();
-  const actionData = useActionData() as EditStationActionData | undefined;
   const { stationId } = useParams();
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const defaultConnectorType = CONNECTOR_OPTIONS[0] ?? "CCS2";
   const { station, loading, error } = useEditStationLoader(stationId);
-  const {
-    values,
-    handlers,
-    onSubmit,
-    formError,
-    locationCenter,
-    onRequestLocation,
-    onPickLocation,
-    addressLookupLoading,
-    locationLoading,
-    locationError,
-  } = useEditStationFormState(station, defaultConnectorType);
-
-  const submitError = formError || actionData?.error || null;
-  const isSubmitting = navigation.state === "submitting";
 
   // Navigates back to the admin dashboard.
   const handleBackToAdmin = () => {
     navigate("/admin");
+  };
+
+  const handleSubmit = async (values: StationFormValues) => {
+    if (!station) return;
+    setServerError(null);
+    const result = await updateStationRequest(station.id, values);
+    if (result.ok) {
+      navigate("/admin");
+      return;
+    }
+    setServerError(result.error);
   };
 
   if (loading) {
@@ -62,19 +58,11 @@ export default function EditStationPage() {
   return (
     <EditStationLayout>
       <EditStationFormSection
-        values={values}
-        handlers={handlers}
-        submitError={submitError}
-        isSubmitting={isSubmitting}
-        onSubmit={onSubmit}
+        key={station.id}
+        defaultValues={buildEditStationDefaults(station, defaultConnectorType)}
+        serverError={serverError}
+        onSubmit={handleSubmit}
         onCancel={handleBackToAdmin}
-        stationId={station.id}
-        locationCenter={locationCenter}
-        onRequestLocation={onRequestLocation}
-        onPickLocation={onPickLocation}
-        locationLoading={locationLoading}
-        addressLookupLoading={addressLookupLoading}
-        locationError={locationError}
       />
     </EditStationLayout>
   );

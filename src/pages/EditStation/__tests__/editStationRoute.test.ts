@@ -1,93 +1,57 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { editStationAction } from '../editStationRoute';
-import * as adminStations from '../../../api/adminStations';
-import { parseStationFormData } from '../../AddStation/stationFormUtils';
+import { updateStationRequest } from '../editStationRoute';
+import * as api from '../../../api/adminStations';
+import type { StationFormValues } from '../../../forms/schemas';
 
-// Mock the API and utils
-vi.mock('../../../api/adminStations', () => ({
-    updateStation: vi.fn(),
-}));
+vi.mock('../../../api/adminStations', () => ({ updateStation: vi.fn() }));
 
-vi.mock('../../AddStation/stationFormUtils', () => ({
-    parseStationFormData: vi.fn(),
-}));
+const values: StationFormValues = {
+    name: 'Test Station',
+    address: '123 Test St',
+    status: 'AVAILABLE',
+    lat: '10',
+    lng: '20',
+    connectors: [
+        { id: 'c1', type: 'CCS2', powerKW: '50', ports: '2', availablePorts: '1' },
+    ],
+    pricing: { currency: 'USD', perKwh: '0.3', perMinute: '', parkingFee: '' },
+    amenities: '',
+    photos: [],
+    notes: '',
+};
 
-describe('editStationRoute', () => {
+describe('updateStationRequest', () => {
     beforeEach(() => {
         vi.clearAllMocks();
     });
 
-    it('should return error when stationId is missing', async () => {
-        const formData = new FormData();
-        formData.append('name', 'Test Station');
-
-        const request = new Request('http://localhost:3000', {
-            method: 'POST',
-            body: formData,
-        });
-
-        const result = await editStationAction({ request });
-        expect(result).toEqual({ error: 'Station ID is missing.' });
+    it('returns an error when stationId is missing', async () => {
+        const result = await updateStationRequest('', values);
+        expect(result).toEqual({ ok: false, error: 'Station ID is missing.' });
+        expect(api.updateStation).not.toHaveBeenCalled();
     });
 
-    it('should return error from parseStationFormData', async () => {
-        vi.mocked(parseStationFormData).mockReturnValue({
-            ok: false,
-            error: 'Validation failed',
-        } as any);
+    it('calls updateStation with the built payload', async () => {
+        vi.mocked(api.updateStation).mockResolvedValue({ ok: true } as any);
 
-        const formData = new FormData();
-        formData.append('stationId', 's1');
+        const result = await updateStationRequest('s1', values);
 
-        const request = new Request('http://localhost:3000', {
-            method: 'POST',
-            body: formData,
-        });
-
-        const result = await editStationAction({ request });
-        expect(result).toEqual({ error: 'Validation failed' });
+        expect(result).toEqual({ ok: true });
+        expect(api.updateStation).toHaveBeenCalledTimes(1);
+        const [id, payload] = vi.mocked(api.updateStation).mock.calls[0];
+        expect(id).toBe('s1');
+        expect(payload).toMatchObject({ name: 'Test Station', lat: 10, lng: 20 });
     });
 
-    it('should call updateStation with correct payload', async () => {
-        vi.mocked(adminStations.updateStation).mockResolvedValue({ ok: true } as any);
-        vi.mocked(parseStationFormData).mockReturnValue({
-            ok: true,
-            payload: { name: 'Updated Station' },
-        } as any);
-
-        const formData = new FormData();
-        formData.append('stationId', 's1');
-        formData.append('name', 'Test Station');
-
-        const request = new Request('http://localhost:3000', {
-            method: 'POST',
-            body: formData,
-        });
-
-        await editStationAction({ request });
-
-        expect(adminStations.updateStation).toHaveBeenCalledWith('s1', { name: 'Updated Station' });
-    });
-
-    it('should return error when updateStation fails', async () => {
-        vi.mocked(adminStations.updateStation).mockResolvedValue({
+    it('returns the error when updateStation fails', async () => {
+        vi.mocked(api.updateStation).mockResolvedValue({
             ok: false,
             error: 'Update failed',
         } as any);
-        vi.mocked(parseStationFormData).mockReturnValue({
-            ok: true,
-            payload: { name: 'Test' },
-        } as any);
 
-        const formData = new FormData();
-        formData.append('stationId', 's1');
-
-        const request = new Request('http://localhost:3000', {
-            method: 'POST',
-            body: formData,
+        expect(await updateStationRequest('s1', values)).toEqual({
+            ok: false,
+            error: 'Update failed',
         });
-
-        const result = await editStationAction({ request });
-        expect(result).toEqual({ error: 'Update failed' });
     });
 });

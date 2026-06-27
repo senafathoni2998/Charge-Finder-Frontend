@@ -1,63 +1,35 @@
-import type { FormEvent } from "react";
 import { CONNECTOR_OPTIONS } from "../../MainPage/constants";
-import StationFormCard, {
-  type StationFormValues,
-} from "../../AddStation/components/StationFormCard";
+import type { StationFormValues } from "../../../forms/schemas";
+import StationFormCard from "../../AddStation/components/StationFormCard";
 import EditStationHeader from "./EditStationHeader";
-import type { EditStationFormHandlers } from "../types";
 
 type EditStationFormSectionProps = {
-  values: StationFormValues;
-  handlers: EditStationFormHandlers;
-  submitError: string | null;
-  isSubmitting: boolean;
-  onSubmit: (event: FormEvent) => void;
+  defaultValues: StationFormValues;
+  serverError: string | null;
+  onSubmit: (values: StationFormValues) => void | Promise<void>;
   onCancel: () => void;
-  stationId: string;
-  locationCenter: { lat: number; lng: number };
-  onRequestLocation: () => void;
-  onPickLocation: (lat: number, lng: number) => void;
-  locationLoading: boolean;
-  addressLookupLoading: boolean;
-  locationError: string | null;
 };
 
-// Renders the edit-station header with the shared form card.
+// Renders the edit-station header with the shared react-hook-form card.
 export default function EditStationFormSection({
-  values,
-  handlers,
-  submitError,
-  isSubmitting,
+  defaultValues,
+  serverError,
   onSubmit,
   onCancel,
-  stationId,
-  locationCenter,
-  onRequestLocation,
-  onPickLocation,
-  locationLoading,
-  addressLookupLoading,
-  locationError,
 }: EditStationFormSectionProps) {
+  const defaultConnectorType = CONNECTOR_OPTIONS[0] ?? "CCS2";
   return (
     <>
       <EditStationHeader />
       <StationFormCard
-        values={values}
-        handlers={handlers}
+        defaultValues={defaultValues}
         connectorOptions={CONNECTOR_OPTIONS}
-        submitError={submitError}
-        isSubmitting={isSubmitting}
+        defaultConnectorType={defaultConnectorType}
+        serverError={serverError}
         onSubmit={onSubmit}
         onCancel={onCancel}
-        stationId={stationId}
         submitLabel="Update station"
         submittingLabel="Updating..."
-        locationCenter={locationCenter}
-        onRequestLocation={onRequestLocation}
-        onPickLocation={onPickLocation}
-        locationLoading={locationLoading}
-        addressLookupLoading={addressLookupLoading}
-        locationError={locationError}
       />
     </>
   );

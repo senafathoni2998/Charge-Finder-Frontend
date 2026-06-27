@@ -1,4 +1,5 @@
-import { type FormEvent } from "react";
+import { Controller, useFieldArray, useForm, type Path } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Box,
   Button,
@@ -13,149 +14,80 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import { Form } from "react-router";
 import { UI } from "../../../theme/theme";
-import type { Availability, ConnectorType } from "../../../models/model";
+import type { ConnectorType } from "../../../models/model";
+import { stationFormSchema, type StationFormValues } from "../../../forms/schemas";
+import { createDefaultConnector, createDefaultPhoto } from "../stationFormUtils";
+import useStationLocationField from "../hooks/useStationLocationField";
 import LocationPickerMap from "./LocationPickerMap";
 
-export type StationConnectorDraft = {
-  id: string;
-  type: ConnectorType;
-  powerKW: string;
-  ports: string;
-  availablePorts: string;
-};
-
-export type StationPhotoDraft = {
-  id: string;
-  label: string;
-  gradient: string;
-};
-
-type StationPricingDraft = {
-  currency: string;
-  perKwh: string;
-  perMinute: string;
-  parkingFee: string;
-};
-
-export type StationFormValues = {
-  name: string;
-  address: string;
-  status: Availability;
-  lat: string;
-  lng: string;
-  connectors: StationConnectorDraft[];
-  pricing: StationPricingDraft;
-  amenities: string;
-  photos: StationPhotoDraft[];
-  notes: string;
-};
-
-type StationFormHandlers = {
-  onNameChange: (value: string) => void;
-  onAddressChange: (value: string) => void;
-  onStatusChange: (value: Availability) => void;
-  onLatChange: (value: string) => void;
-  onLngChange: (value: string) => void;
-  onConnectorChange: (
-    id: string,
-    field: keyof StationConnectorDraft,
-    value: string
-  ) => void;
-  onAddConnector: () => void;
-  onRemoveConnector: (id: string) => void;
-  onPricingChange: (field: keyof StationPricingDraft, value: string) => void;
-  onAmenitiesChange: (value: string) => void;
-  onPhotoChange: (id: string, field: keyof StationPhotoDraft, value: string) => void;
-  onAddPhoto: () => void;
-  onRemovePhoto: (id: string) => void;
-  onNotesChange: (value: string) => void;
-};
-
 type StationFormCardProps = {
-  values: StationFormValues;
-  handlers: StationFormHandlers;
+  defaultValues: StationFormValues;
   connectorOptions: ConnectorType[];
-  submitError: string | null;
-  isSubmitting: boolean;
-  onSubmit: (event: FormEvent) => void;
+  defaultConnectorType: ConnectorType;
+  serverError: string | null;
+  onSubmit: (values: StationFormValues) => void | Promise<void>;
   onCancel: () => void;
-  stationId?: string | null;
   submitLabel?: string;
   submittingLabel?: string;
-  locationCenter?: { lat: number; lng: number };
-  onPickLocation?: (lat: number, lng: number) => void;
-  onRequestLocation?: () => void;
-  locationLoading?: boolean;
-  addressLookupLoading?: boolean;
-  locationError?: string | null;
 };
 
-const STATUS_OPTIONS: Availability[] = ["AVAILABLE", "BUSY", "OFFLINE"];
+const STATUS_OPTIONS: StationFormValues["status"][] = [
+  "AVAILABLE",
+  "BUSY",
+  "OFFLINE",
+];
 
-const toNumber = (value: string) => {
-  const num = Number(value);
-  return Number.isFinite(num) ? num : 0;
-};
+const fieldSx = {
+  "& .MuiOutlinedInput-root": {
+    borderRadius: 3,
+    backgroundColor: "rgba(10,10,16,0.02)",
+  },
+} as const;
 
-// Renders the station form card with inputs and connector definitions.
+const errorTextSx = { color: "rgba(244,67,54,0.9)", fontSize: 13 };
+
+// Self-contained react-hook-form station form (shared by AddStation + EditStation).
+// Owns the form; the page supplies defaultValues + an onSubmit side-effect.
 export default function StationFormCard({
-  values,
-  handlers,
+  defaultValues,
   connectorOptions,
-  submitError,
-  isSubmitting,
+  defaultConnectorType,
+  serverError,
   onSubmit,
   onCancel,
-  stationId,
   submitLabel = "Save station",
   submittingLabel = "Saving...",
-  locationCenter,
-  onPickLocation,
-  onRequestLocation,
-  locationLoading,
-  addressLookupLoading,
-  locationError,
 }: StationFormCardProps) {
-  const latValue = values.lat.trim() ? Number(values.lat) : Number.NaN;
-  const lngValue = values.lng.trim() ? Number(values.lng) : Number.NaN;
-  const hasCoords = Number.isFinite(latValue) && Number.isFinite(lngValue);
-  const selectedPoint = hasCoords ? { lat: latValue, lng: lngValue } : null;
-  const mapCenter =
-    locationCenter ?? selectedPoint ?? { lat: -6.2, lng: 106.8167 };
+  const {
+    register,
+    control,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<StationFormValues>({
+    resolver: zodResolver(stationFormSchema),
+    defaultValues,
+  });
 
-  const handleMapPick = (lat: number, lng: number) => {
-    handlers.onLatChange(lat.toFixed(6));
-    handlers.onLngChange(lng.toFixed(6));
-    onPickLocation?.(lat, lng);
+  const connectors = useFieldArray({ control, name: "connectors" });
+  const photos = useFieldArray({ control, name: "photos" });
+
+  const lat = watch("lat");
+  const lng = watch("lng");
+  const location = useStationLocationField(setValue, lat, lng);
+
+  // Routes the register ref to MUI's inputRef (so it lands on the input, not root).
+  const textField = (name: Path<StationFormValues>) => {
+    const { ref, ...rest } = register(name);
+    return { inputRef: ref, ...rest };
   };
 
-  const connectorsPayload = values.connectors.map((connector) => ({
-    type: connector.type,
-    powerKW: toNumber(connector.powerKW),
-    ports: toNumber(connector.ports),
-    availablePorts: toNumber(connector.availablePorts),
-  }));
-
-  const pricingPayload = {
-    currency: values.pricing.currency.trim(),
-    perKwh: toNumber(values.pricing.perKwh),
-    perMinute: toNumber(values.pricing.perMinute),
-    parkingFee: values.pricing.parkingFee.trim(),
-  };
-
-  const amenitiesPayload = values.amenities
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
-
-  const photosPayload = values.photos
-    .map((photo) => ({
-      label: photo.label.trim(),
-      gradient: photo.gradient.trim(),
-    }))
-    .filter((photo) => photo.label || photo.gradient);
+  const connectorsErr = errors.connectors as
+    | { message?: string; root?: { message?: string } }
+    | undefined;
+  const connectorsError = connectorsErr?.root?.message ?? connectorsErr?.message;
 
   return (
     <Card
@@ -170,30 +102,7 @@ export default function StationFormCard({
     >
       <Box sx={{ height: 8, background: UI.brandGradStrong }} />
       <CardContent sx={{ p: { xs: 2.25, sm: 3 } }}>
-        <Box component={Form} method="post" onSubmit={onSubmit} noValidate>
-          {stationId ? (
-            <input type="hidden" name="stationId" value={stationId} />
-          ) : null}
-          <input
-            type="hidden"
-            name="connectors"
-            value={JSON.stringify(connectorsPayload)}
-          />
-          <input
-            type="hidden"
-            name="pricing"
-            value={JSON.stringify(pricingPayload)}
-          />
-          <input
-            type="hidden"
-            name="amenities"
-            value={JSON.stringify(amenitiesPayload)}
-          />
-          <input
-            type="hidden"
-            name="photos"
-            value={JSON.stringify(photosPayload)}
-          />
+        <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
           <Stack spacing={2.5}>
             <Stack spacing={2}>
               <Typography sx={{ fontWeight: 800, color: UI.text }}>
@@ -201,54 +110,35 @@ export default function StationFormCard({
               </Typography>
               <TextField
                 label="Station name"
-                name="name"
-                value={values.name}
-                onChange={(event) => handlers.onNameChange(event.target.value)}
+                {...textField("name")}
                 placeholder="e.g. Central Plaza Fast Charge"
+                error={!!errors.name}
+                helperText={errors.name?.message}
                 fullWidth
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: 3,
-                    backgroundColor: "rgba(10,10,16,0.02)",
-                  },
-                }}
+                sx={fieldSx}
               />
               <TextField
                 label="Address"
-                name="address"
-                value={values.address}
-                onChange={(event) => handlers.onAddressChange(event.target.value)}
+                {...textField("address")}
                 placeholder="Street, city, region"
+                error={!!errors.address}
+                helperText={errors.address?.message}
                 fullWidth
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: 3,
-                    backgroundColor: "rgba(10,10,16,0.02)",
-                  },
-                }}
+                sx={fieldSx}
               />
-              <TextField
-                label="Status"
+              <Controller
                 name="status"
-                value={values.status}
-                onChange={(event) =>
-                  handlers.onStatusChange(event.target.value as Availability)
-                }
-                select
-                fullWidth
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: 3,
-                    backgroundColor: "rgba(10,10,16,0.02)",
-                  },
-                }}
-              >
-                {STATUS_OPTIONS.map((option) => (
-                  <MenuItem key={option} value={option}>
-                    {option}
-                  </MenuItem>
-                ))}
-              </TextField>
+                control={control}
+                render={({ field }) => (
+                  <TextField label="Status" select fullWidth sx={fieldSx} {...field}>
+                    {STATUS_OPTIONS.map((option) => (
+                      <MenuItem key={option} value={option}>
+                        {option}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                )}
+              />
             </Stack>
 
             <Divider sx={{ borderColor: UI.border2 }} />
@@ -260,31 +150,21 @@ export default function StationFormCard({
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                 <TextField
                   label="Latitude"
-                  name="lat"
                   type="number"
-                  value={values.lat}
-                  onChange={(event) => handlers.onLatChange(event.target.value)}
+                  {...textField("lat")}
+                  error={!!errors.lat}
+                  helperText={errors.lat?.message}
                   fullWidth
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 3,
-                      backgroundColor: "rgba(10,10,16,0.02)",
-                    },
-                  }}
+                  sx={fieldSx}
                 />
                 <TextField
                   label="Longitude"
-                  name="lng"
                   type="number"
-                  value={values.lng}
-                  onChange={(event) => handlers.onLngChange(event.target.value)}
+                  {...textField("lng")}
+                  error={!!errors.lng}
+                  helperText={errors.lng?.message}
                   fullWidth
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 3,
-                      backgroundColor: "rgba(10,10,16,0.02)",
-                    },
-                  }}
+                  sx={fieldSx}
                 />
               </Stack>
               <Stack
@@ -296,37 +176,33 @@ export default function StationFormCard({
                   Click the map to set coordinates.
                 </Typography>
                 <Box sx={{ flex: 1 }} />
-                {onRequestLocation ? (
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={onRequestLocation}
-                    disabled={locationLoading}
-                    sx={{
-                      textTransform: "none",
-                      borderRadius: 3,
-                      borderColor: UI.border,
-                      color: UI.text,
-                    }}
-                  >
-                    {locationLoading ? "Locating..." : "Use my location"}
-                  </Button>
-                ) : null}
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={location.onRequestLocation}
+                  disabled={location.locationLoading}
+                  sx={{
+                    textTransform: "none",
+                    borderRadius: 3,
+                    borderColor: UI.border,
+                    color: UI.text,
+                  }}
+                >
+                  {location.locationLoading ? "Locating..." : "Use my location"}
+                </Button>
               </Stack>
-              {addressLookupLoading ? (
+              {location.addressLookupLoading ? (
                 <Typography sx={{ color: UI.text2, fontSize: 13 }}>
                   Looking up address...
                 </Typography>
               ) : null}
-              {locationError ? (
-                <Typography sx={{ color: "rgba(244,67,54,0.9)", fontSize: 13 }}>
-                  {locationError}
-                </Typography>
+              {location.locationError ? (
+                <Typography sx={errorTextSx}>{location.locationError}</Typography>
               ) : null}
               <LocationPickerMap
-                center={mapCenter}
-                selected={selectedPoint}
-                onPick={handleMapPick}
+                center={location.locationCenter}
+                selected={location.selectedPoint}
+                onPick={location.onMapPick}
               />
             </Stack>
 
@@ -342,7 +218,9 @@ export default function StationFormCard({
                   variant="outlined"
                   size="small"
                   startIcon={<AddIcon />}
-                  onClick={handlers.onAddConnector}
+                  onClick={() =>
+                    connectors.append(createDefaultConnector(defaultConnectorType))
+                  }
                   sx={{
                     textTransform: "none",
                     borderRadius: 3,
@@ -355,9 +233,9 @@ export default function StationFormCard({
               </Stack>
 
               <Stack spacing={2}>
-                {values.connectors.map((connector, index) => (
+                {connectors.fields.map((field, index) => (
                   <Box
-                    key={connector.id}
+                    key={field.id}
                     sx={{
                       p: 1.5,
                       borderRadius: 3,
@@ -373,10 +251,10 @@ export default function StationFormCard({
                           Connector {index + 1}
                         </Typography>
                         <Box sx={{ flex: 1 }} />
-                        {values.connectors.length > 1 ? (
+                        {connectors.fields.length > 1 ? (
                           <IconButton
                             size="small"
-                            onClick={() => handlers.onRemoveConnector(connector.id)}
+                            onClick={() => connectors.remove(index)}
                             sx={{
                               borderRadius: 2,
                               border: `1px solid ${UI.border2}`,
@@ -389,49 +267,31 @@ export default function StationFormCard({
                       </Stack>
 
                       <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-                        <TextField
-                          label="Type"
-                          value={connector.type}
-                          onChange={(event) =>
-                            handlers.onConnectorChange(
-                              connector.id,
-                              "type",
-                              event.target.value
-                            )
-                          }
-                          select
-                          fullWidth
-                          sx={{
-                            "& .MuiOutlinedInput-root": {
-                              borderRadius: 3,
-                              backgroundColor: "rgba(10,10,16,0.02)",
-                            },
-                          }}
-                        >
-                          {connectorOptions.map((option) => (
-                            <MenuItem key={option} value={option}>
-                              {option}
-                            </MenuItem>
-                          ))}
-                        </TextField>
+                        <Controller
+                          name={`connectors.${index}.type`}
+                          control={control}
+                          render={({ field: typeField }) => (
+                            <TextField
+                              label="Type"
+                              select
+                              fullWidth
+                              sx={fieldSx}
+                              {...typeField}
+                            >
+                              {connectorOptions.map((option) => (
+                                <MenuItem key={option} value={option}>
+                                  {option}
+                                </MenuItem>
+                              ))}
+                            </TextField>
+                          )}
+                        />
                         <TextField
                           label="Power (kW)"
                           type="number"
-                          value={connector.powerKW}
-                          onChange={(event) =>
-                            handlers.onConnectorChange(
-                              connector.id,
-                              "powerKW",
-                              event.target.value
-                            )
-                          }
+                          {...textField(`connectors.${index}.powerKW`)}
                           fullWidth
-                          sx={{
-                            "& .MuiOutlinedInput-root": {
-                              borderRadius: 3,
-                              backgroundColor: "rgba(10,10,16,0.02)",
-                            },
-                          }}
+                          sx={fieldSx}
                         />
                       </Stack>
 
@@ -439,46 +299,25 @@ export default function StationFormCard({
                         <TextField
                           label="Ports"
                           type="number"
-                          value={connector.ports}
-                          onChange={(event) =>
-                            handlers.onConnectorChange(
-                              connector.id,
-                              "ports",
-                              event.target.value
-                            )
-                          }
+                          {...textField(`connectors.${index}.ports`)}
                           fullWidth
-                          sx={{
-                            "& .MuiOutlinedInput-root": {
-                              borderRadius: 3,
-                              backgroundColor: "rgba(10,10,16,0.02)",
-                            },
-                          }}
+                          sx={fieldSx}
                         />
                         <TextField
                           label="Available ports"
                           type="number"
-                          value={connector.availablePorts}
-                          onChange={(event) =>
-                            handlers.onConnectorChange(
-                              connector.id,
-                              "availablePorts",
-                              event.target.value
-                            )
-                          }
+                          {...textField(`connectors.${index}.availablePorts`)}
                           fullWidth
-                          sx={{
-                            "& .MuiOutlinedInput-root": {
-                              borderRadius: 3,
-                              backgroundColor: "rgba(10,10,16,0.02)",
-                            },
-                          }}
+                          sx={fieldSx}
                         />
                       </Stack>
                     </Stack>
                   </Box>
                 ))}
               </Stack>
+              {connectorsError ? (
+                <Typography sx={errorTextSx}>{connectorsError}</Typography>
+              ) : null}
             </Stack>
 
             <Divider sx={{ borderColor: UI.border2 }} />
@@ -490,63 +329,33 @@ export default function StationFormCard({
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                 <TextField
                   label="Currency"
-                  value={values.pricing.currency}
-                  onChange={(event) =>
-                    handlers.onPricingChange("currency", event.target.value)
-                  }
+                  {...textField("pricing.currency")}
                   fullWidth
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 3,
-                      backgroundColor: "rgba(10,10,16,0.02)",
-                    },
-                  }}
+                  sx={fieldSx}
                 />
                 <TextField
                   label="Per kWh"
                   type="number"
-                  value={values.pricing.perKwh}
-                  onChange={(event) =>
-                    handlers.onPricingChange("perKwh", event.target.value)
-                  }
+                  {...textField("pricing.perKwh")}
+                  error={!!errors.pricing?.perKwh}
+                  helperText={errors.pricing?.perKwh?.message}
                   fullWidth
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 3,
-                      backgroundColor: "rgba(10,10,16,0.02)",
-                    },
-                  }}
+                  sx={fieldSx}
                 />
               </Stack>
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                 <TextField
                   label="Per minute (optional)"
                   type="number"
-                  value={values.pricing.perMinute}
-                  onChange={(event) =>
-                    handlers.onPricingChange("perMinute", event.target.value)
-                  }
+                  {...textField("pricing.perMinute")}
                   fullWidth
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 3,
-                      backgroundColor: "rgba(10,10,16,0.02)",
-                    },
-                  }}
+                  sx={fieldSx}
                 />
                 <TextField
                   label="Parking fee (optional)"
-                  value={values.pricing.parkingFee}
-                  onChange={(event) =>
-                    handlers.onPricingChange("parkingFee", event.target.value)
-                  }
+                  {...textField("pricing.parkingFee")}
                   fullWidth
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 3,
-                      backgroundColor: "rgba(10,10,16,0.02)",
-                    },
-                  }}
+                  sx={fieldSx}
                 />
               </Stack>
             </Stack>
@@ -559,16 +368,10 @@ export default function StationFormCard({
               </Typography>
               <TextField
                 label="Amenities"
-                value={values.amenities}
-                onChange={(event) => handlers.onAmenitiesChange(event.target.value)}
+                {...textField("amenities")}
                 helperText="Comma-separated list (e.g. Restroom, Coffee, Wi-Fi)"
                 fullWidth
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: 3,
-                    backgroundColor: "rgba(10,10,16,0.02)",
-                  },
-                }}
+                sx={fieldSx}
               />
             </Stack>
 
@@ -584,7 +387,7 @@ export default function StationFormCard({
                   variant="outlined"
                   size="small"
                   startIcon={<AddIcon />}
-                  onClick={handlers.onAddPhoto}
+                  onClick={() => photos.append(createDefaultPhoto())}
                   sx={{
                     textTransform: "none",
                     borderRadius: 3,
@@ -596,10 +399,10 @@ export default function StationFormCard({
                 </Button>
               </Stack>
               <Stack spacing={2}>
-                {values.photos.length ? (
-                  values.photos.map((photo) => (
+                {photos.fields.length ? (
+                  photos.fields.map((field, index) => (
                     <Box
-                      key={photo.id}
+                      key={field.id}
                       sx={{
                         p: 1.5,
                         borderRadius: 3,
@@ -617,7 +420,7 @@ export default function StationFormCard({
                           <Box sx={{ flex: 1 }} />
                           <IconButton
                             size="small"
-                            onClick={() => handlers.onRemovePhoto(photo.id)}
+                            onClick={() => photos.remove(index)}
                             sx={{
                               borderRadius: 2,
                               border: `1px solid ${UI.border2}`,
@@ -630,40 +433,16 @@ export default function StationFormCard({
                         <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                           <TextField
                             label="Label"
-                            value={photo.label}
-                            onChange={(event) =>
-                              handlers.onPhotoChange(
-                                photo.id,
-                                "label",
-                                event.target.value
-                              )
-                            }
+                            {...textField(`photos.${index}.label`)}
                             fullWidth
-                            sx={{
-                              "& .MuiOutlinedInput-root": {
-                                borderRadius: 3,
-                                backgroundColor: "rgba(10,10,16,0.02)",
-                              },
-                            }}
+                            sx={fieldSx}
                           />
                           <TextField
                             label="Gradient"
-                            value={photo.gradient}
-                            onChange={(event) =>
-                              handlers.onPhotoChange(
-                                photo.id,
-                                "gradient",
-                                event.target.value
-                              )
-                            }
+                            {...textField(`photos.${index}.gradient`)}
                             placeholder="linear-gradient(135deg, ...)"
                             fullWidth
-                            sx={{
-                              "& .MuiOutlinedInput-root": {
-                                borderRadius: 3,
-                                backgroundColor: "rgba(10,10,16,0.02)",
-                              },
-                            }}
+                            sx={fieldSx}
                           />
                         </Stack>
                       </Stack>
@@ -685,25 +464,16 @@ export default function StationFormCard({
               </Typography>
               <TextField
                 label="Notes"
-                name="notes"
-                value={values.notes}
-                onChange={(event) => handlers.onNotesChange(event.target.value)}
+                {...textField("notes")}
                 multiline
                 minRows={3}
                 fullWidth
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: 3,
-                    backgroundColor: "rgba(10,10,16,0.02)",
-                  },
-                }}
+                sx={fieldSx}
               />
             </Stack>
 
-            {submitError ? (
-              <Typography sx={{ color: "rgba(244,67,54,0.9)", fontSize: 13 }}>
-                {submitError}
-              </Typography>
+            {serverError ? (
+              <Typography sx={errorTextSx}>{serverError}</Typography>
             ) : null}
 
             <Divider sx={{ borderColor: UI.border2 }} />
