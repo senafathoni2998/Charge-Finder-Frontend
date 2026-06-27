@@ -18,11 +18,11 @@ jobs:
           cache: "npm"
       - name: Install dependencies
         run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
       - name: Run unit tests
         run: npm test -- --run
       - name: Build
         run: npm run build
-      # NOTE: `npm run typecheck` and `npm run lint` are intentionally NOT gated yet —
-      # the codebase has ~15 pre-existing type errors and ~160 lint errors (react-leaflet
-      # types, MUI Button generics, react-hooks rules). Enable these gates as part of the
-      # refactor plan (RF1/RF4) once those are cleaned up.
+      # NOTE: `npm run lint` is not gated yet — the codebase still has ~160 pre-existing
+      # eslint errors (react-hooks rules, unused vars). Enable that gate after a lint pass.

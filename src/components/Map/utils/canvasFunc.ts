@@ -1,4 +1,8 @@
-export function normalizeToCanvas(lat, lng, bounds) {
+export function normalizeToCanvas(
+  lat: number,
+  lng: number,
+  bounds: { minLat: number; minLng: number; latSpan: number; lngSpan: number },
+) {
   // y inverted: higher lat -> smaller y
   const x = (lng - bounds.minLng) / bounds.lngSpan;
   const y = 1 - (lat - bounds.minLat) / bounds.latSpan;

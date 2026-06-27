@@ -408,6 +408,7 @@ export default function StationDetailPage() {
 
   const defaultTicketKwh = useMemo(() => {
     if (!Number.isFinite(activeCarBatteryCapacity)) return TICKET_KWH;
+    if (activeCarBatteryCapacity == null) return TICKET_KWH;
     if (effectiveBatteryPercent == null) return TICKET_KWH;
     const remainingKwh =
       ((100 - effectiveBatteryPercent) / 100) * activeCarBatteryCapacity;

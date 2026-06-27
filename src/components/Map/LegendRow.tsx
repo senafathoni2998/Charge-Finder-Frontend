@@ -1,7 +1,12 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { UI } from "../../theme/theme";
 
-export default function LegendRow({ label, color }) {
+type LegendRowProps = {
+  label: string;
+  color: string;
+};
+
+export default function LegendRow({ label, color }: LegendRowProps) {
   return (
     <Stack direction="row" spacing={1} alignItems="center">
       <Box

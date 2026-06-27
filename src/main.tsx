@@ -8,7 +8,7 @@ import store from "./app/store";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Analytics } from "@vercel/analytics/react";
 
-createRoot(document.getElementById("root")).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <SpeedInsights />
     <Analytics />

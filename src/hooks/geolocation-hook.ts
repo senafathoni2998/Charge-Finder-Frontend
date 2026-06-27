@@ -1,9 +1,9 @@
 import { useCallback, useState } from "react";
 
 export function useGeoLocation() {
-  const [loc, setLoc] = useState(null);
+  const [loc, setLoc] = useState<{ lat: number; lng: number } | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [requestId, setRequestId] = useState(0);
 
   const request = useCallback(() => {

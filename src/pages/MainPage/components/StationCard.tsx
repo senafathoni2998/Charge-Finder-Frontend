@@ -3,8 +3,16 @@ import { UI } from "../../../theme/theme";
 import ConnectorChip from "./ConnectorChip";
 import StatusChip from "./StatusChip";
 import { minutesAgo } from "../../../utils/time";
+import type { Connector } from "../../../models/model";
+import type { StationWithDistance } from "../types";
 
-const StationCard = ({ s, selectedId, focusStation }) => (
+type StationCardProps = {
+  s: StationWithDistance;
+  selectedId: string | null;
+  focusStation: (station: StationWithDistance) => void;
+};
+
+const StationCard = ({ s, selectedId, focusStation }: StationCardProps) => (
     <Card
       variant="outlined"
       onClick={() => focusStation(s)}
@@ -47,7 +55,7 @@ const StationCard = ({ s, selectedId, focusStation }) => (
           </Stack>
 
           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-            {s.connectors.slice(0, 3).map((c, idx) => (
+            {s.connectors.slice(0, 3).map((c: Connector, idx: number) => (
               <ConnectorChip key={idx} type={c.type} powerKW={c.powerKW} />
             ))}
           </Stack>

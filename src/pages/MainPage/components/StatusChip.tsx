@@ -1,8 +1,17 @@
 import { Chip } from "@mui/material";
+import type { SxProps, Theme } from "@mui/material";
 import { UI } from "../../../theme/theme";
+import type { Availability } from "../../../models/model";
 
-export default function StatusChip({ status, isChargingHere }) {
-  const map = {
+type StatusChipProps = {
+  status: Availability;
+  isChargingHere?: boolean;
+};
+
+type StatusKey = Availability | "CHARGING";
+
+export default function StatusChip({ status, isChargingHere }: StatusChipProps) {
+  const map: Record<StatusKey, { label: string; sx: SxProps<Theme> }> = {
     CHARGING: {
       label: "Charging",
       sx: {
@@ -33,7 +42,7 @@ export default function StatusChip({ status, isChargingHere }) {
     },
   };
 
-  const key = isChargingHere ? "CHARGING" : status;
+  const key: StatusKey = isChargingHere ? "CHARGING" : status;
   const config = map[key] ?? map.OFFLINE;
 
   return (

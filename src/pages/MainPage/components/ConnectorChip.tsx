@@ -1,7 +1,13 @@
 import { Chip } from "@mui/material";
 import { UI } from "../../../theme/theme";
+import type { ConnectorType } from "../../../models/model";
 
-export default function ConnectorChip({ type, powerKW }) {
+type ConnectorChipProps = {
+  type: ConnectorType;
+  powerKW: number;
+};
+
+export default function ConnectorChip({ type, powerKW }: ConnectorChipProps) {
   return (
     <Chip
       size="small"

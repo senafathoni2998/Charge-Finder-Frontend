@@ -210,7 +210,8 @@ export default function useEditStationFormState(
       }
       setAddressLookupLoading(false);
       if (result.ok && result.address) {
-        setValues((prev) => ({ ...prev, address: result.address }));
+        const resolvedAddress = result.address;
+        setValues((prev) => ({ ...prev, address: resolvedAddress }));
         return;
       }
       setAddressLookupError(result.error || "Could not resolve address.");
@@ -221,12 +222,13 @@ export default function useEditStationFormState(
   // Syncs lat/lng when the user requests their current location.
   useEffect(() => {
     if (!useMyLocation || !geo.loc) return;
+    const loc = geo.loc;
     setValues((prev) => ({
       ...prev,
-      lat: geo.loc.lat.toFixed(6),
-      lng: geo.loc.lng.toFixed(6),
+      lat: loc.lat.toFixed(6),
+      lng: loc.lng.toFixed(6),
     }));
-    handlePickLocation(geo.loc.lat, geo.loc.lng);
+    handlePickLocation(loc.lat, loc.lng);
     setUseMyLocation(false);
   }, [geo.loc, handlePickLocation, useMyLocation]);
 

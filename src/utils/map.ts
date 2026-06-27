@@ -1,6 +1,8 @@
+import type { Availability } from "../models/model";
+
 export const CHARGING_COLOR = "rgba(0,200,83,0.95)";
 
-export function statusColor(status, isChargingHere = false) {
+export function statusColor(status: Availability, isChargingHere = false) {
   if (isChargingHere) return CHARGING_COLOR;
   if (status === "AVAILABLE") return "rgba(0,229,255,0.95)";
   if (status === "BUSY") return "rgba(255,193,7,0.95)";

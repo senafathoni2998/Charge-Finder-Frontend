@@ -153,7 +153,7 @@ export default function ActionsCard({
               </Box>
             )}
 
-            {!loading && station?.status !== "AVAILABLE" ? (
+            {!loading && station && station.status !== "AVAILABLE" ? (
               <Typography variant="body2" sx={{ color: UI.text2 }}>
                 {station.status === "BUSY"
                   ? "All ports are currently in use. You can still navigate here and queue."

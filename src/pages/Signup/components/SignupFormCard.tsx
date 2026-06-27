@@ -266,7 +266,7 @@ export default function SignupFormCard({
                   </Avatar>
                   <Stack spacing={0.25} sx={{ flex: 1, minWidth: 0 }}>
                     <Button
-                      component="label"
+                      component={"label" as React.ElementType}
                       variant="outlined"
                       type="button"
                       size="small"

@@ -10,7 +10,9 @@ export async function addStationAction({ request }: { request: Request }) {
     return { error: parsed.error };
   }
 
-  const result = await createStation(parsed.payload);
+  const result = await createStation(
+    parsed.payload as Parameters<typeof createStation>[0],
+  );
   if (!result.ok) {
     return { error: result.error || "Could not create station." };
   }

@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type ElementType,
+  type FormEvent,
+} from "react";
 import {
   Avatar,
   Box,
@@ -152,7 +159,7 @@ export default function EditProfileDialog({
                 </Avatar>
                 <Stack spacing={0.25} sx={{ flex: 1, minWidth: 0 }}>
                   <Button
-                    component="label"
+                    component={"label" as ElementType}
                     variant="outlined"
                     type="button"
                     size="small"

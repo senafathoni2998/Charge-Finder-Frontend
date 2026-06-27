@@ -1,4 +1,8 @@
-import { Availability } from "../models/model";
+import { Availability, Connector, Station } from "../models/model";
+import {
+  StationFilters,
+  StationWithDistance,
+} from "../pages/MainPage/types";
 
 export function statusLabel(status: Availability) {
   if (status === "AVAILABLE") return "Available";
@@ -12,7 +16,10 @@ export function formatCurrency(currency: string, value?: number) {
   return `${currency} ${value.toLocaleString("en-US")}`;
 }
 
-export function haversineKm(a, b) {
+export function haversineKm(
+  a: { lat: number; lng: number },
+  b: { lat: number; lng: number }
+) {
   const R = 6371;
   const dLat = ((b.lat - a.lat) * Math.PI) / 180;
   const dLon = ((b.lng - a.lng) * Math.PI) / 180;
@@ -29,7 +36,9 @@ const DEFAULT_MAP_CENTER = { lat: -6.2, lng: 106.8167 };
 const DEFAULT_LAT_SPAN = 0.35;
 const DEFAULT_LNG_SPAN = 0.45;
 
-export function boundsFromStations(stations) {
+export function boundsFromStations(
+  stations: Array<{ lat: number; lng: number }>
+) {
   const coords = stations
     .map((s) => ({ lat: Number(s.lat), lng: Number(s.lng) }))
     .filter(
@@ -65,7 +74,11 @@ export function boundsFromStations(stations) {
   return { minLat, maxLat, minLng, maxLng, latSpan, lngSpan };
 }
 
-export function filterStations(stations, filters, userCenter) {
+export function filterStations(
+  stations: Station[],
+  filters: StationFilters,
+  userCenter: { lat: number; lng: number }
+): StationWithDistance[] {
   const lower = filters.q.toLowerCase();
   const maxDistanceKm = Number.isFinite(filters.radiusKm)
     ? Number(filters.radiusKm)
@@ -89,11 +102,11 @@ export function filterStations(stations, filters, userCenter) {
         : s.status === filters.status;
 
       const matchesConnector = filters.connectorSet.size
-        ? s.connectors.some((c) => filters.connectorSet.has(c.type))
+        ? s.connectors.some((c: Connector) => filters.connectorSet.has(c.type))
         : true;
 
       const matchesMinKw = filters.minKW
-        ? s.connectors.some((c) => c.powerKW >= filters.minKW)
+        ? s.connectors.some((c: Connector) => c.powerKW >= filters.minKW)
         : true;
 
       const matchesDistance = maxDistanceKm
@@ -110,7 +123,7 @@ export function filterStations(stations, filters, userCenter) {
     })
     .sort((a, b) => {
       // Priority: charging > available > busy > offline
-      const getStatusPriority = (station) => {
+      const getStatusPriority = (station: StationWithDistance) => {
         if (station.isChargingHere) return 0;
         if (station.status === "AVAILABLE") return 1;
         if (station.status === "BUSY") return 2;

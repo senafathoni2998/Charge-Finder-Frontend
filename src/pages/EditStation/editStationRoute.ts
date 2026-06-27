@@ -1,6 +1,9 @@
 import { redirect } from "react-router";
 import { updateStation } from "../../api/adminStations";
 import { parseStationFormData } from "../AddStation/stationFormUtils";
+import type { Station } from "../../models/model";
+
+type StationPayload = Omit<Station, "id"> & { id?: string };
 
 // Handles edit-station submissions for admins.
 export async function editStationAction({ request }: { request: Request }) {
@@ -15,7 +18,10 @@ export async function editStationAction({ request }: { request: Request }) {
     return { error: parsed.error };
   }
 
-  const result = await updateStation(stationId, parsed.payload);
+  const result = await updateStation(
+    stationId,
+    parsed.payload as StationPayload,
+  );
   if (!result.ok) {
     return { error: result.error || "Could not update station." };
   }

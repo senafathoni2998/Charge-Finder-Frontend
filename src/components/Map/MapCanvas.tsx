@@ -8,9 +8,11 @@ import {
   useMap,
   useMapEvents,
 } from "react-leaflet";
-import type { LatLngBoundsExpression } from "leaflet";
+import type { LatLngBoundsExpression, Map as LeafletMap } from "leaflet";
 import Supercluster from "supercluster";
 import LegendRow from "./LegendRow";
+import type { Station as StationModel } from "../../models/model";
+import type { StationBounds } from "../../pages/MainPage/types";
 import { UI } from "../../theme/theme";
 import { CHARGING_COLOR, statusColor } from "../../utils/map";
 import { haversineKm } from "../../utils/distance";
@@ -44,9 +46,12 @@ const TILE_ATTRIBUTION = USING_MAPTILER
 const TILE_SIZE = USING_MAPTILER ? 512 : 256;
 const TILE_ZOOM_OFFSET = USING_MAPTILER ? -1 : 0;
 
+// Station as consumed by the map: the model plus an optional distance/charging flag.
+type MapStation = StationModel & { distanceKm?: number; isChargingHere?: boolean };
+
 // Reads the current map view: zoom, bbox (for supercluster), center and an
 // approximate radius (km) covering the viewport — used for viewport-driven fetch.
-function readMapView(map) {
+function readMapView(map: LeafletMap) {
   const zoom = map.getZoom();
   const b = map.getBounds();
   const center = map.getCenter();
@@ -60,7 +65,7 @@ function readMapView(map) {
   );
   return {
     zoom,
-    bbox: [west, south, east, north],
+    bbox: [west, south, east, north] as [number, number, number, number],
     center: { lat: center.lat, lng: center.lng },
     radiusKm,
   };
@@ -68,7 +73,9 @@ function readMapView(map) {
 
 // Fits the map to the station bounds ONCE (on first valid bounds). After that the
 // view is user-controlled, so viewport-driven refetching can't fight auto-fitting.
-function FitBounds({ bounds }) {
+type FitBoundsProps = { bounds: StationBounds | null | undefined };
+
+function FitBounds({ bounds }: FitBoundsProps) {
   const map = useMap();
   const didFitRef = useRef(false);
 
@@ -95,9 +102,15 @@ function FitBounds({ bounds }) {
   return null;
 }
 
-function FocusStation({ selectedId, stations, zoom = 15 }) {
+type FocusStationProps = {
+  selectedId: string | null;
+  stations: MapStation[];
+  zoom?: number;
+};
+
+function FocusStation({ selectedId, stations, zoom = 15 }: FocusStationProps) {
   const map = useMap();
-  const lastIdRef = useRef(null);
+  const lastIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!selectedId) {
@@ -118,7 +131,13 @@ function FocusStation({ selectedId, stations, zoom = 15 }) {
 }
 
 // Renders the (2-3) layered CircleMarkers for a single station.
-function StationMarkers({ station, isActive, onSelect }) {
+type StationMarkersProps = {
+  station: MapStation;
+  isActive: boolean;
+  onSelect?: (id: string) => void;
+};
+
+function StationMarkers({ station, isActive, onSelect }: StationMarkersProps) {
   const s = station;
   const isCharging = Boolean(s.isChargingHere);
   const color = statusColor(s.status, isCharging);
@@ -175,10 +194,22 @@ function StationMarkers({ station, isActive, onSelect }) {
 // Clusters stations with supercluster and renders cluster bubbles (low zoom) or
 // individual station markers (high zoom). Also reports viewport changes (debounced)
 // for viewport-driven station fetching.
-function StationLayer({ stations, selectedId, onSelect, onViewportChange }) {
+type StationLayerProps = {
+  stations: MapStation[];
+  selectedId: string | null;
+  onSelect?: (id: string) => void;
+  onViewportChange?: (lat: number, lng: number, radiusKm: number) => void;
+};
+
+function StationLayer({
+  stations,
+  selectedId,
+  onSelect,
+  onViewportChange,
+}: StationLayerProps) {
   const map = useMap();
   const [view, setView] = useState(() => readMapView(map));
-  const debounceRef = useRef(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useMapEvents({
     moveend: () => {
@@ -201,7 +232,10 @@ function StationLayer({ stations, selectedId, onSelect, onViewportChange }) {
   }, []);
 
   const index = useMemo(() => {
-    const sc = new Supercluster({ radius: 64, maxZoom: 17 });
+    const sc = new Supercluster<{ cluster: false; station: MapStation }>({
+      radius: 64,
+      maxZoom: 17,
+    });
     sc.load(
       stations
         .filter(
@@ -247,7 +281,7 @@ function StationLayer({ stations, selectedId, onSelect, onViewportChange }) {
               eventHandlers={{
                 click: () => {
                   const expansionZoom = Math.min(
-                    index.getClusterExpansionZoom(feature.id),
+                    index.getClusterExpansionZoom(Number(feature.id)),
                     18
                   );
                   map.setView([lat, lng], expansionZoom, { animate: true });
@@ -275,6 +309,15 @@ function StationLayer({ stations, selectedId, onSelect, onViewportChange }) {
   );
 }
 
+type MapCanvasProps = {
+  stations?: MapStation[];
+  bounds?: StationBounds | null;
+  selectedId: string | null;
+  onSelect?: (id: string) => void;
+  userLoc?: { lat: number; lng: number } | null;
+  onViewportChange?: (lat: number, lng: number, radiusKm: number) => void;
+};
+
 export default function MapCanvas({
   stations = [],
   bounds,
@@ -282,7 +325,7 @@ export default function MapCanvas({
   onSelect,
   userLoc,
   onViewportChange,
-}) {
+}: MapCanvasProps) {
   const mapBounds = useMemo<LatLngBoundsExpression>(() => {
     if (
       !bounds ||

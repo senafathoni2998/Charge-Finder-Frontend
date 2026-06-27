@@ -104,8 +104,8 @@ export default function ChargingHistoryCard({
 
           {loading ? (
             <Stack spacing={{ xs: 1, sm: 1.5 }}>
-              <Skeleton variant="rounded" height={{ xs: 60, sm: 68, md: 72 }} />
-              <Skeleton variant="rounded" height={{ xs: 60, sm: 68, md: 72 }} />
+              <Skeleton variant="rounded" sx={{ height: { xs: 60, sm: 68, md: 72 } }} />
+              <Skeleton variant="rounded" sx={{ height: { xs: 60, sm: 68, md: 72 } }} />
             </Stack>
           ) : error ? (
             <Box
