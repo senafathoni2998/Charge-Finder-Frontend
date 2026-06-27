@@ -20,3 +20,9 @@ jobs:
         run: npm ci
       - name: Run unit tests
         run: npm test -- --run
+      - name: Build
+        run: npm run build
+      # NOTE: `npm run typecheck` and `npm run lint` are intentionally NOT gated yet —
+      # the codebase has ~15 pre-existing type errors and ~160 lint errors (react-leaflet
+      # types, MUI Button generics, react-hooks rules). Enable these gates as part of the
+      # refactor plan (RF1/RF4) once those are cleaned up.

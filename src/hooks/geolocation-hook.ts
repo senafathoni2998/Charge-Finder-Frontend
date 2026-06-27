@@ -17,7 +17,6 @@ export function useGeoLocation() {
     setLoading(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        console.log("Got position:", pos);
         setLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setLoading(false);
         setRequestId((prev) => prev + 1);

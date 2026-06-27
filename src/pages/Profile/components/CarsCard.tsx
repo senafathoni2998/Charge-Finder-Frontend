@@ -118,7 +118,6 @@ export default function CarsCard({
                   car.chargingStatus.trim().toUpperCase() === "CHARGING";
                 const hasBatteryPercent = Number.isFinite(car.batteryPercent);
                 const hasBatteryCapacity = Number.isFinite(car.batteryCapacity);
-                console.log("Rendering car:", car, "isActive:", isActive);
                 return (
                   <Box
                     key={car.id}

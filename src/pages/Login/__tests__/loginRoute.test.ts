@@ -44,9 +44,30 @@ describe('loginAction', () => {
         });
     });
 
-    it('should return error when password has issues', async () => {
+    it('should return error when password is empty', async () => {
         vi.mocked(validate.isValidEmail).mockReturnValue(true);
-        vi.mocked(validate.passwordIssue).mockReturnValue('Password must be at least 7 characters.' as any);
+
+        const formData = new FormData();
+        formData.append('email', 'test@example.com');
+        formData.append('password', '');
+
+        const request = new Request('http://localhost:3000', {
+            method: 'POST',
+            body: formData,
+        });
+
+        const result = await loginAction({ request });
+
+        expect(result).toEqual({
+            error: 'Please enter your password.',
+        });
+    });
+
+    it('should NOT enforce password-composition rules on login (legacy short passwords pass the gate)', async () => {
+        // A short / rule-violating password must NOT be blocked by the login form;
+        // composition rules belong only on signup / change-password.
+        import.meta.env.VITE_APP_BACKEND_URL = '';
+        vi.mocked(validate.isValidEmail).mockReturnValue(true);
 
         const formData = new FormData();
         formData.append('email', 'test@example.com');
@@ -59,9 +80,9 @@ describe('loginAction', () => {
 
         const result = await loginAction({ request });
 
-        expect(result).toEqual({
-            error: 'Password must be at least 7 characters.',
-        });
+        // It got past password validation to the next check (backend URL), proving
+        // the short password was accepted.
+        expect(result).toEqual({ error: 'Backend URL is not configured.' });
     });
 
     it('should return error when backend URL is not configured', async () => {

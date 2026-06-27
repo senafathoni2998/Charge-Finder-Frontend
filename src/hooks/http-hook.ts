@@ -26,8 +26,6 @@ const useHttpClient = () => {
           (reqCtrl) => reqCtrl !== httpAbortCtrl
         );
 
-        console.log(activeHttpRequests);
-
         if (!response.ok) {
           throw new Error(responseData.message || "Failed to fetch data");
         }

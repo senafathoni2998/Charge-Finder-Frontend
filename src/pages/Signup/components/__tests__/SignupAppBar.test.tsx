@@ -23,10 +23,8 @@ describe('SignupAppBar', () => {
         expect(screen.getByText('Create your account')).toBeInTheDocument();
     });
 
-    it('should render the Light mode chip', () => {
-        render(<SignupAppBar />);
-        expect(screen.getByText('Light mode')).toBeInTheDocument();
-    });
+    // The "Light mode" chip was removed from the signup page (commit 521e033);
+    // its test was left behind and is intentionally deleted here.
 
     it('should render the electric bolt icon', () => {
         render(<SignupAppBar />);

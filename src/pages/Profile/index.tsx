@@ -280,7 +280,6 @@ export default function ProfilePage() {
   const profileImageUrl = resolveAssetUrl(loaderData?.user?.image);
 
   const displayName = useMemo(() => {
-    console.log("profileName:", profileName);
     if (profileName && profileName.trim()) return profileName.trim();
     if (!email) return "Driver";
     const [name] = email.split("@");
@@ -539,13 +538,6 @@ export default function ProfilePage() {
     dispatch(removeCar(carId));
     persistCarsToStorage(nextCars, nextActiveId);
   };
-
-  console.log(
-    "Rendering ProfilePage with cars:",
-    cars,
-    "activeCarId:",
-    activeCarId
-  );
 
   return (
     <Box

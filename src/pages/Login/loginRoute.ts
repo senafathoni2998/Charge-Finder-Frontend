@@ -1,7 +1,7 @@
 import { redirect } from "react-router";
 import store from "../../app/store";
 import { login } from "../../features/auth/authSlice";
-import { isValidEmail, passwordIssue } from "../../utils/validate";
+import { isValidEmail } from "../../utils/validate";
 import { persistLoginSession } from "./loginStorage";
 import { safeNextPath } from "./loginUtils";
 
@@ -16,9 +16,10 @@ export async function loginAction({ request }: { request: Request }) {
     return { error: "Please enter a valid email address." };
   }
 
-  const pwIssue = passwordIssue(password);
-  if (pwIssue) {
-    return { error: pwIssue };
+  // Login must not enforce password-composition rules (that would block existing
+  // users whose passwords predate the rules) — only require a non-empty value.
+  if (!password) {
+    return { error: "Please enter your password." };
   }
 
   const baseUrl = import.meta.env.VITE_APP_BACKEND_URL;

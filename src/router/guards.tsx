@@ -2,9 +2,12 @@ import { Navigate, Outlet, useLocation, useSearchParams } from "react-router";
 import { useAppSelector } from "../app/hooks";
 
 function safeNextPath(next: string | null): string {
+  // Reject protocol-relative ("//evil.com") and backslash targets (open-redirect).
   if (
     !next ||
     !next.startsWith("/") ||
+    next.startsWith("//") ||
+    next.startsWith("/\\") ||
     next.startsWith("/login") ||
     next.startsWith("/signup")
   ) {

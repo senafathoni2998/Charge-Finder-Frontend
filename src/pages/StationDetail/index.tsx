@@ -293,8 +293,6 @@ export default function StationDetailPage() {
     };
   }, [stationId]);
 
-  console.log("Station detail for ID:", stationId, station);
-
   const selectedPayment = useMemo(
     () =>
       PAYMENT_METHODS.find((method) => method.id === selectedPaymentId) ??
@@ -1055,8 +1053,6 @@ export default function StationDetailPage() {
     setReportOpen(false);
     setReportNote("");
   };
-
-  console.log("Rendering StationDetailPage for station:", station, loading);
 
   if (!loading && !station) {
     return (

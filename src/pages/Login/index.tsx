@@ -6,7 +6,7 @@ import {
   useNavigation,
   useSearchParams,
 } from "react-router";
-import { isValidEmail, passwordIssue } from "../../utils/validate";
+import { isValidEmail } from "../../utils/validate";
 import { UI } from "../../theme/theme";
 import type { LoginActionData } from "./types";
 import { getRememberedLoginEmail } from "./loginStorage";
@@ -34,7 +34,6 @@ export default function ChargeFinderLoginPage() {
     consumeSessionMessage(),
   );
 
-  const pwIssue = useMemo(() => passwordIssue(password), [password]);
   const nextPath = useMemo(
     () => safeNextPath(searchParams.get("next")),
     [searchParams],
@@ -54,8 +53,11 @@ export default function ChargeFinderLoginPage() {
       event.preventDefault();
       return;
     }
-    if (pwIssue) {
-      setError(pwIssue || "Invalid password.");
+    // Login only requires a non-empty password. Composition rules (length/digits)
+    // belong on signup and change-password, never on login — enforcing them here
+    // locks out existing users whose passwords predate those rules.
+    if (!password) {
+      setError("Please enter your password.");
       event.preventDefault();
       return;
     }
@@ -113,7 +115,7 @@ export default function ChargeFinderLoginPage() {
             error={error}
             onDismissError={() => setError(null)}
             onSubmit={handleSubmit}
-            pwIssue={pwIssue}
+            pwIssue={null}
             isSubmitting={isSubmitting}
             onForgotPassword={handleForgotPassword}
             onNavigateToSignup={handleNavigateToSignup}

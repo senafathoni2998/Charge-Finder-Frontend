@@ -85,8 +85,6 @@ export default function MapCanvas({
     ];
   }, [bounds]);
 
-  console.log("USER LOC IN MAP CANVAS:", userLoc);
-
   return (
     <Box
       sx={{
