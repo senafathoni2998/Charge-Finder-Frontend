@@ -102,10 +102,30 @@ export const changePasswordFormSchema = z
     path: ["newPassword"],
   });
 
+// Admin "add user" form (react-hook-form).
+export const addUserFormSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(2, "Name must be 2-50 characters.")
+    .max(50, "Name must be 2-50 characters."),
+  email: z
+    .string()
+    .trim()
+    .regex(EMAIL_REGEX, "Please enter a valid email address."),
+  role: z.enum(["admin", "user"]),
+  password: z
+    .string()
+    .min(PASSWORD_MIN, PASSWORD_TOO_SHORT)
+    .regex(/\d/, PASSWORD_NEEDS_DIGIT),
+  region: z.string().trim().min(1, "Region is required."),
+});
+
 export type LoginValues = z.infer<typeof loginSchema>;
 export type SignupFormValues = z.infer<typeof signupFormSchema>;
 export type EditProfileValues = z.infer<typeof editProfileFormSchema>;
 export type ChangePasswordValues = z.infer<typeof changePasswordFormSchema>;
+export type AddUserFormValues = z.infer<typeof addUserFormSchema>;
 
 /** First validation message for a field schema, or null when valid. */
 export function firstIssue(schema: z.ZodTypeAny, value: unknown): string | null {

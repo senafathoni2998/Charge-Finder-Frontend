@@ -1,4 +1,6 @@
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Box,
   Button,
@@ -13,49 +15,55 @@ import {
 } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import { Form } from "react-router";
 import { UI } from "../../../theme/theme";
-
-export type AddUserFormValues = {
-  name: string;
-  email: string;
-  role: string;
-  password: string;
-  region: string;
-};
-
-type AddUserFormHandlers = {
-  onNameChange: (value: string) => void;
-  onEmailChange: (value: string) => void;
-  onRoleChange: (value: string) => void;
-  onPasswordChange: (value: string) => void;
-  onRegionChange: (value: string) => void;
-};
+import {
+  addUserFormSchema,
+  type AddUserFormValues,
+} from "../../../forms/schemas";
 
 type AddUserFormCardProps = {
-  values: AddUserFormValues;
-  handlers: AddUserFormHandlers;
-  submitError: string | null;
-  isSubmitting: boolean;
-  onSubmit: (event: FormEvent) => void;
+  serverError: string | null;
+  onSubmit: (values: AddUserFormValues) => void | Promise<void>;
   onCancel: () => void;
   submitLabel?: string;
   submittingLabel?: string;
 };
 
 const ROLE_OPTIONS = ["admin", "user"];
-// Renders the user form card with inputs and actions.
+const inputSx = {
+  "& .MuiOutlinedInput-root": {
+    borderRadius: 3,
+    backgroundColor: "rgba(10,10,16,0.02)",
+  },
+};
+
+// Renders the user form card. Owns the form via react-hook-form + zodResolver.
 export default function AddUserFormCard({
-  values,
-  handlers,
-  submitError,
-  isSubmitting,
+  serverError,
   onSubmit,
   onCancel,
   submitLabel = "Create user",
   submittingLabel = "Creating...",
 }: AddUserFormCardProps) {
   const [showPw, setShowPw] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors, isSubmitting },
+  } = useForm<AddUserFormValues>({
+    resolver: zodResolver(addUserFormSchema),
+    defaultValues: { name: "", email: "", role: "user", password: "", region: "" },
+    mode: "onTouched",
+  });
+
+  const { ref: nameRef, ...nameField } = register("name");
+  const { ref: emailRef, ...emailField } = register("email");
+  const { ref: passwordRef, ...passwordField } = register("password");
+  const { ref: regionRef, ...regionField } = register("region");
+
+  const submit = handleSubmit((values) => onSubmit(values));
 
   return (
     <Card
@@ -70,65 +78,59 @@ export default function AddUserFormCard({
     >
       <Box sx={{ height: 8, background: UI.brandGradStrong }} />
       <CardContent sx={{ p: { xs: 2.25, sm: 3 } }}>
-        <Box component={Form} method="post" onSubmit={onSubmit} noValidate>
+        <Box component="form" onSubmit={submit} noValidate>
           <Stack spacing={2}>
             <TextField
               label="Full name"
-              name="name"
-              value={values.name}
-              onChange={(event) => handlers.onNameChange(event.target.value)}
+              inputRef={nameRef}
+              {...nameField}
               placeholder="e.g. Nadia Putri"
               fullWidth
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 3,
-                  backgroundColor: "rgba(10,10,16,0.02)",
-                },
-              }}
+              error={!!errors.name}
+              helperText={errors.name?.message}
+              sx={inputSx}
             />
             <TextField
               label="Email"
-              name="email"
               type="email"
-              value={values.email}
-              onChange={(event) => handlers.onEmailChange(event.target.value)}
+              inputRef={emailRef}
+              {...emailField}
               placeholder="e.g. nadia@chargefinder.app"
               fullWidth
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 3,
-                  backgroundColor: "rgba(10,10,16,0.02)",
-                },
-              }}
+              error={!!errors.email}
+              helperText={errors.email?.message}
+              sx={inputSx}
+            />
+            <Controller
+              name="role"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Role"
+                  select
+                  fullWidth
+                  error={!!errors.role}
+                  helperText={errors.role?.message}
+                  sx={inputSx}
+                >
+                  {ROLE_OPTIONS.map((option) => (
+                    <MenuItem key={option} value={option}>
+                      {option}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
             />
             <TextField
-              label="Role"
-              name="role"
-              value={values.role}
-              onChange={(event) => handlers.onRoleChange(event.target.value)}
-              select
-              fullWidth
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 3,
-                  backgroundColor: "rgba(10,10,16,0.02)",
-                },
-              }}
-            >
-              {ROLE_OPTIONS.map((option) => (
-                <MenuItem key={option} value={option}>
-                  {option}
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField
               label="Password"
-              name="password"
               type={showPw ? "text" : "password"}
-              value={values.password}
-              onChange={(event) => handlers.onPasswordChange(event.target.value)}
+              inputRef={passwordRef}
+              {...passwordField}
               placeholder="Set a temporary password"
               fullWidth
+              error={!!errors.password}
+              helperText={errors.password?.message}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -146,31 +148,22 @@ export default function AddUserFormCard({
                   </InputAdornment>
                 ),
               }}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 3,
-                  backgroundColor: "rgba(10,10,16,0.02)",
-                },
-              }}
+              sx={inputSx}
             />
             <TextField
               label="Region"
-              name="region"
-              value={values.region}
-              onChange={(event) => handlers.onRegionChange(event.target.value)}
+              inputRef={regionRef}
+              {...regionField}
               placeholder="e.g. Jakarta, ID"
               fullWidth
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 3,
-                  backgroundColor: "rgba(10,10,16,0.02)",
-                },
-              }}
+              error={!!errors.region}
+              helperText={errors.region?.message}
+              sx={inputSx}
             />
 
-            {submitError ? (
+            {serverError ? (
               <Box sx={{ color: "rgba(244,67,54,0.9)", fontSize: 13 }}>
-                {submitError}
+                {serverError}
               </Box>
             ) : null}
 
@@ -183,6 +176,7 @@ export default function AddUserFormCard({
             >
               <Button
                 variant="outlined"
+                type="button"
                 onClick={onCancel}
                 sx={{
                   textTransform: "none",

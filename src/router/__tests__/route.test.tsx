@@ -159,7 +159,8 @@ describe('Router Configuration', () => {
         const addUser = findRoute(adminWrapper.children, 'admin/users/new');
         const addUserLoaded = await addUser.lazy();
         expect(addUserLoaded.Component()).toBe('AddUser');
-        expect(addUserLoaded.action()).toBe('addUserAction');
+        // AddUser is now a client-side react-hook-form form — no route action.
+        expect(addUserLoaded.action).toBeUndefined();
     });
 
     it('should configure auth routes (login/signup) properly', async () => {

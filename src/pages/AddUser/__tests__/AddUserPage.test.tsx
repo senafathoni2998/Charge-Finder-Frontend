@@ -1,83 +1,77 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import AddUserPage from '../index';
-import * as router from 'react-router';
+import { createUserRequest } from '../addUserRoute';
 
-vi.mock('../components/AddUserFormCard', () => ({
-    default: ({ values, handlers, onSubmit, submitError }: any) => (
-        <form data-testid="user-form" onSubmit={onSubmit}>
-            <input 
-                aria-label="Name" 
-                value={values.name} 
-                onChange={e => handlers.onNameChange(e.target.value)} 
-            />
-            <input 
-                aria-label="Email" 
-                value={values.email} 
-                onChange={e => handlers.onEmailChange(e.target.value)} 
-            />
-            <input 
-                aria-label="Password" 
-                value={values.password} 
-                onChange={e => handlers.onPasswordChange(e.target.value)} 
-            />
-            <input 
-                aria-label="Region" 
-                value={values.region} 
-                onChange={e => handlers.onRegionChange(e.target.value)} 
-            />
-            <div data-testid="submit-error">{submitError}</div>
-            <button type="submit">Create</button>
-        </form>
-    ),
-}));
+const mockNavigate = vi.fn();
 
 vi.mock('react-router', async () => {
     const actual = await vi.importActual('react-router');
     return {
         ...actual,
-        useNavigate: vi.fn(),
-        useActionData: vi.fn(),
-        useNavigation: vi.fn(),
+        useNavigate: () => mockNavigate,
     };
 });
+
+const VALUES = {
+    name: 'Valid Name',
+    email: 'test@test.com',
+    role: 'user',
+    password: 'Password123!',
+    region: 'Jakarta',
+};
+
+vi.mock('../components/AddUserFormCard', () => ({
+    default: ({ serverError, onSubmit, onCancel }: any) => (
+        <div>
+            <button onClick={() => onSubmit(VALUES)}>Create</button>
+            <button onClick={onCancel}>Cancel</button>
+            <div data-testid="submit-error">{serverError}</div>
+        </div>
+    ),
+}));
+
+vi.mock('../addUserRoute', () => ({
+    createUserRequest: vi.fn(),
+}));
 
 describe('AddUserPage', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        (router.useNavigate as any).mockReturnValue(vi.fn());
-        (router.useNavigation as any).mockReturnValue({ state: 'idle' });
-        (router.useActionData as any).mockReturnValue(undefined);
     });
 
-    it('should validate name', () => {
+    it('creates the user and navigates to /admin on success', async () => {
+        vi.mocked(createUserRequest).mockResolvedValue({ ok: true });
+
         render(<AddUserPage />);
-        fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'A' } }); // Short
         fireEvent.click(screen.getByText('Create'));
-        expect(screen.getByTestId('submit-error')).toHaveTextContent('Name must be');
+
+        await waitFor(() =>
+            expect(createUserRequest).toHaveBeenCalledWith(VALUES)
+        );
+        expect(mockNavigate).toHaveBeenCalledWith('/admin');
     });
 
-    it('should validate email', () => {
+    it('shows the server error on failure', async () => {
+        vi.mocked(createUserRequest).mockResolvedValue({
+            ok: false,
+            error: 'Email taken',
+        });
+
         render(<AddUserPage />);
-        fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Valid Name' } });
-        fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'invalid' } });
         fireEvent.click(screen.getByText('Create'));
-        expect(screen.getByTestId('submit-error')).toHaveTextContent('valid email');
+
+        await waitFor(() =>
+            expect(screen.getByTestId('submit-error')).toHaveTextContent(
+                'Email taken'
+            )
+        );
+        expect(mockNavigate).not.toHaveBeenCalled();
     });
 
-    it('should validate region', () => {
+    it('navigates to /admin on cancel', () => {
         render(<AddUserPage />);
-        fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Valid Name' } });
-        fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'validate@email.com' } });
-        fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'Password123!' } });
-        // Region is empty by default
-        fireEvent.click(screen.getByText('Create'));
-        expect(screen.getByTestId('submit-error')).toHaveTextContent('Region is required');
-    });
-
-    it('should display server error', () => {
-        (router.useActionData as any).mockReturnValue({ error: 'Email taken' });
-        render(<AddUserPage />);
-        expect(screen.getByTestId('submit-error')).toHaveTextContent('Email taken');
+        fireEvent.click(screen.getByText('Cancel'));
+        expect(mockNavigate).toHaveBeenCalledWith('/admin');
     });
 });

@@ -52,7 +52,7 @@ const lazyEditStation = async () => {
 
 const lazyAddUser = async () => {
   const module = await import("../pages/AddUser");
-  return { Component: module.default, action: module.addUserAction };
+  return { Component: module.default };
 };
 
 const lazyLogin = async () => {
