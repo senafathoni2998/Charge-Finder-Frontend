@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Box, Snackbar, Stack, Typography } from "@mui/material";
-import { useActionData, useLoaderData, useNavigate } from "react-router";
+import { useLoaderData, useNavigate } from "react-router";
 import { UI } from "../../theme/theme";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import {
@@ -10,8 +10,12 @@ import {
   updateProfile,
 } from "../../features/auth/authSlice";
 import type { UserCar } from "../../features/auth/authSlice";
-import { passwordIssue, strengthLabel } from "../../utils/validate";
-import type { ProfileActionData, ProfileLoaderData } from "./types";
+import type { ProfileLoaderData } from "./types";
+import { changePasswordRequest, updateProfileRequest } from "./profileRequests";
+import type {
+  ChangePasswordValues,
+  EditProfileValues,
+} from "../../forms/schemas";
 import {
   persistCarsToStorage,
   persistProfileToStorage,
@@ -204,7 +208,6 @@ export default function ProfilePage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const loaderData = useLoaderData() as ProfileLoaderData | null;
-  const actionData = useActionData() as ProfileActionData | undefined;
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
   const email = useAppSelector((state) => state.auth.email);
   const userId = useAppSelector((state) => state.auth.userId);
@@ -213,13 +216,8 @@ export default function ProfilePage() {
   const cars = useAppSelector((state) => state.auth.cars);
   const activeCarId = useAppSelector((state) => state.auth.activeCarId);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [nameDraft, setNameDraft] = useState("");
-  const [regionDraft, setRegionDraft] = useState("");
   const [profileError, setProfileError] = useState<string | null>(null);
   const [passwordOpen, setPasswordOpen] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [passwordToast, setPasswordToast] = useState<string | null>(null);
   const [carError, setCarError] = useState<string | null>(null);
@@ -272,11 +270,6 @@ export default function ProfilePage() {
     };
   }, [isAuthenticated]);
 
-  const newPwIssue = useMemo(() => passwordIssue(newPassword), [newPassword]);
-  const newPwStrength = useMemo(
-    () => strengthLabel(newPassword),
-    [newPassword]
-  );
   const profileImageUrl = resolveAssetUrl(loaderData?.user?.image);
 
   const displayName = useMemo(() => {
@@ -295,29 +288,29 @@ export default function ProfilePage() {
   }, [displayName]);
 
   const handleOpenProfileEditor = () => {
-    setNameDraft(profileName?.trim() || displayName);
-    setRegionDraft(profileRegion?.trim() || "Jakarta, ID");
     setProfileError(null);
     setProfileOpen(true);
   };
 
-  const handleNameDraftChange = (value: string) => {
-    setNameDraft(value);
-    if (profileError) setProfileError(null);
-  };
-
-  const handleRegionDraftChange = (value: string) => {
-    setRegionDraft(value);
-  };
-
-  const handleProfileSubmit = (event: FormEvent) => {
-    const nextName = nameDraft.trim();
-    if (!nextName) {
-      event.preventDefault();
-      setProfileError("Name is required.");
-      return;
+  const handleProfileSubmit = async (
+    values: EditProfileValues,
+    image: File | null
+  ) => {
+    setProfileError(null);
+    const result = await updateProfileRequest({
+      userId: userId || "",
+      name: values.name,
+      region: values.region,
+      image,
+    });
+    if (result.ok) {
+      const region = values.region || null;
+      dispatch(updateProfile({ name: values.name, region }));
+      persistProfileToStorage(values.name, region);
+      setProfileOpen(false);
+    } else {
+      setProfileError(result.error);
     }
-    if (profileError) setProfileError(null);
   };
 
   useEffect(() => {
@@ -374,43 +367,6 @@ export default function ProfilePage() {
   }, [dispatch, loaderData]);
 
   useEffect(() => {
-    if (!actionData) return;
-
-    if (actionData.intent === "profile") {
-      if (actionData.error) {
-        setProfileError(actionData.error);
-        return;
-      }
-      if (actionData.ok) {
-        dispatch(
-          updateProfile({
-            name: actionData.name ?? null,
-            region: actionData.region ?? null,
-          })
-        );
-        persistProfileToStorage(actionData.name ?? null, actionData.region ?? null);
-        setProfileOpen(false);
-        setProfileError(null);
-      }
-    }
-
-    if (actionData.intent === "password") {
-      if (actionData.error) {
-        setPasswordError(actionData.error);
-        return;
-      }
-      if (actionData.ok) {
-        setPasswordToast("Password updated.");
-        setCurrentPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
-        setPasswordOpen(false);
-        setPasswordError(null);
-      }
-    }
-  }, [actionData, dispatch]);
-
-  useEffect(() => {
     if (!chargingVehicleId) return;
     let active = true;
     let controller: AbortController | null = null;
@@ -457,55 +413,22 @@ export default function ProfilePage() {
   }, [activeCarId, chargingVehicleId, dispatch]);
 
   const handleOpenPasswordEditor = () => {
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
     setPasswordError(null);
     setPasswordOpen(true);
   };
 
-  const handleCurrentPasswordChange = (value: string) => {
-    setCurrentPassword(value);
-    if (passwordError) setPasswordError(null);
-  };
-
-  const handleNewPasswordChange = (value: string) => {
-    setNewPassword(value);
-    if (passwordError) setPasswordError(null);
-  };
-
-  const handleConfirmPasswordChange = (value: string) => {
-    setConfirmPassword(value);
-    if (passwordError) setPasswordError(null);
-  };
-
-  const handlePasswordSubmit = (event: FormEvent) => {
+  const handlePasswordSubmit = async (values: ChangePasswordValues) => {
     setPasswordError(null);
-    if (!currentPassword.trim()) {
-      event.preventDefault();
-      setPasswordError("Enter your current password.");
-      return;
-    }
-
-    if (newPwIssue) {
-      event.preventDefault();
-      setPasswordError(newPwIssue);
-      return;
-    }
-    if (!newPassword.trim()) {
-      event.preventDefault();
-      setPasswordError("Enter a new password.");
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      event.preventDefault();
-      setPasswordError("Passwords do not match.");
-      return;
-    }
-    if (currentPassword === newPassword) {
-      event.preventDefault();
-      setPasswordError("New password must be different.");
-      return;
+    const result = await changePasswordRequest({
+      userId: userId || "",
+      currentPassword: values.currentPassword,
+      newPassword: values.newPassword,
+    });
+    if (result.ok) {
+      setPasswordToast("Password updated.");
+      setPasswordOpen(false);
+    } else {
+      setPasswordError(result.error);
     }
   };
 
@@ -589,30 +512,20 @@ export default function ProfilePage() {
       <EditProfileDialog
         open={profileOpen}
         onClose={() => setProfileOpen(false)}
-        onSubmit={handleProfileSubmit}
-        nameDraft={nameDraft}
-        regionDraft={regionDraft}
-        profileError={profileError}
         email={email}
-        userId={userId}
-        onNameChange={handleNameDraftChange}
-        onRegionChange={handleRegionDraftChange}
+        initialName={profileName?.trim() || displayName}
+        initialRegion={profileRegion?.trim() || "Jakarta, ID"}
+        serverError={profileError}
+        onDismissError={() => setProfileError(null)}
+        onSubmit={handleProfileSubmit}
       />
 
       <ChangePasswordDialog
         open={passwordOpen}
         onClose={() => setPasswordOpen(false)}
+        serverError={passwordError}
+        onDismissError={() => setPasswordError(null)}
         onSubmit={handlePasswordSubmit}
-        currentPassword={currentPassword}
-        newPassword={newPassword}
-        confirmPassword={confirmPassword}
-        onCurrentPasswordChange={handleCurrentPasswordChange}
-        onNewPasswordChange={handleNewPasswordChange}
-        onConfirmPasswordChange={handleConfirmPasswordChange}
-        passwordError={passwordError}
-        newPwIssue={newPwIssue}
-        newPwStrength={newPwStrength}
-        userId={userId}
       />
 
       <Snackbar

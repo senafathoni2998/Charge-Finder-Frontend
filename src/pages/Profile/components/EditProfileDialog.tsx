@@ -4,9 +4,11 @@ import {
   useState,
   type ChangeEvent,
   type ElementType,
-  type FormEvent,
 } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
+  Alert,
   Avatar,
   Box,
   Button,
@@ -19,39 +21,60 @@ import {
   Typography,
 } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
-import { Form } from "react-router";
 import { UI } from "../../../theme/theme";
+import {
+  editProfileFormSchema,
+  type EditProfileValues,
+} from "../../../forms/schemas";
 
 type EditProfileDialogProps = {
   open: boolean;
   onClose: () => void;
-  onSubmit: (event: FormEvent) => void;
-  nameDraft: string;
-  regionDraft: string;
-  profileError: string | null;
   email: string | null;
-  userId: string | null;
-  onNameChange: (value: string) => void;
-  onRegionChange: (value: string) => void;
+  initialName: string;
+  initialRegion: string;
+  serverError: string | null;
+  onDismissError: () => void;
+  onSubmit: (
+    values: EditProfileValues,
+    image: File | null,
+  ) => void | Promise<void>;
 };
 
-// Renders the profile editing dialog and form fields.
+// Profile editing dialog. Owns the form via react-hook-form + zodResolver; the
+// page provides the submit handler (API call + side-effects) and any server error.
 export default function EditProfileDialog({
   open,
   onClose,
-  onSubmit,
-  nameDraft,
-  regionDraft,
-  profileError,
   email,
-  userId,
-  onNameChange,
-  onRegionChange,
+  initialName,
+  initialRegion,
+  serverError,
+  onDismissError,
+  onSubmit,
 }: EditProfileDialogProps) {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const photoInputRef = useRef<HTMLInputElement | null>(null);
   const photoPreviewRef = useRef<string | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<EditProfileValues>({
+    resolver: zodResolver(editProfileFormSchema),
+    defaultValues: { name: initialName, region: initialRegion },
+  });
+
+  const { ref: nameRef, ...nameField } = register("name");
+  const { ref: regionRef, ...regionField } = register("region");
+
+  // Re-sync the form to the current profile each time the dialog opens.
+  useEffect(() => {
+    if (open) reset({ name: initialName, region: initialRegion });
+  }, [open, initialName, initialRegion, reset]);
 
   useEffect(() => {
     return () => {
@@ -93,6 +116,8 @@ export default function EditProfileDialog({
     onClose();
   };
 
+  const submit = handleSubmit((values) => onSubmit(values, photoFile));
+
   return (
     <Dialog
       open={open}
@@ -112,24 +137,21 @@ export default function EditProfileDialog({
     >
       <DialogTitle sx={{ fontWeight: 950 }}>Edit profile</DialogTitle>
       <DialogContent dividers sx={{ borderColor: UI.border2 }}>
-        <Form
-          id="profile-form"
-          method="post"
-          encType="multipart/form-data"
-          onSubmit={onSubmit}
-        >
-          <input type="hidden" name="intent" value="profile" />
-          <input type="hidden" name="userId" value={userId?.trim() || ""} />
+        <Box component="form" id="profile-form" onSubmit={submit} noValidate>
           <Stack spacing={2}>
+            {serverError ? (
+              <Alert severity="error" onClose={onDismissError}>
+                {serverError}
+              </Alert>
+            ) : null}
             <TextField
               label="Full name"
-              name="name"
-              value={nameDraft}
-              onChange={(event) => onNameChange(event.target.value)}
+              inputRef={nameRef}
+              {...nameField}
               fullWidth
               required
-              error={!!profileError}
-              helperText={profileError || "Shown on your profile."}
+              error={!!errors.name}
+              helperText={errors.name?.message || "Shown on your profile."}
             />
             <TextField label="Email" value={email || ""} fullWidth disabled />
             <Box>
@@ -199,15 +221,14 @@ export default function EditProfileDialog({
             </Box>
             <TextField
               label="Region"
-              name="region"
-              value={regionDraft}
-              onChange={(event) => onRegionChange(event.target.value)}
+              inputRef={regionRef}
+              {...regionField}
               fullWidth
               placeholder="Example: Jakarta, ID"
               helperText="Used for local recommendations."
             />
           </Stack>
-        </Form>
+        </Box>
       </DialogContent>
       <DialogActions sx={{ p: 2 }}>
         <Button

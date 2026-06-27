@@ -1,6 +1,9 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Alert,
+  Box,
   Button,
   Chip,
   Dialog,
@@ -16,57 +19,75 @@ import {
 import LockIcon from "@mui/icons-material/Lock";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import { Form } from "react-router";
 import { UI } from "../../../theme/theme";
-import { toneChipSx } from "../../../utils/validate";
+import { strengthLabel, toneChipSx } from "../../../utils/validate";
+import {
+  changePasswordFormSchema,
+  type ChangePasswordValues,
+} from "../../../forms/schemas";
 
-type PasswordStrength = {
-  label: string;
-  tone: "weak" | "ok" | "strong";
+const EMPTY: ChangePasswordValues = {
+  currentPassword: "",
+  newPassword: "",
+  confirmPassword: "",
 };
 
 type ChangePasswordDialogProps = {
   open: boolean;
   onClose: () => void;
-  onSubmit: (event: FormEvent) => void;
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-  onCurrentPasswordChange: (value: string) => void;
-  onNewPasswordChange: (value: string) => void;
-  onConfirmPasswordChange: (value: string) => void;
-  passwordError: string | null;
-  newPwIssue: string | null;
-  newPwStrength: PasswordStrength;
-  userId: string | null;
+  serverError: string | null;
+  onDismissError: () => void;
+  onSubmit: (values: ChangePasswordValues) => void | Promise<void>;
 };
 
-// Renders the password update dialog with inline validation feedback.
+// Password update dialog. Owns the form via react-hook-form + zodResolver; the
+// page provides the submit handler (API call) and any server error.
 export default function ChangePasswordDialog({
   open,
   onClose,
+  serverError,
+  onDismissError,
   onSubmit,
-  currentPassword,
-  newPassword,
-  confirmPassword,
-  onCurrentPasswordChange,
-  onNewPasswordChange,
-  onConfirmPasswordChange,
-  passwordError,
-  newPwIssue,
-  newPwStrength,
-  userId,
 }: ChangePasswordDialogProps) {
   const [showCurrentPw, setShowCurrentPw] = useState(false);
   const [showNewPw, setShowNewPw] = useState(false);
   const [showConfirmPw, setShowConfirmPw] = useState(false);
 
+  const {
+    register,
+    handleSubmit,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm<ChangePasswordValues>({
+    resolver: zodResolver(changePasswordFormSchema),
+    defaultValues: EMPTY,
+    mode: "onTouched",
+  });
+
+  const { ref: currentRef, ...currentField } = register("currentPassword");
+  const { ref: newRef, ...newField } = register("newPassword");
+  const { ref: confirmRef, ...confirmField } = register("confirmPassword");
+
+  const newPassword = watch("newPassword");
+  const newPwStrength = strengthLabel(newPassword);
+
   useEffect(() => {
     if (!open) return;
+    reset(EMPTY);
     setShowCurrentPw(false);
     setShowNewPw(false);
     setShowConfirmPw(false);
-  }, [open]);
+  }, [open, reset]);
+
+  const submit = handleSubmit((values) => onSubmit(values));
+
+  const inputSx = {
+    "& .MuiOutlinedInput-root": {
+      borderRadius: 3,
+      backgroundColor: "rgba(10,10,16,0.02)",
+    },
+  };
 
   return (
     <Dialog
@@ -86,21 +107,22 @@ export default function ChangePasswordDialog({
     >
       <DialogTitle sx={{ fontWeight: 950 }}>Change password</DialogTitle>
       <DialogContent dividers sx={{ borderColor: UI.border2 }}>
-        <Form id="password-form" method="post" onSubmit={onSubmit}>
-          <input type="hidden" name="intent" value="password" />
-          <input type="hidden" name="userId" value={userId?.trim() || ""} />
+        <Box component="form" id="password-form" onSubmit={submit} noValidate>
           <Stack spacing={2}>
-            {passwordError ? (
-              <Alert severity="error">{passwordError}</Alert>
+            {serverError ? (
+              <Alert severity="error" onClose={onDismissError}>
+                {serverError}
+              </Alert>
             ) : null}
             <TextField
               label="Current password"
-              name="currentPassword"
-              value={currentPassword}
-              onChange={(event) => onCurrentPasswordChange(event.target.value)}
+              inputRef={currentRef}
+              {...currentField}
               autoComplete="current-password"
               fullWidth
               type={showCurrentPw ? "text" : "password"}
+              error={!!errors.currentPassword}
+              helperText={errors.currentPassword?.message ?? " "}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -112,9 +134,7 @@ export default function ChangePasswordDialog({
                     <IconButton
                       onClick={() => setShowCurrentPw((value) => !value)}
                       edge="end"
-                      aria-label={
-                        showCurrentPw ? "Hide password" : "Show password"
-                      }
+                      aria-label={showCurrentPw ? "Hide password" : "Show password"}
                     >
                       {showCurrentPw ? (
                         <VisibilityOffIcon sx={{ color: UI.text3 }} />
@@ -125,23 +145,17 @@ export default function ChangePasswordDialog({
                   </InputAdornment>
                 ),
               }}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 3,
-                  backgroundColor: "rgba(10,10,16,0.02)",
-                },
-              }}
+              sx={inputSx}
             />
             <TextField
               label="New password"
-              name="newPassword"
-              value={newPassword}
-              onChange={(event) => onNewPasswordChange(event.target.value)}
+              inputRef={newRef}
+              {...newField}
               autoComplete="new-password"
               fullWidth
               type={showNewPw ? "text" : "password"}
-              error={newPassword.length > 0 && !!newPwIssue}
-              helperText={newPassword.length > 0 && newPwIssue ? newPwIssue : " "}
+              error={!!errors.newPassword}
+              helperText={errors.newPassword?.message ?? " "}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -164,12 +178,7 @@ export default function ChangePasswordDialog({
                   </InputAdornment>
                 ),
               }}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 3,
-                  backgroundColor: "rgba(10,10,16,0.02)",
-                },
-              }}
+              sx={inputSx}
             />
             <Stack direction="row" spacing={1} alignItems="center">
               {newPassword.length > 0 ? (
@@ -192,18 +201,13 @@ export default function ChangePasswordDialog({
             </Stack>
             <TextField
               label="Confirm new password"
-              name="confirmPassword"
-              value={confirmPassword}
-              onChange={(event) => onConfirmPasswordChange(event.target.value)}
+              inputRef={confirmRef}
+              {...confirmField}
               autoComplete="new-password"
               fullWidth
               type={showConfirmPw ? "text" : "password"}
-              error={confirmPassword.length > 0 && confirmPassword !== newPassword}
-              helperText={
-                confirmPassword.length > 0 && confirmPassword !== newPassword
-                  ? "Passwords do not match."
-                  : " "
-              }
+              error={!!errors.confirmPassword}
+              helperText={errors.confirmPassword?.message ?? " "}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -215,9 +219,7 @@ export default function ChangePasswordDialog({
                     <IconButton
                       onClick={() => setShowConfirmPw((value) => !value)}
                       edge="end"
-                      aria-label={
-                        showConfirmPw ? "Hide password" : "Show password"
-                      }
+                      aria-label={showConfirmPw ? "Hide password" : "Show password"}
                     >
                       {showConfirmPw ? (
                         <VisibilityOffIcon sx={{ color: UI.text3 }} />
@@ -228,15 +230,10 @@ export default function ChangePasswordDialog({
                   </InputAdornment>
                 ),
               }}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 3,
-                  backgroundColor: "rgba(10,10,16,0.02)",
-                },
-              }}
+              sx={inputSx}
             />
           </Stack>
-        </Form>
+        </Box>
       </DialogContent>
       <DialogActions sx={{ p: 2 }}>
         <Button

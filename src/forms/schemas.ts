@@ -72,8 +72,40 @@ export const signupFormSchema = z
     path: ["confirm"],
   });
 
+// Profile dialog (react-hook-form). Name required; region optional. Both trimmed
+// to match the legacy profile action. Image is handled outside the schema.
+export const editProfileFormSchema = z.object({
+  name: z.string().trim().min(1, "Name is required."),
+  region: z.string().trim(),
+});
+
+// Change-password dialog. Current password must be present; new password follows
+// the signup strength rules; confirm must match; new must differ from current.
+// Values are NOT trimmed (passwords are sent verbatim).
+export const changePasswordFormSchema = z
+  .object({
+    currentPassword: z
+      .string()
+      .refine((v) => v.trim().length > 0, "Enter your current password."),
+    newPassword: z
+      .string()
+      .min(PASSWORD_MIN, PASSWORD_TOO_SHORT)
+      .regex(/\d/, PASSWORD_NEEDS_DIGIT),
+    confirmPassword: z.string(),
+  })
+  .refine((d) => d.newPassword === d.confirmPassword, {
+    message: "Passwords do not match.",
+    path: ["confirmPassword"],
+  })
+  .refine((d) => d.currentPassword !== d.newPassword, {
+    message: "New password must be different.",
+    path: ["newPassword"],
+  });
+
 export type LoginValues = z.infer<typeof loginSchema>;
 export type SignupFormValues = z.infer<typeof signupFormSchema>;
+export type EditProfileValues = z.infer<typeof editProfileFormSchema>;
+export type ChangePasswordValues = z.infer<typeof changePasswordFormSchema>;
 
 /** First validation message for a field schema, or null when valid. */
 export function firstIssue(schema: z.ZodTypeAny, value: unknown): string | null {

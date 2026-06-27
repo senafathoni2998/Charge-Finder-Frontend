@@ -9,12 +9,3 @@ export type ProfileLoaderData = {
   vehicles: unknown[] | null;
   activeCarId: string | null;
 };
-
-// Action payloads returned by profile form submissions.
-export type ProfileActionData = {
-  intent: "profile" | "password";
-  ok?: boolean;
-  error?: string;
-  name?: string | null;
-  region?: string | null;
-};
