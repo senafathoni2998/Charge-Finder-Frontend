@@ -1,21 +1,24 @@
+import {
+  emailSchema,
+  nameSchema,
+  passwordSchema,
+  firstIssue,
+} from "../forms/schemas";
+
+// Thin facades over the zod schemas in forms/schemas.ts, which are the single
+// source of truth for these rules. Signatures + messages are unchanged so the
+// existing forms and route actions keep working.
+
 export function isValidEmail(input: string) {
-  const v = String(input || "").trim();
-  // simple and safe for UI validation (not RFC-perfect)
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  return emailSchema.safeParse(input).success;
 }
 
 export function isValidName(input: string) {
-  const v = String(input || "").trim();
-  return v.length >= 2 && v.length <= 50;
+  return nameSchema.safeParse(input).success;
 }
 
 export function passwordIssue(pw: string) {
-  const v = String(pw || "");
-  if (v.length < 7) return "Password must be at least 7 characters.";
-  // if (!/[A-Z]/.test(v) && !/[a-z]/.test(v))
-  //   return "Use letters in your password.";
-  if (!/\d/.test(v)) return "Add at least one number.";
-  return null;
+  return firstIssue(passwordSchema, pw);
 }
 
 export function strengthLabel(pw: string): {
