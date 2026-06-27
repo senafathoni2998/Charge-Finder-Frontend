@@ -109,7 +109,9 @@ describe('LoginFormCard', () => {
         fireEvent.click(screen.getByText('Sign in'));
 
         await waitFor(() =>
-            expect(screen.getByText('Example: name@email.com')).toBeInTheDocument()
+            expect(
+                screen.getByText('Please enter a valid email address.')
+            ).toBeInTheDocument()
         );
         expect(props.onSubmit).not.toHaveBeenCalled();
     });

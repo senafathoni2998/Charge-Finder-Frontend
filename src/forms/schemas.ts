@@ -44,7 +44,7 @@ export const passwordSchema = z.preprocess(
 // string checks (input type = output type = string) rather than the preprocess
 // field schemas above — those exist for the null-tolerant validate.ts facades.
 export const loginSchema = z.object({
-  email: z.string().trim().regex(EMAIL_REGEX, EMAIL_HINT),
+  email: z.string().trim().regex(EMAIL_REGEX, "Please enter a valid email address."),
   // Presence only — never gate legacy passwords on the login path.
   password: z.string().min(1, "Please enter your password."),
 });
