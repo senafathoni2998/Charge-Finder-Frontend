@@ -184,6 +184,7 @@ describe('Router Configuration', () => {
         const signupPage = findIndexRoute(signupRoute.children);
         const signupPageLoaded = await signupPage.lazy();
         expect(signupPageLoaded.Component()).toBe('Signup');
-        expect(signupPageLoaded.action()).toBe('signupAction');
+        // Signup is now a client-side react-hook-form form — no route action.
+        expect(signupPageLoaded.action).toBeUndefined();
     });
 });

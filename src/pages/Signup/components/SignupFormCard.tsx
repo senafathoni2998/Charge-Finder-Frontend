@@ -3,8 +3,9 @@ import {
   useRef,
   useState,
   type ChangeEvent,
-  type FormEvent,
 } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Alert,
   Avatar,
@@ -29,55 +30,26 @@ import PersonIcon from "@mui/icons-material/Person";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { LocationCity } from "@mui/icons-material";
-import { Form } from "react-router";
 import { UI } from "../../../theme/theme";
-import { isValidEmail, isValidName, toneChipSx } from "../../../utils/validate";
-
-type SignupFormValues = {
-  name: string;
-  region: string;
-  email: string;
-  password: string;
-  confirm: string;
-};
-
-type SignupFormHandlers = {
-  onNameChange: (value: string) => void;
-  onRegionChange: (value: string) => void;
-  onEmailChange: (value: string) => void;
-  onPasswordChange: (value: string) => void;
-  onConfirmChange: (value: string) => void;
-};
-
-type PasswordStrength = {
-  label: string;
-  tone: "weak" | "ok" | "strong";
-};
+import { isValidName, strengthLabel, toneChipSx } from "../../../utils/validate";
+import { signupFormSchema, type SignupFormValues } from "../../../forms/schemas";
 
 type SignupFormCardProps = {
-  values: SignupFormValues;
-  handlers: SignupFormHandlers;
-  error: string | null;
+  serverError: string | null;
   onDismissError: () => void;
-  onSubmit: (event: FormEvent) => void;
-  pwIssue: string | null;
-  pwStrength: PasswordStrength;
-  passwordsMatch: boolean;
-  isSubmitting: boolean;
+  onSubmit: (
+    values: SignupFormValues,
+    opts: { remember: boolean; image: File | null },
+  ) => void | Promise<void>;
   onNavigateToLogin: () => void;
 };
 
-// Renders the signup card with form fields and helper text.
+// Renders the signup card. Owns the form via react-hook-form + zodResolver; the
+// page provides the submit handler (API call + navigation) and any server error.
 export default function SignupFormCard({
-  values,
-  handlers,
-  error,
+  serverError,
   onDismissError,
   onSubmit,
-  pwIssue,
-  pwStrength,
-  passwordsMatch,
-  isSubmitting,
   onNavigateToLogin,
 }: SignupFormCardProps) {
   const [remember, setRemember] = useState(true);
@@ -87,6 +59,31 @@ export default function SignupFormCard({
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const photoInputRef = useRef<HTMLInputElement | null>(null);
   const photoPreviewRef = useRef<string | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<SignupFormValues>({
+    resolver: zodResolver(signupFormSchema),
+    defaultValues: { name: "", region: "", email: "", password: "", confirm: "" },
+    mode: "onTouched",
+  });
+
+  const { ref: nameRef, ...nameField } = register("name");
+  const { ref: regionRef, ...regionField } = register("region");
+  const { ref: emailRef, ...emailField } = register("email");
+  const { ref: passwordRef, ...passwordField } = register("password");
+  const { ref: confirmRef, ...confirmField } = register("confirm");
+
+  // name/region are non-blocking — show a soft hint (like the legacy form) rather
+  // than gating submit. password strength is derived live from the watched value.
+  const nameValue = watch("name");
+  const regionValue = watch("region");
+  const nameInvalid = nameValue.length > 0 && !isValidName(nameValue);
+  const regionInvalid = regionValue.length > 0 && !isValidName(regionValue);
+  const pwStrength = strengthLabel(watch("password"));
 
   useEffect(() => {
     return () => {
@@ -123,6 +120,10 @@ export default function SignupFormCard({
     if (photoInputRef.current) photoInputRef.current.value = "";
   };
 
+  const submit = handleSubmit((values) =>
+    onSubmit(values, { remember, image: photoFile }),
+  );
+
   return (
     <Card
       variant="outlined"
@@ -158,7 +159,7 @@ export default function SignupFormCard({
             </Typography>
           </Box>
 
-          {error ? (
+          {serverError ? (
             <Alert
               severity="error"
               onClose={onDismissError}
@@ -168,32 +169,21 @@ export default function SignupFormCard({
                 backgroundColor: "rgba(244, 67, 54, 0.08)",
               }}
             >
-              {error}
+              {serverError}
             </Alert>
           ) : null}
 
-          <Box
-            component={Form}
-            method="post"
-            encType="multipart/form-data"
-            onSubmit={onSubmit}
-            noValidate
-          >
+          <Box component="form" onSubmit={submit} noValidate>
             <Stack spacing={1.5}>
               <TextField
                 placeholder="Your full name"
                 label="Name"
-                name="name"
-                value={values.name}
-                onChange={(event) => handlers.onNameChange(event.target.value)}
+                inputRef={nameRef}
+                {...nameField}
                 autoComplete="name"
                 fullWidth
-                error={values.name.length > 0 && !isValidName(values.name)}
-                helperText={
-                  values.name.length > 0 && !isValidName(values.name)
-                    ? "Please enter a valid name."
-                    : " "
-                }
+                error={nameInvalid}
+                helperText={nameInvalid ? "Please enter a valid name." : " "}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -212,18 +202,13 @@ export default function SignupFormCard({
               <TextField
                 placeholder="Your Region"
                 label="Region"
-                name="region"
-                value={values.region}
-                onChange={(event) =>
-                  handlers.onRegionChange(event.target.value)
-                }
+                inputRef={regionRef}
+                {...regionField}
                 autoComplete="address-level1"
                 fullWidth
-                error={values.region.length > 0 && !isValidName(values.region)}
+                error={regionInvalid}
                 helperText={
-                  values.region.length > 0 && !isValidName(values.region)
-                    ? "Please enter a valid region."
-                    : " "
+                  regionInvalid ? "Please enter a valid region." : " "
                 }
                 InputProps={{
                   startAdornment: (
@@ -308,17 +293,12 @@ export default function SignupFormCard({
               <TextField
                 label="Email"
                 placeholder="name@email.com"
-                name="email"
-                value={values.email}
-                onChange={(event) => handlers.onEmailChange(event.target.value)}
+                inputRef={emailRef}
+                {...emailField}
                 autoComplete="email"
                 fullWidth
-                error={values.email.length > 0 && !isValidEmail(values.email)}
-                helperText={
-                  values.email.length > 0 && !isValidEmail(values.email)
-                    ? "Example: name@email.com"
-                    : " "
-                }
+                error={!!errors.email}
+                helperText={errors.email?.message ?? " "}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -337,16 +317,13 @@ export default function SignupFormCard({
               <TextField
                 label="Password"
                 placeholder="At least 7 characters"
-                name="password"
-                value={values.password}
-                onChange={(event) =>
-                  handlers.onPasswordChange(event.target.value)
-                }
+                inputRef={passwordRef}
+                {...passwordField}
                 autoComplete="new-password"
                 fullWidth
                 type={showPw ? "text" : "password"}
-                error={values.password.length > 0 && !!pwIssue}
-                helperText={pwIssue ? pwIssue : " "}
+                error={!!errors.password}
+                helperText={errors.password?.message ?? " "}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -380,20 +357,13 @@ export default function SignupFormCard({
               <TextField
                 label="Confirm password"
                 placeholder="Re-enter your password"
-                name="confirm"
-                value={values.confirm}
-                onChange={(event) =>
-                  handlers.onConfirmChange(event.target.value)
-                }
+                inputRef={confirmRef}
+                {...confirmField}
                 autoComplete="new-password"
                 fullWidth
                 type={showConfirm ? "text" : "password"}
-                error={values.confirm.length > 0 && !passwordsMatch}
-                helperText={
-                  values.confirm.length > 0 && !passwordsMatch
-                    ? "Passwords do not match."
-                    : " "
-                }
+                error={!!errors.confirm}
+                helperText={errors.confirm?.message ?? " "}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">

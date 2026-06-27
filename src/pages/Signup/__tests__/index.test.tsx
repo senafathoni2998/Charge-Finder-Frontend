@@ -1,26 +1,22 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import SignupPage from '../index';
+import * as signupUtils from '../signupUtils';
+import { signupRequest } from '../signupRoute';
 
-// Mock React Router hooks
-const mockUseActionData = vi.fn(() => undefined);
-const mockUseNavigate = vi.fn(() => vi.fn());
-const mockUseNavigation = vi.fn(() => ({ state: 'idle' }));
-const mockUseSearchParams = vi.fn(() => [new URLSearchParams()]);
+const mockUseNavigate = vi.fn();
+const mockUseSearchParams = vi.fn(() => [new URLSearchParams(), vi.fn()]);
 
 vi.mock('react-router', async () => {
     const actual = await vi.importActual<typeof import('react-router')>('react-router');
     return {
         ...actual,
-        useActionData: () => mockUseActionData(),
-        useNavigate: () => mockUseNavigate(),
-        useNavigation: () => mockUseNavigation(),
+        useNavigate: () => mockUseNavigate,
         useSearchParams: () => mockUseSearchParams(),
     };
 });
 
-// Mock child components
 vi.mock('../components/SignupAppBar', () => ({
     default: () => <div data-testid="signup-appbar">SignupAppBar</div>,
 }));
@@ -29,105 +25,109 @@ vi.mock('../components/SignupBackground', () => ({
     default: () => <div data-testid="signup-background">SignupBackground</div>,
 }));
 
+// The card owns the form now; the page passes the submit handler + server error.
 vi.mock('../components/SignupFormCard', () => ({
-    default: ({ values, handlers, error, onDismissError, onSubmit, pwIssue, pwStrength, passwordsMatch, isSubmitting, onNavigateToLogin }: any) => (
+    default: ({ serverError, onDismissError, onSubmit, onNavigateToLogin }: any) => (
         <div data-testid="signup-form-card">
-            <div>Name: {values.name}</div>
-            <div>Email: {values.email}</div>
-            <div>Password: {values.password}</div>
             <button onClick={onNavigateToLogin}>Navigate to Login</button>
-            {error && <div>Error: {error}</div>}
+            <button
+                onClick={() =>
+                    onSubmit(
+                        {
+                            name: 'Test',
+                            region: 'JKT',
+                            email: 'test@example.com',
+                            password: 'password123',
+                            confirm: 'password123',
+                        },
+                        { remember: true, image: null }
+                    )
+                }
+            >
+                Submit
+            </button>
+            {serverError && <div>Error: {serverError}</div>}
+            <button onClick={onDismissError}>Dismiss</button>
         </div>
     ),
 }));
 
+vi.mock('../signupRoute', () => ({
+    signupRequest: vi.fn(),
+}));
+
+vi.mock('../signupUtils', () => ({
+    safeNextPath: vi.fn((path: string | null) => path || '/'),
+}));
+
+const renderPage = () =>
+    render(
+        <MemoryRouter>
+            <SignupPage />
+        </MemoryRouter>
+    );
+
 describe('SignupPage', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        mockUseSearchParams.mockReturnValue([new URLSearchParams(), vi.fn()]);
     });
 
     it('should render without crashing', () => {
-        render(
-            <MemoryRouter>
-                <SignupPage />
-            </MemoryRouter>
-        );
+        renderPage();
         expect(screen.getByTestId('signup-appbar')).toBeInTheDocument();
         expect(screen.getByTestId('signup-background')).toBeInTheDocument();
         expect(screen.getByTestId('signup-form-card')).toBeInTheDocument();
     });
 
-    it('should render the SignupAppBar', () => {
-        render(
-            <MemoryRouter>
-                <SignupPage />
-            </MemoryRouter>
-        );
-        expect(screen.getByTestId('signup-appbar')).toBeInTheDocument();
+    it('should navigate to login forwarding the next param', () => {
+        mockUseSearchParams.mockReturnValue([
+            new URLSearchParams('?next=/profile'),
+            vi.fn(),
+        ]);
+        vi.mocked(signupUtils.safeNextPath).mockReturnValue('/profile');
+
+        renderPage();
+        fireEvent.click(screen.getByText('Navigate to Login'));
+        expect(mockUseNavigate).toHaveBeenCalledWith('/login?next=%2Fprofile');
     });
 
-    it('should render the SignupBackground', () => {
-        render(
-            <MemoryRouter>
-                <SignupPage />
-            </MemoryRouter>
+    it('should navigate to the next path after a successful signup', async () => {
+        mockUseSearchParams.mockReturnValue([
+            new URLSearchParams('?next=/profile'),
+            vi.fn(),
+        ]);
+        vi.mocked(signupUtils.safeNextPath).mockReturnValue('/profile');
+        vi.mocked(signupRequest).mockResolvedValue({ ok: true });
+
+        renderPage();
+        fireEvent.click(screen.getByText('Submit'));
+
+        await waitFor(() =>
+            expect(signupRequest).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    email: 'test@example.com',
+                    password: 'password123',
+                    remember: true,
+                    image: null,
+                })
+            )
         );
-        expect(screen.getByTestId('signup-background')).toBeInTheDocument();
+        expect(mockUseNavigate).toHaveBeenCalledWith('/profile');
     });
 
-    it('should render the SignupFormCard', () => {
-        render(
-            <MemoryRouter>
-                <SignupPage />
-            </MemoryRouter>
-        );
-        expect(screen.getByTestId('signup-form-card')).toBeInTheDocument();
-    });
-
-    it('should initialize with empty form values', () => {
-        render(
-            <MemoryRouter>
-                <SignupPage />
-            </MemoryRouter>
-        );
-        expect(screen.getByText('Name:')).toBeInTheDocument();
-        expect(screen.getByText('Email:')).toBeInTheDocument();
-        expect(screen.getByText('Password:')).toBeInTheDocument();
-    });
-
-    it('should handle action data error', async () => {
-        mockUseActionData.mockReturnValueOnce({ error: 'Email already exists' });
-
-        render(
-            <MemoryRouter>
-                <SignupPage />
-            </MemoryRouter>
-        );
-
-        await waitFor(() => {
-            expect(screen.getByText('Error: Email already exists')).toBeInTheDocument();
+    it('should show the server error when signup fails', async () => {
+        vi.mocked(signupRequest).mockResolvedValue({
+            ok: false,
+            error: 'Email already exists',
         });
-    });
 
-    it('should call navigateToLogin when Navigate to Login button is clicked', () => {
-        render(
-            <MemoryRouter>
-                <SignupPage />
-            </MemoryRouter>
-        );
-        const navigateButton = screen.getByText('Navigate to Login');
-        navigateButton.click();
-        // Button should be clickable without error
-        expect(navigateButton).toBeInTheDocument();
-    });
+        renderPage();
+        fireEvent.click(screen.getByText('Submit'));
 
-    it('should render within a Box with correct background', () => {
-        const { container } = render(
-            <MemoryRouter>
-                <SignupPage />
-            </MemoryRouter>
+        await waitFor(() =>
+            expect(screen.getByText('Error: Email already exists')).toBeInTheDocument()
         );
-        const box = container.firstChild as HTMLElement;
-        expect(box).toBeInTheDocument();
+        expect(mockUseNavigate).not.toHaveBeenCalled();
     });
 });

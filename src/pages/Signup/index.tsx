@@ -1,84 +1,50 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useMemo, useState } from "react";
 import { Box, CssBaseline } from "@mui/material";
-import {
-  useActionData,
-  useNavigate,
-  useNavigation,
-  useSearchParams,
-} from "react-router";
-import {
-  isValidEmail,
-  passwordIssue,
-  strengthLabel,
-} from "../../utils/validate";
+import { useNavigate, useSearchParams } from "react-router";
 import { UI } from "../../theme/theme";
-import type { SignupActionData } from "./types";
+import type { SignupFormValues } from "../../forms/schemas";
+import { signupRequest } from "./signupRoute";
 import { safeNextPath } from "./signupUtils";
 import SignupAppBar from "./components/SignupAppBar";
 import SignupBackground from "./components/SignupBackground";
 import SignupFormCard from "./components/SignupFormCard";
 
-export { signupAction } from "./signupRoute";
-
-// Signup page container that wires form state and layout components.
+// Signup page container. The form state lives in SignupFormCard (react-hook-form);
+// this page owns the submit side-effects (API call) and navigation.
 export default function ChargeFinderSignupPage() {
   const navigate = useNavigate();
-  const actionData = useActionData() as SignupActionData | undefined;
-  const navigation = useNavigation();
   const [searchParams] = useSearchParams();
 
-  const [name, setName] = useState("");
-  const [region, setRegion] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [serverError, setServerError] = useState<string | null>(null);
 
-  const pwIssue = useMemo(() => passwordIssue(password), [password]);
-  const pwStrength = useMemo(() => strengthLabel(password), [password]);
-  const passwordsMatch = password === confirm;
   const nextPath = useMemo(
     () => safeNextPath(searchParams.get("next")),
     [searchParams]
   );
-  const isSubmitting = navigation.state === "submitting";
 
-  useEffect(() => {
-    if (actionData?.error) setError(actionData.error);
-  }, [actionData]);
-
-  // Performs client-side validation before submitting the form.
-  const handleSubmit = (event: FormEvent) => {
-    setError(null);
-
-    if (!isValidEmail(email)) {
-      setError("Please enter a valid email address.");
-      event.preventDefault();
-      return;
-    }
-    if (pwIssue) {
-      setError(pwIssue);
-      event.preventDefault();
-      return;
-    }
-    if (!passwordsMatch) {
-      setError("Passwords do not match.");
-      event.preventDefault();
-      return;
+  // Validated by zodResolver(signupFormSchema) before this runs.
+  const handleSignup = async (
+    values: SignupFormValues,
+    opts: { remember: boolean; image: File | null }
+  ) => {
+    setServerError(null);
+    const result = await signupRequest({
+      name: values.name,
+      region: values.region,
+      email: values.email,
+      password: values.password,
+      remember: opts.remember,
+      image: opts.image,
+    });
+    if (result.ok) {
+      navigate(nextPath);
+    } else {
+      setServerError(result.error);
     }
   };
 
   const handleNavigateToLogin = () => {
     navigate(`/login?next=${encodeURIComponent(nextPath)}`);
-  };
-
-  const formValues = { name, region, email, password, confirm };
-  const formHandlers = {
-    onNameChange: (value: string) => setName(value),
-    onRegionChange: (value: string) => setRegion(value),
-    onEmailChange: (value: string) => setEmail(value),
-    onPasswordChange: (value: string) => setPassword(value),
-    onConfirmChange: (value: string) => setConfirm(value),
   };
 
   return (
@@ -108,15 +74,9 @@ export default function ChargeFinderSignupPage() {
           }}
         >
           <SignupFormCard
-            values={formValues}
-            handlers={formHandlers}
-            error={error}
-            onDismissError={() => setError(null)}
-            onSubmit={handleSubmit}
-            pwIssue={pwIssue}
-            pwStrength={pwStrength}
-            passwordsMatch={passwordsMatch}
-            isSubmitting={isSubmitting}
+            serverError={serverError}
+            onDismissError={() => setServerError(null)}
+            onSubmit={handleSignup}
             onNavigateToLogin={handleNavigateToLogin}
           />
         </Box>

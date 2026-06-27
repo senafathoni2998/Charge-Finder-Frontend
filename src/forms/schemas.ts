@@ -49,14 +49,31 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Please enter your password."),
 });
 
-export const signupSchema = z.object({
-  name: nameSchema,
-  email: emailSchema,
-  password: passwordSchema,
-});
+// Signup form schema (react-hook-form). Plain string fields (input=output=string).
+// name/region are non-blocking — the legacy signup action never gated on them, so
+// keeping them un-validated preserves behaviour; email + password are validated and
+// confirm must match the password.
+export const signupFormSchema = z
+  .object({
+    name: z.string(),
+    region: z.string(),
+    email: z
+      .string()
+      .trim()
+      .regex(EMAIL_REGEX, "Please enter a valid email address."),
+    password: z
+      .string()
+      .min(PASSWORD_MIN, PASSWORD_TOO_SHORT)
+      .regex(/\d/, PASSWORD_NEEDS_DIGIT),
+    confirm: z.string(),
+  })
+  .refine((data) => data.password === data.confirm, {
+    message: "Passwords do not match.",
+    path: ["confirm"],
+  });
 
 export type LoginValues = z.infer<typeof loginSchema>;
-export type SignupValues = z.infer<typeof signupSchema>;
+export type SignupFormValues = z.infer<typeof signupFormSchema>;
 
 /** First validation message for a field schema, or null when valid. */
 export function firstIssue(schema: z.ZodTypeAny, value: unknown): string | null {

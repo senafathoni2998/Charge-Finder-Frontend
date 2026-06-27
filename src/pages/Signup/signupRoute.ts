@@ -1,51 +1,47 @@
-import { redirect } from "react-router";
 import store from "../../app/store";
 import { login } from "../../features/auth/authSlice";
-import { isValidEmail, passwordIssue } from "../../utils/validate";
 import { persistSignupSession } from "./signupStorage";
-import { safeNextPath } from "./signupUtils";
 
-// Handles signup submissions and initializes the auth session.
-export async function signupAction({ request }: { request: Request }) {
-  const formData = await request.formData();
-  const name = String(formData.get("name") || "").trim();
-  const region = String(formData.get("region") || "").trim();
-  const email = String(formData.get("email") || "").trim();
-  const password = String(formData.get("password") || "");
-  const confirmPassword = String(formData.get("confirm") || "");
-  const remember = formData.get("remember") === "1";
-  const imageEntry = formData.get("image");
-  const imageFile =
-    imageEntry instanceof File && imageEntry.size > 0 ? imageEntry : null;
+export type SignupRequestResult = { ok: true } | { ok: false; error: string };
 
-  if (!isValidEmail(email)) {
-    return { error: "Please enter a valid email address." };
-  }
-  const pwIssue = passwordIssue(password);
-  if (pwIssue) {
-    return { error: pwIssue };
-  }
-  if (password !== confirmPassword) {
-    return { error: "Passwords do not match." };
-  }
-  if (imageFile && !imageFile.type.startsWith("image/")) {
-    return { error: "Profile photo must be an image file." };
+/**
+ * Performs the signup API call and the resulting session side-effects. Field
+ * validation (email/password/confirm) is handled by the form via
+ * zodResolver(signupFormSchema); navigation is the caller's responsibility.
+ */
+export async function signupRequest({
+  name,
+  region,
+  email,
+  password,
+  remember,
+  image,
+}: {
+  name: string;
+  region: string;
+  email: string;
+  password: string;
+  remember: boolean;
+  image: File | null;
+}): Promise<SignupRequestResult> {
+  if (image && !image.type.startsWith("image/")) {
+    return { ok: false, error: "Profile photo must be an image file." };
   }
 
   const baseUrl = import.meta.env.VITE_APP_BACKEND_URL;
   if (!baseUrl) {
-    return { error: "Backend URL is not configured." };
+    return { ok: false, error: "Backend URL is not configured." };
   }
 
   try {
     let response: Response;
-    if (imageFile) {
+    if (image) {
       const payload = new FormData();
       payload.append("email", email);
       payload.append("password", password);
       payload.append("name", name);
       if (region) payload.append("region", region);
-      payload.append("image", imageFile);
+      payload.append("image", image);
       response = await fetch(`${baseUrl}/auth/signup`, {
         method: "POST",
         body: payload,
@@ -66,7 +62,7 @@ export async function signupAction({ request }: { request: Request }) {
     }
     const responseData = await response.json().catch(() => ({}));
     if (!response.ok) {
-      return { error: responseData.message || "Failed to sign up." };
+      return { ok: false, error: responseData.message || "Failed to sign up." };
     }
 
     const user = responseData.user || {};
@@ -112,11 +108,10 @@ export async function signupAction({ request }: { request: Request }) {
       })
     );
 
-    const url = new URL(request.url);
-    const nextPath = safeNextPath(url.searchParams.get("next"));
-    return redirect(nextPath);
+    return { ok: true };
   } catch (err) {
     return {
+      ok: false,
       error: err instanceof Error ? err.message : "Failed to sign up.",
     };
   }

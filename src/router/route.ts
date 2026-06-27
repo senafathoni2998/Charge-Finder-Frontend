@@ -62,7 +62,7 @@ const lazyLogin = async () => {
 
 const lazySignup = async () => {
   const module = await import("../pages/Signup");
-  return { Component: module.default, action: module.signupAction };
+  return { Component: module.default };
 };
 
 const lazyNotFound = async () => {

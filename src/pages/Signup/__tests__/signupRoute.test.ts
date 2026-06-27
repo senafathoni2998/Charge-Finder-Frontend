@@ -1,75 +1,55 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { signupAction } from '../signupRoute';
+import { signupRequest } from '../signupRoute';
 import * as signupStorage from '../signupStorage';
 
-// Mock dependencies
-vi.mock('../../app/store', () => ({
+vi.mock('../../../app/store', () => ({
     default: {
         dispatch: vi.fn(),
     },
 }));
 
-vi.mock('react-router', () => ({
-    redirect: vi.fn((path) => ({ redirected: true, to: path })),
+vi.mock('../../../features/auth/authSlice', () => ({
+    login: vi.fn(() => ({ type: 'login/test' })),
 }));
 
 vi.mock('../signupStorage', () => ({
     persistSignupSession: vi.fn(),
 }));
 
-describe('signupRoute', () => {
+const baseArgs = {
+    name: 'Test User',
+    region: 'Jakarta',
+    email: 'test@example.com',
+    password: 'password123',
+    remember: true,
+    image: null as File | null,
+};
+
+// Field validation (email/password/confirm) is handled by the form via
+// zodResolver(signupFormSchema) before signupRequest runs, so these tests cover
+// only the image-type guard + the API call + session side-effects.
+describe('signupRequest', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         import.meta.env.VITE_APP_BACKEND_URL = 'https://api.test.com';
     });
 
-    it('should return error for invalid email', async () => {
-        const formData = new FormData();
-        formData.append('email', 'invalid-email');
-        formData.append('password', 'password123');
-        formData.append('confirm', 'password123');
-
-        const result = await signupAction({ request: new Request('http://localhost', { method: 'POST', body: formData }) });
-
-        expect(result).toEqual({ error: 'Please enter a valid email address.' });
+    it('rejects a non-image profile photo', async () => {
+        const badFile = new File(['x'], 'doc.pdf', { type: 'application/pdf' });
+        const result = await signupRequest({ ...baseArgs, image: badFile });
+        expect(result).toEqual({
+            ok: false,
+            error: 'Profile photo must be an image file.',
+        });
     });
 
-    it('should return error for weak password', async () => {
-        const formData = new FormData();
-        formData.append('email', 'test@example.com');
-        formData.append('password', 'weak');
-        formData.append('confirm', 'weak');
-
-        const result = await signupAction({ request: new Request('http://localhost', { method: 'POST', body: formData }) });
-
-        expect(result).toEqual({ error: 'Password must be at least 7 characters.' });
-    });
-
-    it('should return error for mismatched passwords', async () => {
-        const formData = new FormData();
-        formData.append('email', 'test@example.com');
-        formData.append('password', 'password123');
-        formData.append('confirm', 'different123');
-
-        const result = await signupAction({ request: new Request('http://localhost', { method: 'POST', body: formData }) });
-
-        expect(result).toEqual({ error: 'Passwords do not match.' });
-    });
-
-    it('should return error when backend URL is not configured', async () => {
+    it('returns an error when the backend URL is not configured', async () => {
         import.meta.env.VITE_APP_BACKEND_URL = '';
-
-        const formData = new FormData();
-        formData.append('email', 'test@example.com');
-        formData.append('password', 'password123');
-        formData.append('confirm', 'password123');
-
-        const result = await signupAction({ request: new Request('http://localhost', { method: 'POST', body: formData }) });
-
-        expect(result).toEqual({ error: 'Backend URL is not configured.' });
+        const result = await signupRequest(baseArgs);
+        expect(result).toEqual({ ok: false, error: 'Backend URL is not configured.' });
     });
 
-    it('should successfully signup without image', async () => {
+    it('signs up successfully without an image (JSON body)', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
                 ok: true,
@@ -86,52 +66,41 @@ describe('signupRoute', () => {
             })
         ) as any;
 
-        const formData = new FormData();
-        formData.append('email', 'test@example.com');
-        formData.append('password', 'password123');
-        formData.append('confirm', 'password123');
-        formData.append('name', 'Test User');
-        formData.append('region', 'Jakarta');
+        const result = await signupRequest(baseArgs);
 
-        const result = await signupAction({ request: new Request('http://localhost', { method: 'POST', body: formData }) });
-
-        expect(result).toBeDefined();
+        expect(fetch).toHaveBeenCalledWith(
+            'https://api.test.com/auth/signup',
+            expect.objectContaining({
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+            })
+        );
         expect(signupStorage.persistSignupSession).toHaveBeenCalled();
+        expect(result).toEqual({ ok: true });
     });
 
-    it('should successfully signup with image', async () => {
+    it('signs up successfully with an image (multipart body)', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
                 ok: true,
                 json: () => Promise.resolve({
-                    user: {
-                        id: 'user-123',
-                        email: 'test@example.com',
-                        name: 'Test User',
-                        region: 'Jakarta',
-                        role: 'user',
-                        token: 'auth-token',
-                    },
+                    user: { id: 'user-123', email: 'test@example.com' },
                 }),
             })
         ) as any;
 
-        const formData = new FormData();
-        formData.append('email', 'test@example.com');
-        formData.append('password', 'password123');
-        formData.append('confirm', 'password123');
-        formData.append('name', 'Test User');
-        formData.append('region', 'Jakarta');
         const imageFile = new File(['content'], 'photo.jpg', { type: 'image/jpeg' });
-        formData.append('image', imageFile);
+        const result = await signupRequest({ ...baseArgs, image: imageFile });
 
-        const result = await signupAction({ request: new Request('http://localhost', { method: 'POST', body: formData }) });
-
-        expect(result).toBeDefined();
+        const [, options] = (fetch as any).mock.calls[0];
+        expect(options.body).toBeInstanceOf(FormData);
+        expect(options.headers).toBeUndefined();
         expect(signupStorage.persistSignupSession).toHaveBeenCalled();
+        expect(result).toEqual({ ok: true });
     });
 
-    it('should handle signup failure from server', async () => {
+    it('returns the server error message on a non-OK response', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
                 ok: false,
@@ -139,30 +108,17 @@ describe('signupRoute', () => {
             })
         ) as any;
 
-        const formData = new FormData();
-        formData.append('email', 'test@example.com');
-        formData.append('password', 'password123');
-        formData.append('confirm', 'password123');
-
-        const result = await signupAction({ request: new Request('http://localhost', { method: 'POST', body: formData }) });
-
-        expect(result).toEqual({ error: 'Email already exists' });
+        const result = await signupRequest(baseArgs);
+        expect(result).toEqual({ ok: false, error: 'Email already exists' });
     });
 
-    it('should handle network error', async () => {
+    it('handles network errors', async () => {
         global.fetch = vi.fn(() => Promise.reject(new Error('Network error'))) as any;
-
-        const formData = new FormData();
-        formData.append('email', 'test@example.com');
-        formData.append('password', 'password123');
-        formData.append('confirm', 'password123');
-
-        const result = await signupAction({ request: new Request('http://localhost', { method: 'POST', body: formData }) });
-
-        expect(result).toEqual({ error: 'Network error' });
+        const result = await signupRequest(baseArgs);
+        expect(result).toEqual({ ok: false, error: 'Network error' });
     });
 
-    it('should redirect to "/" when no next parameter', async () => {
+    it('returns { ok: true } on a successful signup', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
                 ok: true,
@@ -172,35 +128,7 @@ describe('signupRoute', () => {
             })
         ) as any;
 
-        const formData = new FormData();
-        formData.append('email', 'test@example.com');
-        formData.append('password', 'password123');
-        formData.append('confirm', 'password123');
-
-        const result = await signupAction({ request: new Request('http://localhost', { method: 'POST', body: formData }) });
-
-        expect(result).toBeDefined();
-    });
-
-    it('should redirect to safe next path', async () => {
-        global.fetch = vi.fn(() =>
-            Promise.resolve({
-                ok: true,
-                json: () => Promise.resolve({
-                    user: { id: 'user-123', email: 'test@example.com' },
-                }),
-            })
-        ) as any;
-
-        const formData = new FormData();
-        formData.append('email', 'test@example.com');
-        formData.append('password', 'password123');
-        formData.append('confirm', 'password123');
-
-        const result = await signupAction({
-            request: new Request('http://localhost?next=/profile', { method: 'POST', body: formData }),
-        });
-
-        expect(result).toBeDefined();
+        const result = await signupRequest(baseArgs);
+        expect(result).toEqual({ ok: true });
     });
 });
