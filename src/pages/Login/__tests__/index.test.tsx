@@ -1,14 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import ChargeFinderLoginPage from '../index';
 import * as loginStorage from '../loginStorage';
 import * as sessionUtils from '../../../utils/session';
 import * as loginUtils from '../loginUtils';
+import { loginRequest } from '../loginRoute';
 
-// Mock react-router
 const mockUseNavigate = vi.fn();
-const mockUseNavigation = vi.fn(() => ({ state: 'idle' }));
 const mockUseSearchParams = vi.fn(() => [new URLSearchParams(), vi.fn()]);
 
 vi.mock('react-router', async () => {
@@ -16,9 +15,7 @@ vi.mock('react-router', async () => {
     return {
         ...actual,
         useNavigate: () => mockUseNavigate,
-        useNavigation: () => mockUseNavigation(),
         useSearchParams: () => mockUseSearchParams(),
-        useActionData: () => undefined,
     };
 });
 
@@ -35,32 +32,41 @@ vi.mock('../components/LoginBackground', () => ({
     default: () => <div data-testid="login-background" />,
 }));
 
+// The card owns the form now; the page passes default values + the submit handler.
 vi.mock('../components/LoginFormCard', () => ({
-    default: ({ values, handlers, error, onDismissError, onSubmit, pwIssue, isSubmitting, onForgotPassword, onNavigateToSignup }: any) => (
+    default: ({
+        defaultEmail,
+        defaultPassword,
+        serverError,
+        onDismissError,
+        onSubmit,
+        onForgotPassword,
+        onNavigateToSignup,
+    }: any) => (
         <div data-testid="login-form-card">
-            <input data-testid="email" value={values.email} onChange={(e: any) => handlers.onEmailChange(e.target.value)} />
-            <input data-testid="password" value={values.password} onChange={(e: any) => handlers.onPasswordChange(e.target.value)} />
-            {error && <div data-testid="error">{error}</div>}
-            {pwIssue && <div data-testid="pw-issue">{pwIssue}</div>}
+            <input data-testid="email" defaultValue={defaultEmail} readOnly />
+            <input data-testid="password" defaultValue={defaultPassword} readOnly />
+            {serverError && <div data-testid="error">{serverError}</div>}
             <button onClick={onDismissError}>Dismiss Error</button>
-            <form onSubmit={onSubmit}>
-                <button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Submitting' : 'Submit'}</button>
-            </form>
+            <button
+                onClick={() =>
+                    onSubmit({ email: defaultEmail, password: defaultPassword }, true)
+                }
+            >
+                Submit
+            </button>
             <button onClick={onForgotPassword}>Forgot Password</button>
             <button onClick={onNavigateToSignup}>Sign Up</button>
         </div>
     ),
 }));
 
-// Mock utilities
-vi.mock('../../../utils/validate', () => ({
-    isValidEmail: vi.fn((email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)),
-    passwordIssue: vi.fn(() => null),
+vi.mock('../loginRoute', () => ({
+    loginRequest: vi.fn(),
 }));
 
 vi.mock('../loginStorage', () => ({
     getRememberedLoginEmail: vi.fn(() => null),
-    persistLoginSession: vi.fn(),
 }));
 
 vi.mock('../loginUtils', () => ({
@@ -71,161 +77,111 @@ vi.mock('../../../utils/session', () => ({
     consumeSessionMessage: vi.fn(() => null),
 }));
 
+const renderPage = () =>
+    render(
+        <MemoryRouter>
+            <ChargeFinderLoginPage />
+        </MemoryRouter>
+    );
+
 describe('ChargeFinderLoginPage', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        mockUseNavigate.mockReturnValue(vi.fn());
-        mockUseNavigation.mockReturnValue({ state: 'idle' });
         mockUseSearchParams.mockReturnValue([new URLSearchParams(), vi.fn()]);
         vi.mocked(loginStorage.getRememberedLoginEmail).mockReturnValue(null);
     });
 
     it('should render the login page', () => {
-        render(
-            <MemoryRouter>
-                <ChargeFinderLoginPage />
-            </MemoryRouter>
-        );
-
+        renderPage();
         expect(screen.getByTestId('login-app-bar')).toBeInTheDocument();
         expect(screen.getByTestId('login-background')).toBeInTheDocument();
         expect(screen.getByTestId('login-form-card')).toBeInTheDocument();
     });
 
-    it('should start with demo email when no remembered email', () => {
-        render(
-            <MemoryRouter>
-                <ChargeFinderLoginPage />
-            </MemoryRouter>
-        );
-
+    it('should default to the demo email when there is no remembered email', () => {
+        renderPage();
         expect(screen.getByTestId('email')).toHaveValue('demo@chargefinder.com');
     });
 
-    it('should start with demo password', () => {
-        render(
-            <MemoryRouter>
-                <ChargeFinderLoginPage />
-            </MemoryRouter>
-        );
-
+    it('should default to the demo password', () => {
+        renderPage();
         expect(screen.getByTestId('password')).toHaveValue('demo123');
     });
 
-    it('should load remembered email on mount', () => {
-        vi.mocked(loginStorage.getRememberedLoginEmail).mockReturnValue('remembered@example.com');
-
-        render(
-            <MemoryRouter>
-                <ChargeFinderLoginPage />
-            </MemoryRouter>
+    it('should use the remembered email when present', () => {
+        vi.mocked(loginStorage.getRememberedLoginEmail).mockReturnValue(
+            'remembered@example.com'
         );
-
+        renderPage();
         expect(screen.getByTestId('email')).toHaveValue('remembered@example.com');
     });
 
-    it('should update email when changed', () => {
-        render(
-            <MemoryRouter>
-                <ChargeFinderLoginPage />
-            </MemoryRouter>
-        );
-
-        const emailInput = screen.getByTestId('email');
-        fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-
-        expect(emailInput).toHaveValue('test@example.com');
-    });
-
-    it('should update password when changed', () => {
-        render(
-            <MemoryRouter>
-                <ChargeFinderLoginPage />
-            </MemoryRouter>
-        );
-
-        const passwordInput = screen.getByTestId('password');
-        fireEvent.change(passwordInput, { target: { value: 'password123' } });
-
-        expect(passwordInput).toHaveValue('password123');
-    });
-
-    it('should call onNavigateHome when home button is clicked', () => {
-        render(
-            <MemoryRouter>
-                <ChargeFinderLoginPage />
-            </MemoryRouter>
-        );
-
-        const homeButton = screen.getByText('Home');
-        fireEvent.click(homeButton);
-
+    it('should navigate home when the home button is clicked', () => {
+        renderPage();
+        fireEvent.click(screen.getByText('Home'));
         expect(mockUseNavigate).toHaveBeenCalledWith('/');
     });
 
-    it('should call onForgotPassword when forgot password button is clicked', () => {
-        render(
-            <MemoryRouter>
-                <ChargeFinderLoginPage />
-            </MemoryRouter>
-        );
-
-        const forgotPasswordButton = screen.getByText('Forgot Password');
-        fireEvent.click(forgotPasswordButton);
-
-        expect(forgotPasswordButton).toBeInTheDocument();
+    it('should show a toast when forgot password is clicked', () => {
+        renderPage();
+        fireEvent.click(screen.getByText('Forgot Password'));
+        expect(
+            screen.getByText('Forgot password (demo). Wire to reset flow.')
+        ).toBeInTheDocument();
     });
 
-    it('should navigate to signup with correct path when signup button is clicked', () => {
+    it('should navigate to signup forwarding the next param', () => {
         mockUseSearchParams.mockReturnValue([
             new URLSearchParams('?next=/admin'),
             vi.fn(),
         ]);
         vi.mocked(loginUtils.safeNextPath).mockReturnValue('/admin');
 
-        render(
-            <MemoryRouter>
-                <ChargeFinderLoginPage />
-            </MemoryRouter>
-        );
-
-        const signUpButton = screen.getByText('Sign Up');
-        fireEvent.click(signUpButton);
-
+        renderPage();
+        fireEvent.click(screen.getByText('Sign Up'));
         expect(mockUseNavigate).toHaveBeenCalledWith('/signup?next=%2Fadmin');
     });
 
-    it('should consume session message on mount', () => {
-        render(
-            <MemoryRouter>
-                <ChargeFinderLoginPage />
-            </MemoryRouter>
-        );
-
+    it('should consume the session message on mount', () => {
+        renderPage();
         expect(sessionUtils.consumeSessionMessage).toHaveBeenCalled();
     });
 
-    it('should pass isSubmitting based on navigation state', () => {
-        mockUseNavigation.mockReturnValue({ state: 'submitting' });
+    it('should navigate to the next path after a successful login', async () => {
+        mockUseSearchParams.mockReturnValue([
+            new URLSearchParams('?next=/admin'),
+            vi.fn(),
+        ]);
+        vi.mocked(loginUtils.safeNextPath).mockReturnValue('/admin');
+        vi.mocked(loginRequest).mockResolvedValue({ ok: true });
 
-        render(
-            <MemoryRouter>
-                <ChargeFinderLoginPage />
-            </MemoryRouter>
+        renderPage();
+        fireEvent.click(screen.getByText('Submit'));
+
+        await waitFor(() =>
+            expect(loginRequest).toHaveBeenCalledWith({
+                email: 'demo@chargefinder.com',
+                password: 'demo123',
+                remember: true,
+            })
         );
-
-        const submitButton = screen.getByText('Submitting');
-        expect(submitButton).toBeDisabled();
+        expect(mockUseNavigate).toHaveBeenCalledWith('/admin');
     });
 
-    it('should not disable submit when not submitting', () => {
-        render(
-            <MemoryRouter>
-                <ChargeFinderLoginPage />
-            </MemoryRouter>
-        );
+    it('should show the server error when login fails', async () => {
+        vi.mocked(loginRequest).mockResolvedValue({
+            ok: false,
+            error: 'Invalid email or password.',
+        });
 
-        const submitButton = screen.getByText('Submit');
-        expect(submitButton).not.toBeDisabled();
+        renderPage();
+        fireEvent.click(screen.getByText('Submit'));
+
+        await waitFor(() =>
+            expect(screen.getByTestId('error')).toHaveTextContent(
+                'Invalid email or password.'
+            )
+        );
+        expect(mockUseNavigate).not.toHaveBeenCalled();
     });
 });

@@ -40,10 +40,13 @@ export const passwordSchema = z.preprocess(
   z.string().min(PASSWORD_MIN, PASSWORD_TOO_SHORT).regex(/\d/, PASSWORD_NEEDS_DIGIT),
 );
 
+// Form schema (react-hook-form): fields are always strings, so it uses plain
+// string checks (input type = output type = string) rather than the preprocess
+// field schemas above — those exist for the null-tolerant validate.ts facades.
 export const loginSchema = z.object({
-  email: emailSchema,
+  email: z.string().trim().regex(EMAIL_REGEX, EMAIL_HINT),
   // Presence only — never gate legacy passwords on the login path.
-  password: z.preprocess(toStr, z.string().min(1)),
+  password: z.string().min(1, "Please enter your password."),
 });
 
 export const signupSchema = z.object({

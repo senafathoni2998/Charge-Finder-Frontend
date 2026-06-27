@@ -1,4 +1,6 @@
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Alert,
   Box,
@@ -6,7 +8,6 @@ import {
   Card,
   CardContent,
   Checkbox,
-  Divider,
   FormControlLabel,
   IconButton,
   InputAdornment,
@@ -19,46 +20,47 @@ import EmailIcon from "@mui/icons-material/Email";
 import LockIcon from "@mui/icons-material/Lock";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import { Form } from "react-router";
 import { UI } from "../../../theme/theme";
-import { isValidEmail } from "../../../utils/validate";
-
-type LoginFormValues = {
-  email: string;
-  password: string;
-};
-
-type LoginFormHandlers = {
-  onEmailChange: (value: string) => void;
-  onPasswordChange: (value: string) => void;
-};
+import { loginSchema, type LoginValues } from "../../../forms/schemas";
 
 type LoginFormCardProps = {
-  values: LoginFormValues;
-  handlers: LoginFormHandlers;
-  error: string | null;
+  defaultEmail: string;
+  defaultPassword: string;
+  serverError: string | null;
   onDismissError: () => void;
-  onSubmit: (event: FormEvent) => void;
-  pwIssue: string | null;
-  isSubmitting: boolean;
+  onSubmit: (values: LoginValues, remember: boolean) => void | Promise<void>;
   onForgotPassword: () => void;
   onNavigateToSignup: () => void;
 };
 
-// Renders the login card with credentials and social sign-in actions.
+// Renders the login card. Owns the form via react-hook-form + zodResolver; the
+// page provides the submit handler (API call + navigation) and any server error.
 export default function LoginFormCard({
-  values,
-  handlers,
-  error,
+  defaultEmail,
+  defaultPassword,
+  serverError,
   onDismissError,
   onSubmit,
-  pwIssue,
-  isSubmitting,
   onForgotPassword,
   onNavigateToSignup,
 }: LoginFormCardProps) {
   const [remember, setRemember] = useState(true);
   const [showPw, setShowPw] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: defaultEmail, password: defaultPassword },
+    mode: "onTouched",
+  });
+
+  const { ref: emailRef, ...emailField } = register("email");
+  const { ref: passwordRef, ...passwordField } = register("password");
+
+  const submit = handleSubmit((values) => onSubmit(values, remember));
 
   return (
     <Card
@@ -95,7 +97,7 @@ export default function LoginFormCard({
             </Typography>
           </Box>
 
-          {error ? (
+          {serverError ? (
             <Alert
               severity="error"
               onClose={onDismissError}
@@ -105,26 +107,21 @@ export default function LoginFormCard({
                 backgroundColor: "rgba(244, 67, 54, 0.08)",
               }}
             >
-              {error}
+              {serverError}
             </Alert>
           ) : null}
 
-          <Box component={Form} method="post" onSubmit={onSubmit} noValidate>
+          <Box component="form" onSubmit={submit} noValidate>
             <Stack spacing={1.5}>
               <TextField
                 label="Email"
-                name="email"
                 placeholder="your@email.com"
-                value={values.email}
-                onChange={(event) => handlers.onEmailChange(event.target.value)}
+                inputRef={emailRef}
+                {...emailField}
                 autoComplete="email"
                 fullWidth
-                error={values.email.length > 0 && !isValidEmail(values.email)}
-                helperText={
-                  values.email.length > 0 && !isValidEmail(values.email)
-                    ? "Example: name@email.com"
-                    : " "
-                }
+                error={!!errors.email}
+                helperText={errors.email?.message ?? " "}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -142,17 +139,14 @@ export default function LoginFormCard({
 
               <TextField
                 label="Password"
-                name="password"
                 placeholder="Enter your password"
-                value={values.password}
-                onChange={(event) =>
-                  handlers.onPasswordChange(event.target.value)
-                }
+                inputRef={passwordRef}
+                {...passwordField}
                 autoComplete="current-password"
                 fullWidth
                 type={showPw ? "text" : "password"}
-                error={values.password.length > 0 && !!pwIssue}
-                helperText={pwIssue ? pwIssue : " "}
+                error={!!errors.password}
+                helperText={errors.password?.message ?? " "}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">

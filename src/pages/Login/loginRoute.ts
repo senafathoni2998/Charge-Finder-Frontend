@@ -1,30 +1,26 @@
-import { redirect } from "react-router";
 import store from "../../app/store";
 import { login } from "../../features/auth/authSlice";
-import { isValidEmail } from "../../utils/validate";
 import { persistLoginSession } from "./loginStorage";
-import { safeNextPath } from "./loginUtils";
 
-// Handles login submissions and initializes the auth session.
-export async function loginAction({ request }: { request: Request }) {
-  const formData = await request.formData();
-  const email = String(formData.get("email") || "").trim();
-  const password = String(formData.get("password") || "");
-  const remember = formData.get("remember") === "1";
+export type LoginRequestResult = { ok: true } | { ok: false; error: string };
 
-  if (!isValidEmail(email)) {
-    return { error: "Please enter a valid email address." };
-  }
-
-  // Login must not enforce password-composition rules (that would block existing
-  // users whose passwords predate the rules) — only require a non-empty value.
-  if (!password) {
-    return { error: "Please enter your password." };
-  }
-
+/**
+ * Performs the login API call and the resulting session side-effects
+ * (localStorage + redux). Input is already validated by the form via
+ * zodResolver(loginSchema); navigation is the caller's responsibility.
+ */
+export async function loginRequest({
+  email,
+  password,
+  remember,
+}: {
+  email: string;
+  password: string;
+  remember: boolean;
+}): Promise<LoginRequestResult> {
   const baseUrl = import.meta.env.VITE_APP_BACKEND_URL;
   if (!baseUrl) {
-    return { error: "Backend URL is not configured." };
+    return { ok: false, error: "Backend URL is not configured." };
   }
 
   try {
@@ -39,7 +35,7 @@ export async function loginAction({ request }: { request: Request }) {
     });
     const responseData = await response.json().catch(() => ({}));
     if (!response.ok) {
-      return { error: responseData.message || "Failed to log in." };
+      return { ok: false, error: responseData.message || "Failed to log in." };
     }
 
     const user = responseData.user || {};
@@ -85,11 +81,10 @@ export async function loginAction({ request }: { request: Request }) {
       })
     );
 
-    const url = new URL(request.url);
-    const nextPath = safeNextPath(url.searchParams.get("next"));
-    return redirect(nextPath);
+    return { ok: true };
   } catch (err) {
     return {
+      ok: false,
       error: err instanceof Error ? err.message : "Failed to log in.",
     };
   }

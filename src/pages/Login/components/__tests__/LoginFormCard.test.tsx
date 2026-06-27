@@ -1,160 +1,116 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { RouterProvider } from 'react-router';
-import { createMemoryRouter } from 'react-router';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import LoginFormCard from '../LoginFormCard';
 
-// Wrapper to provide router context
-function createWrapper() {
-    const router = createMemoryRouter([
-        {
-            path: '/',
-            element: (
-                <LoginFormCard
-                    values={{
-                        email: 'test@example.com',
-                        password: 'password123',
-                    }}
-                    handlers={{
-                        onEmailChange: vi.fn(),
-                        onPasswordChange: vi.fn(),
-                    }}
-                    error={null}
-                    onDismissError={vi.fn()}
-                    onSubmit={vi.fn()}
-                    pwIssue={null}
-                    isSubmitting={false}
-                    onForgotPassword={vi.fn()}
-                    onNavigateToSignup={vi.fn()}
-                />
-            ),
-        },
-    ]);
+type Overrides = Partial<React.ComponentProps<typeof LoginFormCard>>;
 
-    return { router };
+function renderCard(overrides: Overrides = {}) {
+    const props = {
+        defaultEmail: 'test@example.com',
+        defaultPassword: 'password123',
+        serverError: null,
+        onDismissError: vi.fn(),
+        onSubmit: vi.fn(),
+        onForgotPassword: vi.fn(),
+        onNavigateToSignup: vi.fn(),
+        ...overrides,
+    };
+    render(<LoginFormCard {...props} />);
+    return props;
 }
 
 describe('LoginFormCard', () => {
     it('should render the login card', () => {
-        const { router } = createWrapper();
-        render(<RouterProvider router={router} />);
-
+        renderCard();
         expect(screen.getByText('Welcome back')).toBeInTheDocument();
-        expect(screen.getByText('Sign in to access your car profile and tickets.')).toBeInTheDocument();
+        expect(
+            screen.getByText('Sign in to access your car profile and tickets.')
+        ).toBeInTheDocument();
     });
 
-    it('should render email input with correct value', () => {
-        const { router } = createWrapper();
-        render(<RouterProvider router={router} />);
-
-        const emailInput = screen.getByLabelText('Email');
-        expect(emailInput).toHaveValue('test@example.com');
+    it('should render email input with the default value', () => {
+        renderCard();
+        expect(screen.getByLabelText('Email')).toHaveValue('test@example.com');
     });
 
-    it('should render password input with correct value', () => {
-        const { router } = createWrapper();
-        render(<RouterProvider router={router} />);
-
-        const passwordInput = screen.getByLabelText('Password');
-        expect(passwordInput).toHaveValue('password123');
+    it('should render password input with the default value', () => {
+        renderCard();
+        expect(screen.getByLabelText('Password')).toHaveValue('password123');
     });
 
-    it('should show error alert when error is provided', () => {
-        const router = createMemoryRouter([
-            {
-                path: '/',
-                element: (
-                    <LoginFormCard
-                        values={{ email: '', password: '' }}
-                        handlers={{
-                            onEmailChange: vi.fn(),
-                            onPasswordChange: vi.fn(),
-                        }}
-                        error="Invalid credentials"
-                        onDismissError={vi.fn()}
-                        onSubmit={vi.fn()}
-                        pwIssue={null}
-                        isSubmitting={false}
-                        onForgotPassword={vi.fn()}
-                        onNavigateToSignup={vi.fn()}
-                    />
-                ),
-            },
-        ]);
-
-        render(<RouterProvider router={router} />);
+    it('should show the server error alert when provided', () => {
+        renderCard({ serverError: 'Invalid credentials' });
         expect(screen.getByText('Invalid credentials')).toBeInTheDocument();
     });
 
-    it('should not show error alert when error is null', () => {
-        const { router } = createWrapper();
-        render(<RouterProvider router={router} />);
-
+    it('should not show an error alert when serverError is null', () => {
+        renderCard();
         expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     });
 
-    it('should show password issue as helper text when present', () => {
-        const router = createMemoryRouter([
-            {
-                path: '/',
-                element: (
-                    <LoginFormCard
-                        values={{ email: '', password: '' }}
-                        handlers={{
-                            onEmailChange: vi.fn(),
-                            onPasswordChange: vi.fn(),
-                        }}
-                        error={null}
-                        onDismissError={vi.fn()}
-                        onSubmit={vi.fn()}
-                        pwIssue="Password is too short"
-                        isSubmitting={false}
-                        onForgotPassword={vi.fn()}
-                        onNavigateToSignup={vi.fn()}
-                    />
-                ),
-            },
-        ]);
-
-        render(<RouterProvider router={router} />);
-        expect(screen.getByText('Password is too short')).toBeInTheDocument();
+    it('should call onDismissError when the alert close button is clicked', () => {
+        const props = renderCard({ serverError: 'Invalid credentials' });
+        fireEvent.click(screen.getByLabelText('Close'));
+        expect(props.onDismissError).toHaveBeenCalled();
     });
 
     it('should render "New here?" text', () => {
-        const { router } = createWrapper();
-        render(<RouterProvider router={router} />);
-
+        renderCard();
         expect(screen.getByText(/New here?/)).toBeInTheDocument();
     });
 
     it('should render terms and privacy text', () => {
-        const { router } = createWrapper();
-        render(<RouterProvider router={router} />);
-
-        expect(screen.getByText(/By signing in, you agree to the demo Terms and Privacy./)).toBeInTheDocument();
+        renderCard();
+        expect(
+            screen.getByText(/By signing in, you agree to the demo Terms and Privacy./)
+        ).toBeInTheDocument();
     });
 
-    it('should render "Remember me" checkbox', () => {
-        const { router } = createWrapper();
-        render(<RouterProvider router={router} />);
-
+    it('should render the "Remember me" checkbox', () => {
+        renderCard();
         expect(screen.getByLabelText('Remember me')).toBeInTheDocument();
     });
 
-    it('should toggle password visibility when eye icon is clicked', () => {
-        const { router } = createWrapper();
-        render(<RouterProvider router={router} />);
-
+    it('should toggle password visibility when the eye icon is clicked', () => {
+        renderCard();
         const passwordInput = screen.getByLabelText('Password');
         expect(passwordInput).toHaveAttribute('type', 'password');
 
-        const toggleButtons = screen.getAllByRole('button');
-        const showButton = toggleButtons.find(btn => btn.getAttribute('aria-label') === 'Show password');
-        expect(showButton).toBeInTheDocument();
+        fireEvent.click(screen.getByLabelText('Show password'));
+        expect(passwordInput).toHaveAttribute('type', 'text');
+    });
 
-        if (showButton) {
-            fireEvent.click(showButton);
-            expect(passwordInput).toHaveAttribute('type', 'text');
-        }
+    it('should call onForgotPassword when the forgot link is clicked', () => {
+        const props = renderCard();
+        fireEvent.click(screen.getByText('Forgot password?'));
+        expect(props.onForgotPassword).toHaveBeenCalled();
+    });
+
+    it('should call onNavigateToSignup when the create-account link is clicked', () => {
+        const props = renderCard();
+        fireEvent.click(screen.getByText('Create an account'));
+        expect(props.onNavigateToSignup).toHaveBeenCalled();
+    });
+
+    it('should call onSubmit with the validated values + remember flag on a valid submit', async () => {
+        const props = renderCard();
+        fireEvent.click(screen.getByText('Sign in'));
+
+        await waitFor(() =>
+            expect(props.onSubmit).toHaveBeenCalledWith(
+                { email: 'test@example.com', password: 'password123' },
+                true
+            )
+        );
+    });
+
+    it('should block submit and show a validation error for an invalid email', async () => {
+        const props = renderCard({ defaultEmail: 'not-an-email' });
+        fireEvent.click(screen.getByText('Sign in'));
+
+        await waitFor(() =>
+            expect(screen.getByText('Example: name@email.com')).toBeInTheDocument()
+        );
+        expect(props.onSubmit).not.toHaveBeenCalled();
     });
 });

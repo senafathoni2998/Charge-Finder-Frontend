@@ -57,7 +57,7 @@ const lazyAddUser = async () => {
 
 const lazyLogin = async () => {
   const module = await import("../pages/Login");
-  return { Component: module.default, action: module.loginAction };
+  return { Component: module.default };
 };
 
 const lazySignup = async () => {

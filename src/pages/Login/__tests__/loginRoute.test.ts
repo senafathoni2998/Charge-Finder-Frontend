@@ -1,10 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { loginAction } from '../loginRoute';
-import * as validate from '../../../utils/validate';
+import { loginRequest } from '../loginRoute';
 import * as loginStorage from '../loginStorage';
 
 // Mock dependencies
-vi.mock('../../../utils/validate');
 vi.mock('../loginStorage');
 
 // Mock Redux store and authSlice
@@ -18,99 +16,28 @@ vi.mock('../../../features/auth/authSlice', () => ({
     login: vi.fn(() => ({ type: 'login/test' })),
 }));
 
-describe('loginAction', () => {
+// Input validation (email format, password presence) is now handled by the form
+// via zodResolver(loginSchema) before loginRequest is ever called, so these tests
+// cover only the API call + session side-effects.
+describe('loginRequest', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        // Set environment variable
         import.meta.env.VITE_APP_BACKEND_URL = 'https://api.test.com';
     });
 
-    it('should return error when email is invalid', async () => {
-        vi.mocked(validate.isValidEmail).mockReturnValue(false);
-
-        const formData = new FormData();
-        formData.append('email', 'invalid-email');
-        formData.append('password', 'password123');
-
-        const request = new Request('http://localhost:3000', {
-            method: 'POST',
-            body: formData,
-        });
-
-        const result = await loginAction({ request });
-
-        expect(result).toEqual({
-            error: 'Please enter a valid email address.',
-        });
-    });
-
-    it('should return error when password is empty', async () => {
-        vi.mocked(validate.isValidEmail).mockReturnValue(true);
-
-        const formData = new FormData();
-        formData.append('email', 'test@example.com');
-        formData.append('password', '');
-
-        const request = new Request('http://localhost:3000', {
-            method: 'POST',
-            body: formData,
-        });
-
-        const result = await loginAction({ request });
-
-        expect(result).toEqual({
-            error: 'Please enter your password.',
-        });
-    });
-
-    it('should NOT enforce password-composition rules on login (legacy short passwords pass the gate)', async () => {
-        // A short / rule-violating password must NOT be blocked by the login form;
-        // composition rules belong only on signup / change-password.
-        import.meta.env.VITE_APP_BACKEND_URL = '';
-        vi.mocked(validate.isValidEmail).mockReturnValue(true);
-
-        const formData = new FormData();
-        formData.append('email', 'test@example.com');
-        formData.append('password', '123');
-
-        const request = new Request('http://localhost:3000', {
-            method: 'POST',
-            body: formData,
-        });
-
-        const result = await loginAction({ request });
-
-        // It got past password validation to the next check (backend URL), proving
-        // the short password was accepted.
-        expect(result).toEqual({ error: 'Backend URL is not configured.' });
-    });
-
-    it('should return error when backend URL is not configured', async () => {
+    it('returns an error when the backend URL is not configured', async () => {
         import.meta.env.VITE_APP_BACKEND_URL = '';
 
-        vi.mocked(validate.isValidEmail).mockReturnValue(true);
-        vi.mocked(validate.passwordIssue).mockReturnValue(null);
-
-        const formData = new FormData();
-        formData.append('email', 'test@example.com');
-        formData.append('password', 'password123');
-
-        const request = new Request('http://localhost:3000', {
-            method: 'POST',
-            body: formData,
+        const result = await loginRequest({
+            email: 'test@example.com',
+            password: 'password123',
+            remember: false,
         });
 
-        const result = await loginAction({ request });
-
-        expect(result).toEqual({
-            error: 'Backend URL is not configured.',
-        });
+        expect(result).toEqual({ ok: false, error: 'Backend URL is not configured.' });
     });
 
-    it('should call backend API with correct payload', async () => {
-        vi.mocked(validate.isValidEmail).mockReturnValue(true);
-        vi.mocked(validate.passwordIssue).mockReturnValue(null);
-
+    it('calls the backend API with the correct payload', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
                 ok: true,
@@ -127,17 +54,11 @@ describe('loginAction', () => {
             })
         ) as any;
 
-        const formData = new FormData();
-        formData.append('email', 'test@example.com');
-        formData.append('password', 'password123');
-        formData.append('remember', '1');
-
-        const request = new Request('http://localhost:3000', {
-            method: 'POST',
-            body: formData,
+        const result = await loginRequest({
+            email: 'test@example.com',
+            password: 'password123',
+            remember: true,
         });
-
-        await loginAction({ request });
 
         expect(fetch).toHaveBeenCalledWith(
             'https://api.test.com/auth/login',
@@ -151,12 +72,10 @@ describe('loginAction', () => {
                 }),
             })
         );
+        expect(result).toEqual({ ok: true });
     });
 
-    it('should return error when backend returns non-OK response', async () => {
-        vi.mocked(validate.isValidEmail).mockReturnValue(true);
-        vi.mocked(validate.passwordIssue).mockReturnValue(null);
-
+    it('returns an error when the backend returns a non-OK response', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
                 ok: false,
@@ -165,26 +84,16 @@ describe('loginAction', () => {
             })
         ) as any;
 
-        const formData = new FormData();
-        formData.append('email', 'test@example.com');
-        formData.append('password', 'wrong-password');
-
-        const request = new Request('http://localhost:3000', {
-            method: 'POST',
-            body: formData,
+        const result = await loginRequest({
+            email: 'test@example.com',
+            password: 'wrong-password',
+            remember: false,
         });
 
-        const result = await loginAction({ request });
-
-        expect(result).toEqual({
-            error: 'Invalid credentials',
-        });
+        expect(result).toEqual({ ok: false, error: 'Invalid credentials' });
     });
 
-    it('should persist login session with correct data', async () => {
-        vi.mocked(validate.isValidEmail).mockReturnValue(true);
-        vi.mocked(validate.passwordIssue).mockReturnValue(null);
-
+    it('persists the login session with the correct data', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
                 ok: true,
@@ -201,17 +110,11 @@ describe('loginAction', () => {
             })
         ) as any;
 
-        const formData = new FormData();
-        formData.append('email', 'persist@example.com');
-        formData.append('password', 'password123');
-        formData.append('remember', '1');
-
-        const request = new Request('http://localhost:3000', {
-            method: 'POST',
-            body: formData,
+        await loginRequest({
+            email: 'persist@example.com',
+            password: 'password123',
+            remember: true,
         });
-
-        await loginAction({ request });
 
         expect(loginStorage.persistLoginSession).toHaveBeenCalledWith({
             token: 'persist-token',
@@ -223,29 +126,19 @@ describe('loginAction', () => {
         });
     });
 
-    it('should handle missing user data gracefully', async () => {
-        vi.mocked(validate.isValidEmail).mockReturnValue(true);
-        vi.mocked(validate.passwordIssue).mockReturnValue(null);
-
+    it('handles missing user data gracefully', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
                 ok: true,
-                json: () => Promise.resolve({
-                    user: {},
-                }),
+                json: () => Promise.resolve({ user: {} }),
             })
         ) as any;
 
-        const formData = new FormData();
-        formData.append('email', 'test@example.com');
-        formData.append('password', 'password123');
-
-        const request = new Request('http://localhost:3000', {
-            method: 'POST',
-            body: formData,
+        await loginRequest({
+            email: 'test@example.com',
+            password: 'password123',
+            remember: false,
         });
-
-        await loginAction({ request });
 
         expect(loginStorage.persistLoginSession).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -257,92 +150,55 @@ describe('loginAction', () => {
         );
     });
 
-    it('should handle numeric user id', async () => {
-        vi.mocked(validate.isValidEmail).mockReturnValue(true);
-        vi.mocked(validate.passwordIssue).mockReturnValue(null);
-
+    it('coerces a numeric user id to a string', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
                 ok: true,
                 json: () => Promise.resolve({
-                    user: {
-                        id: 12345,
-                        email: 'numeric@example.com',
-                    },
+                    user: { id: 12345, email: 'numeric@example.com' },
                 }),
             })
         ) as any;
 
-        const formData = new FormData();
-        formData.append('email', 'numeric@example.com');
-        formData.append('password', 'password123');
-
-        const request = new Request('http://localhost:3000', {
-            method: 'POST',
-            body: formData,
+        await loginRequest({
+            email: 'numeric@example.com',
+            password: 'password123',
+            remember: false,
         });
 
-        await loginAction({ request });
-
         expect(loginStorage.persistLoginSession).toHaveBeenCalledWith(
-            expect.objectContaining({
-                userId: '12345',
-            })
+            expect.objectContaining({ userId: '12345' })
         );
     });
 
-    it('should handle network errors', async () => {
-        vi.mocked(validate.isValidEmail).mockReturnValue(true);
-        vi.mocked(validate.passwordIssue).mockReturnValue(null);
-
+    it('handles network errors', async () => {
         global.fetch = vi.fn(() => Promise.reject(new Error('Network error'))) as any;
 
-        const formData = new FormData();
-        formData.append('email', 'test@example.com');
-        formData.append('password', 'password123');
-
-        const request = new Request('http://localhost:3000', {
-            method: 'POST',
-            body: formData,
+        const result = await loginRequest({
+            email: 'test@example.com',
+            password: 'password123',
+            remember: false,
         });
 
-        const result = await loginAction({ request });
-
-        expect(result).toEqual({
-            error: 'Network error',
-        });
+        expect(result).toEqual({ ok: false, error: 'Network error' });
     });
 
-    it('should return a redirect response on successful login', async () => {
-        vi.mocked(validate.isValidEmail).mockReturnValue(true);
-        vi.mocked(validate.passwordIssue).mockReturnValue(null);
-
+    it('returns { ok: true } on a successful login', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
                 ok: true,
                 json: () => Promise.resolve({
-                    user: {
-                        id: 'user-123',
-                        email: 'test@example.com',
-                    },
+                    user: { id: 'user-123', email: 'test@example.com' },
                 }),
             })
         ) as any;
 
-        const formData = new FormData();
-        formData.append('email', 'test@example.com');
-        formData.append('password', 'password123');
-
-        const request = new Request('http://localhost:3000/login?next=/admin', {
-            method: 'POST',
-            body: formData,
+        const result = await loginRequest({
+            email: 'test@example.com',
+            password: 'password123',
+            remember: false,
         });
 
-        const result = await loginAction({ request });
-
-        // Should return a Response object (redirect)
-        expect(result).toBeDefined();
-        // Response objects are instances of Response
-        expect(result instanceof Response).toBe(true);
+        expect(result).toEqual({ ok: true });
     });
 });

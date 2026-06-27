@@ -1,65 +1,47 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useMemo, useState } from "react";
 import { Box, CssBaseline, Snackbar } from "@mui/material";
-import {
-  useActionData,
-  useNavigate,
-  useNavigation,
-  useSearchParams,
-} from "react-router";
-import { isValidEmail } from "../../utils/validate";
+import { useNavigate, useSearchParams } from "react-router";
 import { UI } from "../../theme/theme";
-import type { LoginActionData } from "./types";
+import type { LoginValues } from "../../forms/schemas";
 import { getRememberedLoginEmail } from "./loginStorage";
+import { loginRequest } from "./loginRoute";
 import { safeNextPath } from "./loginUtils";
 import { consumeSessionMessage } from "../../utils/session";
 import LoginAppBar from "./components/LoginAppBar";
 import LoginBackground from "./components/LoginBackground";
 import LoginFormCard from "./components/LoginFormCard";
 
-export { loginAction } from "./loginRoute";
-
-// Login page container that wires form state and layout components.
+// Login page container. The form state lives in LoginFormCard (react-hook-form);
+// this page owns the submit side-effects (API call) and navigation.
 export default function ChargeFinderLoginPage() {
   const navigate = useNavigate();
-  const actionData = useActionData() as LoginActionData | undefined;
-  const navigation = useNavigation();
   const [searchParams] = useSearchParams();
 
-  const [email, setEmail] = useState(
-    () => getRememberedLoginEmail() ?? "demo@chargefinder.com",
-  );
-  const [password, setPassword] = useState("demo123");
-  const [error, setError] = useState<string | null>(null);
+  const [serverError, setServerError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(() =>
     consumeSessionMessage(),
+  );
+  const [defaultEmail] = useState(
+    () => getRememberedLoginEmail() ?? "demo@chargefinder.com",
   );
 
   const nextPath = useMemo(
     () => safeNextPath(searchParams.get("next")),
     [searchParams],
   );
-  const isSubmitting = navigation.state === "submitting";
 
-  useEffect(() => {
-    if (actionData?.error) setError(actionData.error);
-  }, [actionData]);
-
-  // Performs client-side validation before submitting the form.
-  const handleSubmit = (event: FormEvent) => {
-    setError(null);
-
-    if (!isValidEmail(email)) {
-      setError("Please enter a valid email address.");
-      event.preventDefault();
-      return;
-    }
-    // Login only requires a non-empty password. Composition rules (length/digits)
-    // belong on signup and change-password, never on login — enforcing them here
-    // locks out existing users whose passwords predate those rules.
-    if (!password) {
-      setError("Please enter your password.");
-      event.preventDefault();
-      return;
+  // Validated by zodResolver(loginSchema) before this runs.
+  const handleLogin = async (values: LoginValues, remember: boolean) => {
+    setServerError(null);
+    const result = await loginRequest({
+      email: values.email,
+      password: values.password,
+      remember,
+    });
+    if (result.ok) {
+      navigate(nextPath);
+    } else {
+      setServerError(result.error);
     }
   };
 
@@ -69,12 +51,6 @@ export default function ChargeFinderLoginPage() {
 
   const handleNavigateToSignup = () => {
     navigate(`/signup?next=${encodeURIComponent(nextPath)}`);
-  };
-
-  const formValues = { email, password };
-  const formHandlers = {
-    onEmailChange: (value: string) => setEmail(value),
-    onPasswordChange: (value: string) => setPassword(value),
   };
 
   return (
@@ -110,13 +86,11 @@ export default function ChargeFinderLoginPage() {
           }}
         >
           <LoginFormCard
-            values={formValues}
-            handlers={formHandlers}
-            error={error}
-            onDismissError={() => setError(null)}
-            onSubmit={handleSubmit}
-            pwIssue={null}
-            isSubmitting={isSubmitting}
+            defaultEmail={defaultEmail}
+            defaultPassword="demo123"
+            serverError={serverError}
+            onDismissError={() => setServerError(null)}
+            onSubmit={handleLogin}
             onForgotPassword={handleForgotPassword}
             onNavigateToSignup={handleNavigateToSignup}
           />
