@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
@@ -180,6 +180,8 @@ const mockStation: Station = {
     amenities: ['Cafe'],
 };
 
+const sockets: MockWebSocket[] = [];
+
 class MockWebSocket {
     url: string;
     onmessage: ((event: MessageEvent) => void) | null = null;
@@ -188,8 +190,17 @@ class MockWebSocket {
 
     constructor(url: string) {
         this.url = url;
+        sockets.push(this);
     }
 }
+
+const emit = (payload: Record<string, unknown>) => {
+    const socket = sockets[sockets.length - 1];
+    expect(socket).toBeDefined();
+    act(() => {
+        socket.onmessage?.({ data: JSON.stringify(payload) } as MessageEvent);
+    });
+};
 
 const baseAuthState = {
     isAuthenticated: true,
@@ -234,6 +245,7 @@ let originalWebSocket: typeof WebSocket | undefined;
 describe('StationDetailPage', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        sockets.length = 0;
         originalWebSocket = globalThis.WebSocket;
         globalThis.WebSocket = MockWebSocket as any;
         mockUseParams.mockReturnValue({ id: 'station-1' });
@@ -335,5 +347,54 @@ describe('StationDetailPage', () => {
 
         fireEvent.click(screen.getByText('Charging action'));
         expect(screen.getByTestId('start-charging-dialog')).toBeInTheDocument();
+    });
+
+    // --- charging-progress WebSocket payload handling ---
+
+    it('opens the charging dialog on a "started" WebSocket payload', async () => {
+        const store = createTestStore({ isAuthenticated: true });
+        renderPage(store);
+        await waitFor(() => {
+            expect(screen.getByTestId('actions-card')).toBeInTheDocument();
+        });
+
+        expect(screen.queryByTestId('charging-dialog')).not.toBeInTheDocument();
+        emit({ type: 'started' });
+
+        await waitFor(() => {
+            expect(screen.getByTestId('charging-dialog')).toBeInTheDocument();
+        });
+    });
+
+    it('completes the session on a progress>=100 WebSocket payload', async () => {
+        const store = createTestStore({ isAuthenticated: true });
+        renderPage(store);
+        await waitFor(() => {
+            expect(screen.getByTestId('actions-card')).toBeInTheDocument();
+        });
+
+        emit({ type: 'progress', progressPercent: 100 });
+
+        await waitFor(() => {
+            expect(mockCompleteChargingSession).toHaveBeenCalledWith({
+                stationId: 'station-1',
+            });
+        });
+    });
+
+    it('ignores malformed WebSocket payloads without crashing', async () => {
+        const store = createTestStore({ isAuthenticated: true });
+        renderPage(store);
+        await waitFor(() => {
+            expect(screen.getByTestId('actions-card')).toBeInTheDocument();
+        });
+
+        const socket = sockets[sockets.length - 1];
+        act(() => {
+            socket.onmessage?.({ data: 'not-json{' } as MessageEvent);
+        });
+
+        expect(screen.getByTestId('station-overview')).toBeInTheDocument();
+        expect(mockCompleteChargingSession).not.toHaveBeenCalled();
     });
 });
