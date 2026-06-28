@@ -33,5 +33,12 @@ describe('time utils', () => {
              const past = new Date(now - 90000).toISOString();
              expect(minutesAgo(past)).toBe(2);
         });
+
+        it('should return 0 for missing or malformed timestamps (no "NaNm ago")', () => {
+            expect(minutesAgo(undefined as unknown as string)).toBe(0);
+            expect(minutesAgo(null as unknown as string)).toBe(0);
+            expect(minutesAgo('')).toBe(0);
+            expect(minutesAgo('not-a-date')).toBe(0);
+        });
     });
 });
