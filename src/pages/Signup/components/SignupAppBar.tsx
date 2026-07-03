@@ -1,9 +1,12 @@
 import { AppBar, Box, Toolbar, Typography } from "@mui/material";
 import ElectricBoltIcon from "@mui/icons-material/ElectricBolt";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 
 // Renders the signup page header with branding.
 export default function SignupAppBar() {
+  const { t } = useTranslation("signup");
+
   return (
     <AppBar
       position="sticky"
@@ -36,7 +39,7 @@ export default function SignupAppBar() {
             ChargeFinder
           </Typography>
           <Typography variant="caption" sx={{ color: UI.text3 }}>
-            Create your account
+            {t("appBar.subtitle")}
           </Typography>
         </Box>
         <Box sx={{ flex: 1 }} />

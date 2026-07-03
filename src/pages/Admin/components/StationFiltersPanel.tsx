@@ -10,6 +10,7 @@ import {
   ToggleButtonGroup,
   Typography,
 } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import type { ConnectorType } from "../../../models/model";
 import type { StationFilterStatus } from "../types";
 import { UI } from "../../../theme/theme";
@@ -40,6 +41,8 @@ export default function StationFiltersPanel({
   filtersActiveCount,
   onResetFilters,
 }: StationFiltersPanelProps) {
+  const { t } = useTranslation("admin");
+
   // Handles the availability toggle change.
   const handleStatusChange = (
     _event: MouseEvent<HTMLElement>,
@@ -71,7 +74,7 @@ export default function StationFiltersPanel({
             justifyContent="space-between"
           >
             <Typography variant="caption" sx={{ color: UI.text3 }}>
-              Filters
+              {t("filters.title")}
             </Typography>
             <Button
               size="small"
@@ -84,7 +87,7 @@ export default function StationFiltersPanel({
                 color: UI.text2,
               }}
             >
-              Reset filters
+              {t("filters.reset")}
             </Button>
           </Stack>
 
@@ -96,7 +99,7 @@ export default function StationFiltersPanel({
             }}
           >
             <Typography variant="caption" sx={{ color: UI.text3 }}>
-              Availability
+              {t("filters.availability")}
             </Typography>
             <ToggleButtonGroup
               exclusive
@@ -112,16 +115,22 @@ export default function StationFiltersPanel({
                 },
               }}
             >
-              <ToggleButton value="">All</ToggleButton>
-              <ToggleButton value="AVAILABLE">Available</ToggleButton>
-              <ToggleButton value="BUSY">Busy</ToggleButton>
-              <ToggleButton value="OFFLINE">Offline</ToggleButton>
+              <ToggleButton value="">{t("filters.all")}</ToggleButton>
+              <ToggleButton value="AVAILABLE">
+                {t("status.available", { ns: "common" })}
+              </ToggleButton>
+              <ToggleButton value="BUSY">
+                {t("status.busy", { ns: "common" })}
+              </ToggleButton>
+              <ToggleButton value="OFFLINE">
+                {t("status.offline", { ns: "common" })}
+              </ToggleButton>
             </ToggleButtonGroup>
           </Box>
 
           <Box>
             <Typography variant="caption" sx={{ color: UI.text3 }}>
-              Connectors
+              {t("filters.connectors")}
             </Typography>
             <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: "wrap" }}>
               {connectorOptions.map((connector) => {
@@ -159,7 +168,7 @@ export default function StationFiltersPanel({
               alignItems="center"
             >
               <Typography variant="caption" sx={{ color: UI.text3 }}>
-                Minimum power
+                {t("filters.minimumPower")}
               </Typography>
               <Typography variant="caption" sx={{ color: UI.text3 }}>
                 {minKW || 0} kW

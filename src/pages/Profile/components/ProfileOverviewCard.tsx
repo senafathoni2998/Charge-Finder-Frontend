@@ -13,6 +13,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import LockIcon from "@mui/icons-material/Lock";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { Form } from "react-router";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 
 type ProfileOverviewCardProps = {
@@ -35,6 +36,7 @@ export default function ProfileOverviewCard({
   onEditProfile,
   onChangePassword,
 }: ProfileOverviewCardProps) {
+  const { t } = useTranslation("profile");
   const emailLabel = email || "demo@chargefinder.app";
 
   return (
@@ -83,7 +85,7 @@ export default function ProfileOverviewCard({
               </Typography>
             </Box>
             <Chip
-              label="Active"
+              label={t("overview.active")}
               size="small"
               sx={{
                 borderRadius: 999,
@@ -108,7 +110,7 @@ export default function ProfileOverviewCard({
           >
             <Box>
               <Typography sx={{ color: UI.text3, fontSize: { xs: 11, sm: 12, md: 13 }, mb: 0.25 }}>
-                Name
+                {t("overview.name")}
               </Typography>
               <Typography sx={{ color: UI.text, fontWeight: 700, fontSize: { xs: 13, sm: 14, md: 15 } }}>
                 {displayName}
@@ -116,7 +118,7 @@ export default function ProfileOverviewCard({
             </Box>
             <Box>
               <Typography sx={{ color: UI.text3, fontSize: { xs: 11, sm: 12, md: 13 }, mb: 0.25 }}>
-                Email
+                {t("overview.email")}
               </Typography>
               <Typography sx={{ color: UI.text, fontWeight: 700, fontSize: { xs: 13, sm: 14, md: 15 } }}>
                 {emailLabel}
@@ -124,15 +126,15 @@ export default function ProfileOverviewCard({
             </Box>
             <Box>
               <Typography sx={{ color: UI.text3, fontSize: { xs: 11, sm: 12, md: 13 }, mb: 0.25 }}>
-                Plan
+                {t("overview.plan")}
               </Typography>
               <Typography sx={{ color: UI.text, fontWeight: 700, fontSize: { xs: 13, sm: 14, md: 15 } }}>
-                {"Driver \u2022 Free"}
+                {t("overview.planValue")}
               </Typography>
             </Box>
             <Box>
               <Typography sx={{ color: UI.text3, fontSize: { xs: 11, sm: 12, md: 13 }, mb: 0.25 }}>
-                Region
+                {t("overview.region")}
               </Typography>
               <Typography sx={{ color: UI.text, fontWeight: 700, fontSize: { xs: 13, sm: 14, md: 15 } }}>
                 {regionLabel}
@@ -164,7 +166,7 @@ export default function ProfileOverviewCard({
                 fontSize: { xs: 13, sm: 14 },
               }}
             >
-              Edit profile
+              {t("overview.editProfile")}
             </Button>
             <Button
               variant="outlined"
@@ -181,7 +183,7 @@ export default function ProfileOverviewCard({
                 fontSize: { xs: 13, sm: 14 },
               }}
             >
-              Change password
+              {t("overview.changePassword")}
             </Button>
             <Box sx={{ flex: 1 }} />
             <Form method="post">
@@ -203,7 +205,7 @@ export default function ProfileOverviewCard({
                   fontSize: { xs: 13, sm: 14 },
                 }}
               >
-                Sign out
+                {t("overview.signOut")}
               </Button>
             </Form>
           </Stack>

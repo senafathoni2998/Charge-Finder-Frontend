@@ -16,6 +16,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 import type { UserCar } from "../../../features/auth/authSlice";
 
@@ -37,6 +38,7 @@ export default function CarsCard({
   onRemove,
   onEdit,
 }: CarsCardProps) {
+  const { t } = useTranslation("profile");
   const hasCars = cars.length > 0;
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuCarId, setMenuCarId] = useState<string | null>(null);
@@ -85,10 +87,10 @@ export default function CarsCard({
             >
               <Box sx={{ flex: 1 }}>
                 <Typography sx={{ fontWeight: 900, color: UI.text, fontSize: { xs: 16, sm: 17, md: 18 } }}>
-                  Your cars
+                  {t("cars.title")}
                 </Typography>
                 <Typography sx={{ color: UI.text2, fontSize: { xs: 12, sm: 13, md: 14 } }}>
-                  Choose an active car to personalize filters
+                  {t("cars.subtitle")}
                 </Typography>
               </Box>
               <Button
@@ -104,7 +106,7 @@ export default function CarsCard({
                   fontSize: { xs: 13, sm: 14 },
                 }}
               >
-                Add new car
+                {t("cars.addNew")}
               </Button>
             </Stack>
           </Box>
@@ -154,7 +156,7 @@ export default function CarsCard({
                         {hasBatteryPercent ? (
                           <Chip
                             size="small"
-                            label={`Battery ${car.batteryPercent}%`}
+                            label={t("cars.battery", { percent: car.batteryPercent })}
                             sx={{
                               borderRadius: 999,
                               backgroundColor: "rgba(0,200,83,0.12)",
@@ -169,7 +171,7 @@ export default function CarsCard({
                         {isCharging ? (
                           <Chip
                             size="small"
-                            label="Charging"
+                            label={t("cars.charging")}
                             sx={{
                               borderRadius: 999,
                               backgroundColor: "rgba(0,200,83,0.12)",
@@ -185,7 +187,7 @@ export default function CarsCard({
                         {isActive ? (
                           <Chip
                             size="small"
-                            label="Active"
+                            label={t("cars.active")}
                             sx={{
                               borderRadius: 999,
                               backgroundColor: "rgba(0,229,255,0.12)",
@@ -205,7 +207,7 @@ export default function CarsCard({
                             border: `1px solid ${UI.border2}`,
                             color: UI.text,
                           }}
-                          aria-label="Car actions"
+                          aria-label={t("cars.actionsAria")}
                         >
                           <MoreVertIcon fontSize="small" />
                         </IconButton>
@@ -230,18 +232,18 @@ export default function CarsCard({
                         ))}
                         {!car.connectorTypes?.length ? (
                           <Typography variant="caption" sx={{ color: UI.text3, fontSize: { xs: 11, sm: 12 } }}>
-                            No connectors selected
+                            {t("cars.noConnectors")}
                           </Typography>
                         ) : null}
                       </Stack>
 
                       <Stack spacing={0}>
                         <Typography variant="caption" sx={{ color: UI.text2, fontSize: { xs: 10, sm: 11, md: 12 } }}>
-                          Preferred minimum power: {car.minKW || 0} kW
+                          {t("cars.minPower", { power: car.minKW || 0 })}
                         </Typography>
                         {hasBatteryCapacity ? (
                           <Typography variant="caption" sx={{ color: UI.text2, fontSize: { xs: 10, sm: 11, md: 12 } }}>
-                            Battery capacity: {car.batteryCapacity} kWh
+                            {t("cars.batteryCapacity", { capacity: car.batteryCapacity })}
                           </Typography>
                         ) : null}
                       </Stack>
@@ -260,10 +262,10 @@ export default function CarsCard({
               }}
             >
               <Typography sx={{ fontWeight: 900, color: UI.text, fontSize: { xs: 15, sm: 16 } }}>
-                No cars added yet
+                {t("cars.emptyTitle")}
               </Typography>
               <Typography sx={{ color: UI.text2, mt: 0.5, fontSize: { xs: 13, sm: 14 } }}>
-                Add your first EV to personalize compatible stations
+                {t("cars.emptySubtitle")}
               </Typography>
             </Box>
           )}
@@ -293,7 +295,7 @@ export default function CarsCard({
           <ListItemIcon>
             <CheckCircleOutlineIcon fontSize="small" />
           </ListItemIcon>
-          Use this car
+          {t("cars.menu.use")}
         </MenuItem>
         <MenuItem
           disabled={!menuCar}
@@ -304,7 +306,7 @@ export default function CarsCard({
           <ListItemIcon>
             <EditIcon fontSize="small" />
           </ListItemIcon>
-          Edit
+          {t("actions.edit", { ns: "common" })}
         </MenuItem>
         <MenuItem
           disabled={!menuCar}
@@ -316,7 +318,7 @@ export default function CarsCard({
           <ListItemIcon sx={{ color: "rgba(244,67,54,0.95)" }}>
             <DeleteOutlineIcon fontSize="small" />
           </ListItemIcon>
-          Remove
+          {t("cars.menu.remove")}
         </MenuItem>
       </Menu>
     </Card>

@@ -11,6 +11,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 import type { ChargingStatus, Ticket } from "../types";
 
@@ -98,6 +99,7 @@ function ChargingProgressBar({
   remainingMinutes: number;
   isDone: boolean;
 }) {
+  const { t } = useTranslation("stationDetail");
   return (
     <Box sx={PROGRESS_SECTION_SX}>
       <Stack spacing={1}>
@@ -108,11 +110,14 @@ function ChargingProgressBar({
           alignItems="center"
         >
           <Typography sx={{ fontWeight: 900, color: UI.text }}>
-            Battery {progress}%
+            {t("chargingDialog.battery", { progress })}
           </Typography>
           {!isDone && (
             <Typography variant="caption" sx={{ color: UI.text2 }}>
-              {deliveredKwh} / {ticketKwh} kWh
+              {t("chargingDialog.delivered", {
+                delivered: deliveredKwh,
+                ticket: ticketKwh,
+              })}
             </Typography>
           )}
         </Stack>
@@ -135,10 +140,10 @@ function ChargingProgressBar({
         {/* Time remaining message */}
         <Typography variant="caption" sx={{ color: UI.text3 }}>
           {isDone
-            ? "Charging complete."
-            : `Estimated time remaining: ${
+            ? t("chargingDialog.complete")
+            : `${t("chargingDialog.estimatedTimeRemaining")} ${
                 remainingMinutes || ""
-              } ${remainingMinutes > 0 ? "min" : ""} `}
+              } ${remainingMinutes > 0 ? t("chargingDialog.minShort") : ""} `}
         </Typography>
       </Stack>
     </Box>
@@ -147,6 +152,7 @@ function ChargingProgressBar({
 
 /** Section displaying ticket information */
 function TicketInfo({ ticket }: { ticket: Ticket }) {
+  const { t } = useTranslation("stationDetail");
   return (
     <Box sx={TICKET_SECTION_SX}>
       <Stack
@@ -155,7 +161,7 @@ function TicketInfo({ ticket }: { ticket: Ticket }) {
         justifyContent="space-between"
       >
         <Typography variant="caption" sx={{ color: UI.text3 }}>
-          Ticket ID
+          {t("chargingDialog.ticketId")}
         </Typography>
         <Chip
           size="small"
@@ -170,7 +176,7 @@ function TicketInfo({ ticket }: { ticket: Ticket }) {
         />
       </Stack>
       <Typography variant="body2" sx={{ color: UI.text2, mt: 0.75 }}>
-        Paid with {ticket.methodLabel}
+        {t("chargingDialog.paidWith", { method: ticket.methodLabel })}
       </Typography>
     </Box>
   );
@@ -186,6 +192,7 @@ function StopConfirmDialog({
   onClose: () => void;
   onConfirm: () => void;
 }) {
+  const { t } = useTranslation("stationDetail");
   return (
     <Dialog
       open={open}
@@ -194,14 +201,14 @@ function StopConfirmDialog({
       maxWidth="xs"
       PaperProps={{ sx: DIALOG_PAPER_SX }}
     >
-      <DialogTitle sx={{ fontWeight: 950 }}>Stop charging?</DialogTitle>
+      <DialogTitle sx={{ fontWeight: 950 }}>{t("chargingDialog.stopConfirmTitle")}</DialogTitle>
       <DialogContent dividers sx={{ borderColor: UI.border2 }}>
         <Stack spacing={1}>
           <Typography variant="body2" sx={{ color: UI.text2 }}>
-            Stopping ends this session and the ticket cannot be reused.
+            {t("chargingDialog.stopWarning1")}
           </Typography>
           <Typography variant="body2" sx={{ color: UI.text2 }}>
-            You will need to buy a new ticket to charge again.
+            {t("chargingDialog.stopWarning2")}
           </Typography>
         </Stack>
       </DialogContent>
@@ -216,7 +223,7 @@ function StopConfirmDialog({
             color: UI.text,
           }}
         >
-          Keep charging
+          {t("chargingDialog.keepCharging")}
         </Button>
         <Button
           variant="contained"
@@ -227,7 +234,7 @@ function StopConfirmDialog({
             borderRadius: 3,
           }}
         >
-          Stop charging
+          {t("chargingDialog.stopCharging")}
         </Button>
       </DialogActions>
     </Dialog>
@@ -242,6 +249,7 @@ function StopConfirmDialog({
  * ChargingDialog - Renders the live charging progress dialog.
  */
 export default function ChargingDialog(props: ChargingDialogProps) {
+  const { t } = useTranslation("stationDetail");
   // ===== EXTRACT PROPS =====
   const { dialogState, chargingProgress } = props;
 
@@ -278,16 +286,16 @@ export default function ChargingDialog(props: ChargingDialogProps) {
       : remainingMinutes;
 
   const dialogTitle = isCancelled
-    ? "Charging stopped"
+    ? t("chargingDialog.titleStopped")
     : isDone
-    ? "Charging complete"
-    : "Charging in progress";
+    ? t("chargingDialog.titleComplete")
+    : t("chargingDialog.titleInProgress");
 
   const statusMessage = isCancelled
-    ? "Charging stopped. You can unplug when it is safe."
+    ? t("chargingDialog.statusStopped")
     : isDone
-    ? "Session complete. You can unplug when it is safe."
-    : "Keep the connector plugged in while we deliver your ticket.";
+    ? t("chargingDialog.statusComplete")
+    : t("chargingDialog.statusInProgress");
 
   // ===== STOP CONFIRMATION STATE =====
   const [confirmStopOpen, setConfirmStopOpen] = useState(false);
@@ -351,7 +359,7 @@ export default function ChargingDialog(props: ChargingDialogProps) {
                 color: UI.text,
               }}
             >
-              Stop charging
+              {t("chargingDialog.stopCharging")}
             </Button>
             <Button
               variant="contained"
@@ -363,7 +371,7 @@ export default function ChargingDialog(props: ChargingDialogProps) {
                 color: "white",
               }}
             >
-              Hide
+              {t("chargingDialog.hide")}
             </Button>
           </>
         ) : (
@@ -377,7 +385,7 @@ export default function ChargingDialog(props: ChargingDialogProps) {
               color: "white",
             }}
           >
-            Done
+            {t("chargingDialog.done")}
           </Button>
         )}
       </DialogActions>

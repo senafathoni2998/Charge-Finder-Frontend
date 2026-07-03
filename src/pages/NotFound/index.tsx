@@ -1,12 +1,14 @@
 import { Box, Button, Card, CardContent, Stack, Typography } from "@mui/material";
 import ReportGmailerrorredIcon from "@mui/icons-material/ReportGmailerrorred";
 import { useLocation, useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../theme/theme";
 
 // Not found page that guides users back to valid routes.
 export default function NotFoundPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation("notFound");
 
   // Navigates to the app landing page.
   const handleGoHome = () => {
@@ -55,13 +57,13 @@ export default function NotFoundPage() {
                 <ReportGmailerrorredIcon />
               </Box>
               <Typography sx={{ fontWeight: 900, fontSize: 28, color: UI.text }}>
-                404 - Page not found
+                {t("title")}
               </Typography>
               <Typography sx={{ color: UI.text2 }}>
-                The page you are looking for does not exist or has been moved.
+                {t("description")}
               </Typography>
               <Typography sx={{ color: UI.text3, fontSize: 13 }}>
-                Requested path: {location.pathname}
+                {t("requestedPath", { path: location.pathname })}
               </Typography>
               <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
                 <Button
@@ -74,7 +76,7 @@ export default function NotFoundPage() {
                     boxShadow: "0 12px 24px rgba(124,92,255,0.2)",
                   }}
                 >
-                  Go to home
+                  {t("goHome")}
                 </Button>
                 <Button
                   variant="outlined"
@@ -86,7 +88,7 @@ export default function NotFoundPage() {
                     color: UI.text,
                   }}
                 >
-                  Go back
+                  {t("goBack")}
                 </Button>
               </Stack>
             </Stack>

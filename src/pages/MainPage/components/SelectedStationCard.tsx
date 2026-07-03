@@ -7,6 +7,7 @@ import {
   Typography,
 } from "@mui/material";
 import LaunchIcon from "@mui/icons-material/Launch";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 import { minutesAgo } from "../../../utils/time";
 import ConnectorChip from "./ConnectorChip";
@@ -29,6 +30,7 @@ export default function SelectedStationCard({
   isMdUp,
   drawerOpen,
 }: SelectedStationCardProps) {
+  const { t } = useTranslation("mainPage");
   return (
     <Card
       elevation={0}
@@ -85,10 +87,10 @@ export default function SelectedStationCard({
 
           <Stack direction="row" justifyContent="space-between" alignItems="center">
             <Typography variant="body2" sx={{ color: UI.text2 }}>
-              {station.distanceKm.toFixed(1)} km away
+              {t("station.distanceAway", { distance: station.distanceKm.toFixed(1) })}
             </Typography>
             <Typography variant="caption" sx={{ color: UI.text3 }}>
-              Updated {minutesAgo(station.lastUpdatedISO)}m ago
+              {t("station.updatedAgo", { minutes: minutesAgo(station.lastUpdatedISO) })}
             </Typography>
           </Stack>
 
@@ -105,7 +107,7 @@ export default function SelectedStationCard({
                 color: "white",
               }}
             >
-              View details
+              {t("station.viewDetails")}
             </Button>
             <Button
               variant="outlined"
@@ -117,7 +119,7 @@ export default function SelectedStationCard({
                 backgroundColor: "rgba(10,10,16,0.02)",
                 color: UI.text,
               }}
-              aria-label="Open in Google Maps"
+              aria-label={t("station.openInMaps")}
             >
               <LaunchIcon fontSize="small" />
             </Button>

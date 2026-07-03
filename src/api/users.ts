@@ -1,3 +1,4 @@
+import i18n from "../i18n";
 import { apiRequest } from "./client";
 
 type FetchUsersResult = {
@@ -45,7 +46,7 @@ export const fetchUsers = async (
   const res = await apiRequest<{ users?: unknown[] }>("/admin/users", {
     method: "GET",
     signal,
-    fallbackError: "Could not load users.",
+    fallbackError: i18n.t("users.loadFailed", { ns: "api" }),
   });
   if (!res.ok) {
     return { ok: false, users: [], error: res.error };
@@ -61,12 +62,21 @@ export const patchUser = async ({
   signal,
 }: PatchUserPayload): Promise<PatchUserResult> => {
   if (!userId) {
-    return { ok: false, user: null, error: "User ID is missing." };
+    return {
+      ok: false,
+      user: null,
+      error: i18n.t("users.idMissing", { ns: "api" }),
+    };
   }
 
   const res = await apiRequest<{ user?: unknown; updatedUser?: unknown }>(
     `/admin/users/${userId}`,
-    { method: "PATCH", body: data, signal, fallbackError: "Could not update user." }
+    {
+      method: "PATCH",
+      body: data,
+      signal,
+      fallbackError: i18n.t("users.updateFailed", { ns: "api" }),
+    }
   );
   if (!res.ok) {
     return { ok: false, user: null, error: res.error };
@@ -80,13 +90,13 @@ export const deleteUser = async (
   signal?: AbortSignal
 ): Promise<DeleteUserResult> => {
   if (!userId) {
-    return { ok: false, error: "User ID is missing." };
+    return { ok: false, error: i18n.t("users.idMissing", { ns: "api" }) };
   }
 
   const res = await apiRequest(`/admin/users/${userId}`, {
     method: "DELETE",
     signal,
-    fallbackError: "Could not delete user.",
+    fallbackError: i18n.t("users.deleteFailed", { ns: "api" }),
   });
   if (!res.ok) {
     return { ok: false, error: res.error };
@@ -109,7 +119,7 @@ export const createUser = async ({
       method: "POST",
       body: { name, email, role, password, region },
       signal,
-      fallbackError: "Could not create user.",
+      fallbackError: i18n.t("users.createFailed", { ns: "api" }),
     }
   );
   if (!res.ok) {

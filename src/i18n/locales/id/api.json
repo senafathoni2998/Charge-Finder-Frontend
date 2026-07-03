@@ -1,0 +1,69 @@
+{
+  "client": {
+    "backendNotConfigured": "URL backend belum dikonfigurasi.",
+    "requestFailed": "Permintaan gagal, silakan coba lagi.",
+    "timedOut": "Waktu permintaan habis.",
+    "cancelled": "Permintaan dibatalkan."
+  },
+  "stations": {
+    "loadFailed": "Tidak dapat memuat stasiun.",
+    "idMissing": "ID stasiun tidak ada.",
+    "loadOneFailed": "Tidak dapat memuat stasiun.",
+    "notFound": "Stasiun tidak ditemukan.",
+    "missing": "Stasiun tidak ada.",
+    "createFailed": "Tidak dapat membuat stasiun.",
+    "updateFailed": "Tidak dapat memperbarui stasiun.",
+    "deleteFailed": "Tidak dapat menghapus stasiun."
+  },
+  "charging": {
+    "startFailed": "Tidak dapat memulai pengisian daya.",
+    "progressInvalid": "Persentase progres tidak valid.",
+    "updateProgressFailed": "Tidak dapat memperbarui progres pengisian daya.",
+    "completeFailed": "Tidak dapat menyelesaikan pengisian daya.",
+    "cancelFailed": "Tidak dapat membatalkan pengisian daya."
+  },
+  "history": {
+    "loadFailed": "Tidak dapat memuat riwayat pengisian daya."
+  },
+  "geocode": {
+    "invalidCoordinates": "Koordinat tidak valid.",
+    "resolveFailed": "Tidak dapat menemukan alamat.",
+    "noAddress": "Alamat tidak ditemukan."
+  },
+  "tickets": {
+    "requestFailed": "Tidak dapat meminta tiket.",
+    "loadActiveFailed": "Tidak dapat memuat tiket aktif."
+  },
+  "users": {
+    "loadFailed": "Tidak dapat memuat pengguna.",
+    "idMissing": "ID pengguna tidak ada.",
+    "updateFailed": "Tidak dapat memperbarui pengguna.",
+    "deleteFailed": "Tidak dapat menghapus pengguna.",
+    "createFailed": "Tidak dapat membuat pengguna.",
+    "addFailed": "Tidak dapat menambahkan pengguna."
+  },
+  "vehicles": {
+    "missing": "Kendaraan tidak ada.",
+    "loadFailed": "Tidak dapat memuat kendaraan.",
+    "notFound": "Kendaraan tidak ditemukan."
+  },
+  "session": {
+    "userMissing": "Sesi pengguna tidak ditemukan."
+  },
+  "profile": {
+    "photoMustBeImage": "Foto profil harus berupa berkas gambar.",
+    "updateFailed": "Tidak dapat memperbarui profil.",
+    "passwordUpdateFailed": "Gagal memperbarui kata sandi."
+  },
+  "cars": {
+    "defaultName": "EV Saya",
+    "emailRequired": "Email wajib diisi.",
+    "saveFailed": "Tidak dapat menyimpan mobil.",
+    "updateFailed": "Tidak dapat memperbarui mobil.",
+    "deleteFailed": "Tidak dapat menghapus mobil.",
+    "setActiveFailed": "Tidak dapat memperbarui mobil aktif."
+  },
+  "auth": {
+    "signupFailed": "Gagal mendaftar."
+  }
+}

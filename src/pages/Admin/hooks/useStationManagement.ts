@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type MouseEvent } from "react";
+import { useTranslation } from "react-i18next";
 import type { ConnectorType, Station } from "../../../models/model";
 import { fetchStations } from "../../../api/stations";
 import { deleteStation } from "../../../api/adminStations";
@@ -32,6 +33,7 @@ type StationManagementState = {
 
 // Manages stations, filters, and station-level actions for the admin page.
 export default function useStationManagement(): StationManagementState {
+  const { t } = useTranslation("admin");
   const [stations, setStations] = useState<Station[]>([]);
   const [stationsLoading, setStationsLoading] = useState(true);
   const [stationsError, setStationsError] = useState<string | null>(null);
@@ -69,7 +71,7 @@ export default function useStationManagement(): StationManagementState {
         setStations(result.stations);
       } else {
         setStations([]);
-        setStationsError(result.error || "Could not load stations.");
+        setStationsError(result.error || t("errors.loadStations"));
       }
       setStationsLoading(false);
     };
@@ -79,13 +81,13 @@ export default function useStationManagement(): StationManagementState {
       active = false;
       controller.abort();
     };
-  }, []);
+  }, [t]);
 
   // Deletes a station after confirmation and updates local state.
   const handleDeleteStation = async (station: Station) => {
     if (typeof window !== "undefined") {
       const confirmed = window.confirm(
-        `Delete station ${station.name}? This cannot be undone.`
+        t("confirm.deleteStation", { name: station.name })
       );
       if (!confirmed) return;
     }
@@ -94,7 +96,7 @@ export default function useStationManagement(): StationManagementState {
 
     const result = await deleteStation(station.id);
     if (!result.ok) {
-      setStationActionError(result.error || "Could not delete station.");
+      setStationActionError(result.error || t("errors.deleteStation"));
       setStationsDeleting((prev) => ({ ...prev, [station.id]: false }));
       return;
     }

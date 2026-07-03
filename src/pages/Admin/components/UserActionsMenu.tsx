@@ -1,5 +1,6 @@
 import { ListItemIcon, Menu, MenuItem } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import { useTranslation } from "react-i18next";
 import type { AdminUser } from "../types";
 
 type UserActionsMenuProps = {
@@ -18,6 +19,7 @@ export default function UserActionsMenu({
   onClose,
   onDelete,
 }: UserActionsMenuProps) {
+  const { t } = useTranslation("admin");
   const open = Boolean(anchorEl);
 
   // Handles the delete action and closes the menu.
@@ -44,7 +46,7 @@ export default function UserActionsMenu({
             sx={{ color: "rgba(244,67,54,0.95)" }}
           />
         </ListItemIcon>
-        Delete
+        {t("actions.delete", { ns: "common" })}
       </MenuItem>
     </Menu>
   );

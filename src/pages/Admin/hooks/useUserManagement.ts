@@ -1,4 +1,5 @@
 import { useEffect, useState, type MouseEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { deleteUser, fetchUsers, patchUser } from "../../../api/users";
 import type { AdminUser } from "../types";
 import { nextStatusForUser, normalizeAdminUser } from "../utils";
@@ -20,6 +21,7 @@ type UserManagementState = {
 
 // Manages users, permissions actions, and menus for the admin page.
 export default function useUserManagement(): UserManagementState {
+  const { t } = useTranslation("admin");
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [usersLoading, setUsersLoading] = useState(true);
   const [usersError, setUsersError] = useState<string | null>(null);
@@ -47,12 +49,12 @@ export default function useUserManagement(): UserManagementState {
       if (!active) return;
       if (result.ok) {
         const normalized = result.users
-          .map(normalizeAdminUser)
+          .map((user) => normalizeAdminUser(t, user))
           .filter(Boolean) as AdminUser[];
         setUsers(normalized);
       } else {
         setUsers([]);
-        setUsersError(result.error || "Could not load users.");
+        setUsersError(result.error || t("errors.loadUsers"));
       }
       setUsersLoading(false);
     };
@@ -62,7 +64,7 @@ export default function useUserManagement(): UserManagementState {
       active = false;
       controller.abort();
     };
-  }, []);
+  }, [t]);
 
   // Updates the status of a user and synchronizes local state.
   const handleUserStatusAction = async (user: AdminUser) => {
@@ -76,17 +78,17 @@ export default function useUserManagement(): UserManagementState {
     });
 
     if (!result.ok) {
-      setUserActionError(result.error || "Could not update user.");
+      setUserActionError(result.error || t("errors.updateUser"));
       setUsersUpdating((prev) => ({ ...prev, [user.id]: false }));
       return;
     }
 
-    const normalized = result.user ? normalizeAdminUser(result.user) : null;
+    const normalized = result.user ? normalizeAdminUser(t, result.user) : null;
     setUsers((prev) =>
       prev.map((existing) => {
         if (existing.id !== user.id) return existing;
         if (normalized) return normalized;
-        return { ...existing, status: nextStatus, lastActive: "Just now" };
+        return { ...existing, status: nextStatus, lastActive: t("users.justNow") };
       })
     );
     setUsersUpdating((prev) => ({ ...prev, [user.id]: false }));
@@ -96,7 +98,7 @@ export default function useUserManagement(): UserManagementState {
   const handleDeleteUser = async (user: AdminUser) => {
     if (typeof window !== "undefined") {
       const confirmed = window.confirm(
-        `Delete user ${user.name || user.email}? This cannot be undone.`
+        t("confirm.deleteUser", { name: user.name || user.email })
       );
       if (!confirmed) return;
     }
@@ -105,7 +107,7 @@ export default function useUserManagement(): UserManagementState {
 
     const result = await deleteUser(user.id);
     if (!result.ok) {
-      setUserActionError(result.error || "Could not delete user.");
+      setUserActionError(result.error || t("errors.deleteUser"));
       setUsersDeleting((prev) => ({ ...prev, [user.id]: false }));
       return;
     }

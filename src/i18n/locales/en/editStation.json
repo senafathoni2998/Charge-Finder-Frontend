@@ -1,0 +1,25 @@
+{
+  "header": {
+    "title": "Edit station",
+    "subtitle": "Update station details and keep the network accurate."
+  },
+  "form": {
+    "submit": "Update station",
+    "submitting": "Updating..."
+  },
+  "loading": {
+    "subtitle": "Loading station data...",
+    "message": "Loading station details..."
+  },
+  "notFound": {
+    "message": "Station not found.",
+    "description": "Head back to the admin console to select another station.",
+    "back": "Back to admin"
+  },
+  "errors": {
+    "missingId": "Station ID is missing.",
+    "loadFailed": "Could not load stations.",
+    "notFound": "Station not found.",
+    "updateFailed": "Could not update station."
+  }
+}

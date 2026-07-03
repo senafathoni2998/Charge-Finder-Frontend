@@ -12,6 +12,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
 import TuneIcon from "@mui/icons-material/Tune";
+import { useTranslation } from "react-i18next";
 import type { ConnectorType, Station } from "../../../models/model";
 import { UI } from "../../../theme/theme";
 import { CONNECTOR_OPTIONS } from "../../MainPage/constants";
@@ -63,6 +64,8 @@ export default function StationManagementCard({
   onOpenMenu,
   onNewStation,
 }: StationManagementCardProps) {
+  const { t } = useTranslation("admin");
+
   // Handles the search input change for stations.
   const handleQueryChange = (event: ChangeEvent<HTMLInputElement>) => {
     onQueryChange(event.target.value);
@@ -87,10 +90,10 @@ export default function StationManagementCard({
           >
             <Box sx={{ minWidth: 0 }}>
               <Typography sx={{ fontWeight: 900, color: UI.text }}>
-                Station management
+                {t("stationCard.title")}
               </Typography>
               <Typography sx={{ color: UI.text2, fontSize: 14 }}>
-                Review availability, edit details, and resolve issues.
+                {t("stationCard.subtitle")}
               </Typography>
             </Box>
             <Box sx={{ flex: 1 }} />
@@ -110,8 +113,10 @@ export default function StationManagementCard({
                 }}
               >
                 {filtersActiveCount
-                  ? `Filters (${filtersActiveCount})`
-                  : "Filters"}
+                  ? t("stationCard.filtersActive", {
+                      count: filtersActiveCount,
+                    })
+                  : t("stationCard.filters")}
               </Button>
               <Button
                 variant="contained"
@@ -123,13 +128,13 @@ export default function StationManagementCard({
                   background: UI.brandGrad,
                 }}
               >
-                New station
+                {t("stationCard.newStation")}
               </Button>
             </Stack>
           </Stack>
 
           <TextField
-            placeholder="Search stations, IDs, or cities"
+            placeholder={t("stationCard.searchPlaceholder")}
             size="small"
             fullWidth
             value={query}

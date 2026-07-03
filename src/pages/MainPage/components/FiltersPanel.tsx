@@ -19,6 +19,7 @@ import {
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import SearchIcon from "@mui/icons-material/Search";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 import type { ConnectorType } from "../../../models/model";
 import type { UserCar } from "../../../features/auth/authSlice";
@@ -126,6 +127,7 @@ const ACCORDION_DETAILS_SX = { px: 1.5, pb: 1.5, pt: 0 };
 // ============================================================================
 
 function GuestModePrompt({ onLogin }: { onLogin: () => void }) {
+  const { t } = useTranslation("mainPage");
   return (
     <Box
       sx={{
@@ -137,10 +139,10 @@ function GuestModePrompt({ onLogin }: { onLogin: () => void }) {
     >
       <Stack spacing={0.75}>
         <Typography sx={{ fontWeight: 900, color: UI.text }}>
-          Guest mode
+          {t("guestMode.title")}
         </Typography>
         <Typography variant="body2" sx={{ color: UI.text2 }}>
-          Log in to save cars and personalize filters.
+          {t("guestMode.description")}
         </Typography>
         <Button
           size="small"
@@ -154,7 +156,7 @@ function GuestModePrompt({ onLogin }: { onLogin: () => void }) {
             alignSelf: "flex-start",
           }}
         >
-          Log in
+          {t("guestMode.login")}
         </Button>
       </Stack>
     </Box>
@@ -170,11 +172,12 @@ function CarSelector({
   cars: UserCar[];
   onSelectCar: (carId: string) => void;
 }) {
+  const { t } = useTranslation("mainPage");
   return (
     <TextField
       select
       size="small"
-      label="Selected car"
+      label={t("car.selectedCar")}
       value={activeCarId ?? ""}
       onChange={(event) => onSelectCar(String(event.target.value))}
       fullWidth
@@ -205,6 +208,7 @@ function CarFilterToggle({
   enabled: boolean;
   onToggle: (enabled: boolean) => void;
 }) {
+  const { t } = useTranslation("mainPage");
   return (
     <FormControlLabel
       control={
@@ -216,7 +220,7 @@ function CarFilterToggle({
       }
       label={
         <Typography sx={{ color: UI.text2, fontWeight: 700 }}>
-          Use my car to filter stations
+          {t("car.useToFilter")}
         </Typography>
       }
       sx={{ ml: -0.5 }}
@@ -225,10 +229,11 @@ function CarFilterToggle({
 }
 
 function AddCarPrompt({ onAddCar }: { onAddCar: () => void }) {
+  const { t } = useTranslation("mainPage");
   return (
     <Stack spacing={1} sx={{ mt: 0.75 }}>
       <Typography variant="body2" sx={{ color: UI.text2 }}>
-        Add a car to personalize results.
+        {t("car.addPrompt")}
       </Typography>
       <Button
         size="small"
@@ -242,7 +247,7 @@ function AddCarPrompt({ onAddCar }: { onAddCar: () => void }) {
           alignSelf: "flex-start",
         }}
       >
-        Add car
+        {t("car.addCar")}
       </Button>
     </Stack>
   );
@@ -257,10 +262,11 @@ function ConnectorFilters({
   useCarFilter: boolean;
   onToggleConnector: (connector: ConnectorType) => void;
 }) {
+  const { t } = useTranslation("mainPage");
   return (
     <Box>
       <Typography variant="caption" sx={{ color: UI.text3 }}>
-        Connectors
+        {t("filters.connectors")}
       </Typography>
       <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: "wrap" }}>
         {CONNECTOR_OPTIONS.map((connector) => {
@@ -299,7 +305,7 @@ function ConnectorFilters({
           variant="caption"
           sx={{ color: UI.text3, mt: 0.75, display: "block" }}
         >
-          Connector filters are driven by your car profile.
+          {t("filters.connectorsCarProfile")}
         </Typography>
       )}
     </Box>
@@ -317,6 +323,7 @@ function MinPowerSlider({
   useCarFilter: boolean;
   onChange: (value: number) => void;
 }) {
+  const { t } = useTranslation("mainPage");
   const displayValue = Number.isFinite(value) ? value : 0;
 
   return (
@@ -327,7 +334,7 @@ function MinPowerSlider({
         alignItems="center"
       >
         <Typography variant="caption" sx={{ color: UI.text3 }}>
-          Minimum power
+          {t("filters.minimumPower")}
         </Typography>
         <Typography variant="caption" sx={{ color: UI.text3 }}>
           {effectiveValue || 0} kW
@@ -353,7 +360,7 @@ function MinPowerSlider({
           variant="caption"
           sx={{ color: UI.text3, mt: 0.75, display: "block" }}
         >
-          Minimum power is based on your car profile.
+          {t("filters.minimumPowerCarProfile")}
         </Typography>
       )}
     </Box>
@@ -368,6 +375,7 @@ function MinPowerSlider({
  * FiltersPanel - Sidebar panel with search, filter controls, and station list.
  */
 export default function FiltersPanel(props: FiltersPanelProps) {
+  const { t } = useTranslation("mainPage");
   // ===== EXTRACT PROPS FOR EASIER ACCESS =====
   const { filterValues, filterActions, authState, carState } = props;
 
@@ -394,12 +402,12 @@ export default function FiltersPanel(props: FiltersPanelProps) {
         {/* ===== SEARCH SECTION ===== */}
         <Stack spacing={0.75}>
           <Typography variant="caption" sx={{ color: UI.text3 }}>
-            Search
+            {t("search.label")}
           </Typography>
           <TextField
             fullWidth
             size="small"
-            placeholder="Search station or area"
+            placeholder={t("search.placeholder")}
             value={query}
             onChange={(event) => onQueryChange(event.target.value)}
             InputProps={{
@@ -422,7 +430,7 @@ export default function FiltersPanel(props: FiltersPanelProps) {
         <Accordion defaultExpanded sx={ACCORDION_SX}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={ACCORDION_SUMMARY_SX}>
             <Typography sx={{ fontWeight: 900, color: UI.text }}>
-              Filters
+              {t("filters.title")}
             </Typography>
           </AccordionSummary>
           <AccordionDetails sx={ACCORDION_DETAILS_SX}>
@@ -439,7 +447,7 @@ export default function FiltersPanel(props: FiltersPanelProps) {
                 }}
               >
                 <Typography variant="caption" sx={{ color: UI.text3 }}>
-                  Availability
+                  {t("filters.availability")}
                 </Typography>
                 <ToggleButtonGroup
                   exclusive
@@ -455,10 +463,10 @@ export default function FiltersPanel(props: FiltersPanelProps) {
                     },
                   }}
                 >
-                  <ToggleButton value="">All</ToggleButton>
-                  <ToggleButton value="AVAILABLE">Available</ToggleButton>
-                  <ToggleButton value="BUSY">Busy</ToggleButton>
-                  <ToggleButton value="OFFLINE">Offline</ToggleButton>
+                  <ToggleButton value="">{t("filters.all")}</ToggleButton>
+                  <ToggleButton value="AVAILABLE">{t("common:status.available")}</ToggleButton>
+                  <ToggleButton value="BUSY">{t("common:status.busy")}</ToggleButton>
+                  <ToggleButton value="OFFLINE">{t("common:status.offline")}</ToggleButton>
                 </ToggleButtonGroup>
               </Box>
 
@@ -470,7 +478,7 @@ export default function FiltersPanel(props: FiltersPanelProps) {
                   alignItems="center"
                 >
                   <Typography variant="caption" sx={{ color: UI.text3 }}>
-                    Distance
+                    {t("filters.distance")}
                   </Typography>
                   <Typography variant="caption" sx={{ color: UI.text3 }}>
                     {displayRadiusKm} km
@@ -497,7 +505,7 @@ export default function FiltersPanel(props: FiltersPanelProps) {
                     alignItems="center"
                   >
                     <Typography variant="caption" sx={{ color: UI.text3 }}>
-                      My car
+                      {t("filters.myCar")}
                     </Typography>
                   </Stack>
                   {activeCar ? (

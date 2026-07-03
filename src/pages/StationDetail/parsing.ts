@@ -80,7 +80,8 @@ export const buildChargingSocketUrl = (stationId: string): string | null => {
 
 export const buildTicketFromServer = (
   payload: Record<string, unknown>,
-  priceLabel: string
+  priceLabel: string,
+  accountLabel = "ChargeFinder account"
 ): Ticket => {
   const ticketId =
     toCleanString(payload.id ?? payload._id) || `TICKET-${Date.now()}`;
@@ -89,7 +90,7 @@ export const buildTicketFromServer = (
     typeof payload.createdAt === "string"
       ? payload.createdAt
       : new Date().toISOString();
-  const methodLabel = "ChargeFinder account";
+  const methodLabel = accountLabel;
   const chargingStatus =
     toChargingStatus(payload.chargingStatus) ??
     toChargingStatus(payload.charging_state) ??

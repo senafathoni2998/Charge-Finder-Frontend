@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { CONNECTOR_OPTIONS } from "../../MainPage/constants";
 import type { StationFormValues } from "../../../forms/schemas";
 import StationFormCard from "../../AddStation/components/StationFormCard";
@@ -17,6 +18,7 @@ export default function EditStationFormSection({
   onSubmit,
   onCancel,
 }: EditStationFormSectionProps) {
+  const { t } = useTranslation("editStation");
   const defaultConnectorType = CONNECTOR_OPTIONS[0] ?? "CCS2";
   return (
     <>
@@ -28,8 +30,8 @@ export default function EditStationFormSection({
         serverError={serverError}
         onSubmit={onSubmit}
         onCancel={onCancel}
-        submitLabel="Update station"
-        submittingLabel="Updating..."
+        submitLabel={t("form.submit")}
+        submittingLabel={t("form.submitting")}
       />
     </>
   );

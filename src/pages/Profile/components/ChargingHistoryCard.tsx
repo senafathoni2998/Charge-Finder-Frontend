@@ -7,6 +7,9 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
+import i18n from "../../../i18n";
 import { UI } from "../../../theme/theme";
 
 export type ChargingHistoryItem = {
@@ -27,11 +30,12 @@ type ChargingHistoryCardProps = {
   error?: string | null;
 };
 
-const formatHistoryTime = (timestamp: number | null) => {
-  if (!timestamp || !Number.isFinite(timestamp)) return "Unknown time";
+const formatHistoryTime = (timestamp: number | null, t: TFunction) => {
+  if (!timestamp || !Number.isFinite(timestamp)) return t("history.unknownTime");
   const date = new Date(timestamp);
-  if (!Number.isFinite(date.getTime())) return "Unknown time";
-  return date.toLocaleString("en-US", {
+  if (!Number.isFinite(date.getTime())) return t("history.unknownTime");
+  const locale = i18n.language?.startsWith("id") ? "id-ID" : "en-US";
+  return date.toLocaleString(locale, {
     month: "short",
     day: "numeric",
     hour: "2-digit",
@@ -39,11 +43,12 @@ const formatHistoryTime = (timestamp: number | null) => {
   });
 };
 
-const outcomeLabel = (outcome: string | null) => {
-  if (!outcome) return "Ended";
+const outcomeLabel = (outcome: string | null, t: TFunction) => {
+  if (!outcome) return t("history.outcome.ended");
   const normalized = outcome.trim().toUpperCase();
-  if (normalized === "COMPLETED") return "Completed";
-  if (normalized === "CANCELLED" || normalized === "CANCELED") return "Cancelled";
+  if (normalized === "COMPLETED") return t("history.outcome.completed");
+  if (normalized === "CANCELLED" || normalized === "CANCELED")
+    return t("history.outcome.cancelled");
   return outcome.trim();
 };
 
@@ -73,6 +78,7 @@ export default function ChargingHistoryCard({
   loading = false,
   error,
 }: ChargingHistoryCardProps) {
+  const { t } = useTranslation("profile");
   const hasItems = items.length > 0;
 
   return (
@@ -95,10 +101,10 @@ export default function ChargingHistoryCard({
         <Stack spacing={{ xs: 1.5, sm: 2, md: 2.5 }}>
           <Box>
             <Typography sx={{ fontWeight: 900, color: UI.text, fontSize: { xs: 16, sm: 17, md: 18 } }}>
-              Charging history
+              {t("history.title")}
             </Typography>
             <Typography sx={{ color: UI.text2, fontSize: { xs: 12, sm: 13, md: 14 } }}>
-              Sessions from the last 3 days
+              {t("history.subtitle")}
             </Typography>
           </Box>
 
@@ -117,7 +123,7 @@ export default function ChargingHistoryCard({
               }}
             >
               <Typography sx={{ fontWeight: 800, color: UI.text, fontSize: { xs: 15, sm: 16 } }}>
-                Unable to load history
+                {t("history.errorTitle")}
               </Typography>
               <Typography sx={{ color: UI.text2, mt: 0.5, fontSize: { xs: 13, sm: 14 } }}>
                 {error}
@@ -128,19 +134,23 @@ export default function ChargingHistoryCard({
               {items.map((item) => {
                 const progressLabel =
                   item.progressPercent != null
-                    ? `Progress ${item.progressPercent}%`
+                    ? t("history.progress", { percent: item.progressPercent })
                     : null;
                 const batteryLabel =
                   item.batteryPercentage != null
-                    ? `Battery ${item.batteryPercentage}%`
+                    ? t("history.battery", { percent: item.batteryPercentage })
                     : null;
                 const metaLabels = [
-                  item.vehicleName ? `Vehicle: ${item.vehicleName}` : null,
-                  item.connectorType ? `Connector: ${item.connectorType}` : null,
+                  item.vehicleName
+                    ? t("history.vehicle", { name: item.vehicleName })
+                    : null,
+                  item.connectorType
+                    ? t("history.connector", { type: item.connectorType })
+                    : null,
                   progressLabel,
                   batteryLabel,
                 ].filter(Boolean) as string[];
-                const label = outcomeLabel(item.outcome);
+                const label = outcomeLabel(item.outcome, t);
                 const chipStyle = outcomeStyles(item.outcome);
                 return (
                   <Box
@@ -163,7 +173,7 @@ export default function ChargingHistoryCard({
                         spacing={{ xs: 0.5, sm: 0.75, md: 1 }}
                       >
                         <Typography sx={{ fontWeight: 900, color: UI.text, fontSize: { xs: 14, sm: 15, md: 16 } }}>
-                          {item.stationName || "Charging session"}
+                          {item.stationName || t("history.sessionFallback")}
                         </Typography>
                         <Chip
                           size="small"
@@ -180,7 +190,7 @@ export default function ChargingHistoryCard({
                         />
                         <Box sx={{ flex: 1 }} />
                         <Typography variant="caption" sx={{ color: UI.text3, fontSize: { xs: 10, sm: 11, md: 12 } }}>
-                          {formatHistoryTime(item.endedAt)}
+                          {formatHistoryTime(item.endedAt, t)}
                         </Typography>
                       </Stack>
                       {item.stationAddress ? (
@@ -223,10 +233,10 @@ export default function ChargingHistoryCard({
               }}
             >
               <Typography sx={{ fontWeight: 900, color: UI.text, fontSize: { xs: 15, sm: 16 } }}>
-                No recent charging sessions
+                {t("history.emptyTitle")}
               </Typography>
               <Typography sx={{ color: UI.text2, mt: 0.5, fontSize: { xs: 13, sm: 14 } }}>
-                Your last 3 days of charging will appear here
+                {t("history.emptySubtitle")}
               </Typography>
             </Box>
           )}

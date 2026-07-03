@@ -1,5 +1,6 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   CircleMarker,
   MapContainer,
@@ -138,6 +139,7 @@ type StationMarkersProps = {
 };
 
 function StationMarkers({ station, isActive, onSelect }: StationMarkersProps) {
+  const { t } = useTranslation("mainPage");
   const s = station;
   const isCharging = Boolean(s.isChargingHere);
   const color = statusColor(s.status, isCharging);
@@ -184,7 +186,8 @@ function StationMarkers({ station, isActive, onSelect }: StationMarkersProps) {
         }}
       >
         <Tooltip direction="top" offset={[0, -6]} opacity={0.9}>
-          {s.name} • {isCharging ? `Charging • ${s.status}` : s.status}
+          {s.name} •{" "}
+          {isCharging ? t("map.tooltipCharging", { status: s.status }) : s.status}
         </Tooltip>
       </CircleMarker>
     </Fragment>
@@ -207,6 +210,7 @@ function StationLayer({
   onSelect,
   onViewportChange,
 }: StationLayerProps) {
+  const { t } = useTranslation("mainPage");
   const map = useMap();
   const [view, setView] = useState(() => readMapView(map));
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -289,7 +293,7 @@ function StationLayer({
               }}
             >
               <Tooltip direction="top" offset={[0, -6]} opacity={0.9}>
-                {count} stations
+                {t("map.clusterStations", { total: count })}
               </Tooltip>
             </CircleMarker>
           );
@@ -326,6 +330,7 @@ export default function MapCanvas({
   userLoc,
   onViewportChange,
 }: MapCanvasProps) {
+  const { t } = useTranslation("mainPage");
   const mapBounds = useMemo<LatLngBoundsExpression>(() => {
     if (
       !bounds ||
@@ -444,7 +449,7 @@ export default function MapCanvas({
               }}
             >
               <Tooltip direction="top" offset={[0, -6]} opacity={0.9}>
-                Your location
+                {t("map.yourLocation")}
               </Tooltip>
             </CircleMarker>
           </>
@@ -471,13 +476,13 @@ export default function MapCanvas({
       >
         <Stack spacing={0.75}>
           <Typography sx={{ fontWeight: 950, fontSize: 13, color: UI.text }}>
-            Map Explorer
+            {t("map.title")}
           </Typography>
-          <LegendRow label="Available" color="rgba(0,229,255,0.95)" />
-          <LegendRow label="Busy" color="rgba(255,193,7,0.95)" />
-          <LegendRow label="Offline" color="rgba(244,67,54,0.95)" />
-          <LegendRow label="Charging" color={CHARGING_COLOR} />
-          <LegendRow label="You" color="rgba(124,92,255,0.98)" />
+          <LegendRow label={t("common:status.available")} color="rgba(0,229,255,0.95)" />
+          <LegendRow label={t("common:status.busy")} color="rgba(255,193,7,0.95)" />
+          <LegendRow label={t("common:status.offline")} color="rgba(244,67,54,0.95)" />
+          <LegendRow label={t("status.charging")} color={CHARGING_COLOR} />
+          <LegendRow label={t("map.legend.you")} color="rgba(124,92,255,0.98)" />
         </Stack>
       </Box>
 
@@ -514,7 +519,7 @@ export default function MapCanvas({
               variant="caption"
               sx={{ color: UI.text2, fontWeight: 650 }}
             >
-              Click a marker to preview a station
+              {t("map.hint")}
             </Typography>
           </Box>
         </Box>

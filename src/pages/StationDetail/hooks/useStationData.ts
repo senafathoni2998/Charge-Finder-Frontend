@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { fetchStationById } from "../../../api/stations";
 import type { Station } from "../types";
 
@@ -7,6 +8,7 @@ import type { Station } from "../types";
  * callback used after charging actions to re-pull connector availability.
  */
 export function useStationData(stationId: string | undefined) {
+  const { t } = useTranslation("stationDetail");
   const [loading, setLoading] = useState(true);
   const [station, setStation] = useState<Station | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -15,7 +17,7 @@ export function useStationData(stationId: string | undefined) {
     if (!stationId) {
       setStation(null);
       setLoading(false);
-      setLoadError("Station ID is missing.");
+      setLoadError(t("stationData.missingId"));
       return;
     }
 
@@ -30,12 +32,12 @@ export function useStationData(stationId: string | undefined) {
       if (!active) return;
       if (!result.ok) {
         setStation(null);
-        setLoadError(result.error || "Could not load station data.");
+        setLoadError(result.error || t("stationData.loadFailed"));
         setLoading(false);
         return;
       }
       if (!result.station) {
-        setLoadError("Station not found.");
+        setLoadError(t("stationData.notFound"));
       }
       setStation(result.station);
       setLoading(false);
@@ -46,7 +48,7 @@ export function useStationData(stationId: string | undefined) {
       active = false;
       controller.abort();
     };
-  }, [stationId]);
+  }, [stationId, t]);
 
   const refreshStation = useCallback(async () => {
     if (!stationId) return;

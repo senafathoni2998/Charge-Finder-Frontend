@@ -1,4 +1,5 @@
 import type { ChargingSpeed, ConnectorType } from "../models/model";
+import i18n from "../i18n";
 import { apiRequest } from "./client";
 
 type RequestChargingTicketParams = {
@@ -31,7 +32,7 @@ export const requestChargingTicket = async ({
   signal,
 }: RequestChargingTicketParams): Promise<RequestChargingTicketResult> => {
   if (!stationId) {
-    return { ok: false, error: "Station is missing." };
+    return { ok: false, error: i18n.t("stations.missing", { ns: "api" }) };
   }
 
   const payload: {
@@ -54,7 +55,7 @@ export const requestChargingTicket = async ({
     method: "POST",
     body: payload,
     signal,
-    fallbackError: "Could not request ticket.",
+    fallbackError: i18n.t("tickets.requestFailed", { ns: "api" }),
   });
   if (!res.ok) {
     return { ok: false, error: res.error };
@@ -67,12 +68,16 @@ export const fetchActiveTicketForStation = async (
   signal?: AbortSignal
 ): Promise<FetchActiveTicketResult> => {
   if (!stationId) {
-    return { ok: false, error: "Station is missing." };
+    return { ok: false, error: i18n.t("stations.missing", { ns: "api" }) };
   }
 
   const res = await apiRequest<TicketResponse>(
     `/stations/${stationId}/active-ticket`,
-    { method: "GET", signal, fallbackError: "Could not load active ticket." }
+    {
+      method: "GET",
+      signal,
+      fallbackError: i18n.t("tickets.loadActiveFailed", { ns: "api" }),
+    }
   );
   if (!res.ok) {
     return { ok: false, error: res.error };

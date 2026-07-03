@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
+import { useTranslation } from "react-i18next";
 import { CONNECTOR_OPTIONS } from "../MainPage/constants";
 import type { StationFormValues } from "../../forms/schemas";
 import { updateStationRequest } from "./editStationRoute";
@@ -15,6 +16,7 @@ import useEditStationLoader from "./hooks/useEditStationLoader";
 export default function EditStationPage() {
   const navigate = useNavigate();
   const { stationId } = useParams();
+  const { t } = useTranslation("editStation");
   const [serverError, setServerError] = useState<string | null>(null);
 
   const defaultConnectorType = CONNECTOR_OPTIONS[0] ?? "CCS2";
@@ -28,7 +30,7 @@ export default function EditStationPage() {
   const handleSubmit = async (values: StationFormValues) => {
     if (!station) return;
     setServerError(null);
-    const result = await updateStationRequest(station.id, values);
+    const result = await updateStationRequest(station.id, values, t);
     if (result.ok) {
       navigate("/admin");
       return;

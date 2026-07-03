@@ -1,0 +1,92 @@
+{
+  "page": {
+    "title": "Profile",
+    "subtitle": "Manage your account and charging preferences"
+  },
+  "toast": {
+    "passwordUpdated": "Password updated.",
+    "historyError": "Could not load charging history.",
+    "setActiveError": "Could not update active car.",
+    "deleteError": "Could not delete car."
+  },
+  "overview": {
+    "defaultName": "Driver",
+    "active": "Active",
+    "name": "Name",
+    "email": "Email",
+    "plan": "Plan",
+    "planValue": "Driver • Free",
+    "region": "Region",
+    "editProfile": "Edit profile",
+    "changePassword": "Change password",
+    "signOut": "Sign out"
+  },
+  "cars": {
+    "defaultName": "My EV",
+    "title": "Your cars",
+    "subtitle": "Choose an active car to personalize filters",
+    "addNew": "Add new car",
+    "battery": "Battery {{percent}}%",
+    "charging": "Charging",
+    "active": "Active",
+    "actionsAria": "Car actions",
+    "noConnectors": "No connectors selected",
+    "minPower": "Preferred minimum power: {{power}} kW",
+    "batteryCapacity": "Battery capacity: {{capacity}} kWh",
+    "emptyTitle": "No cars added yet",
+    "emptySubtitle": "Add your first EV to personalize compatible stations",
+    "menu": {
+      "use": "Use this car",
+      "remove": "Remove"
+    }
+  },
+  "history": {
+    "title": "Charging history",
+    "subtitle": "Sessions from the last 3 days",
+    "unknownTime": "Unknown time",
+    "errorTitle": "Unable to load history",
+    "emptyTitle": "No recent charging sessions",
+    "emptySubtitle": "Your last 3 days of charging will appear here",
+    "sessionFallback": "Charging session",
+    "progress": "Progress {{percent}}%",
+    "battery": "Battery {{percent}}%",
+    "vehicle": "Vehicle: {{name}}",
+    "connector": "Connector: {{type}}",
+    "outcome": {
+      "ended": "Ended",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    }
+  },
+  "editDialog": {
+    "title": "Edit profile",
+    "fullName": "Full name",
+    "nameHelper": "Shown on your profile.",
+    "email": "Email",
+    "photoLabel": "Profile photo (optional)",
+    "changePhoto": "Change photo",
+    "uploadPhoto": "Upload photo",
+    "photoHint": "JPG or PNG recommended.",
+    "remove": "Remove",
+    "region": "Region",
+    "regionPlaceholder": "Example: Jakarta, ID",
+    "regionHelper": "Used for local recommendations.",
+    "save": "Save changes"
+  },
+  "passwordDialog": {
+    "title": "Change password",
+    "current": "Current password",
+    "new": "New password",
+    "confirm": "Confirm new password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "strength": "Strength: {{label}}",
+    "strengthLabels": {
+      "weak": "Weak",
+      "ok": "Okay",
+      "strong": "Strong"
+    },
+    "requirements": "Use 8+ characters, letters, and numbers.",
+    "update": "Update password"
+  }
+}

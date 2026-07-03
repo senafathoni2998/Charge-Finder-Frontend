@@ -1,4 +1,5 @@
 import { Box, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 
 type StationHeaderProps = {
@@ -7,16 +8,16 @@ type StationHeaderProps = {
 };
 
 // Renders the title and supporting copy for the station form flow.
-export default function StationHeader({
-  title = "Add station",
-  subtitle = "Create and maintain station details for the network.",
-}: StationHeaderProps) {
+export default function StationHeader({ title, subtitle }: StationHeaderProps) {
+  const { t } = useTranslation("addStation");
   return (
     <Box>
       <Typography sx={{ fontWeight: 950, color: UI.text, fontSize: 28 }}>
-        {title}
+        {title ?? t("header.title")}
       </Typography>
-      <Typography sx={{ color: UI.text2 }}>{subtitle}</Typography>
+      <Typography sx={{ color: UI.text2 }}>
+        {subtitle ?? t("header.subtitle")}
+      </Typography>
     </Box>
   );
 }

@@ -21,7 +21,9 @@ import {
   Typography,
 } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
+import { tValidation } from "../../../i18n/validation";
 import {
   editProfileFormSchema,
   type EditProfileValues,
@@ -53,6 +55,7 @@ export default function EditProfileDialog({
   onDismissError,
   onSubmit,
 }: EditProfileDialogProps) {
+  const { t } = useTranslation("profile");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const photoInputRef = useRef<HTMLInputElement | null>(null);
@@ -135,7 +138,7 @@ export default function EditProfileDialog({
         },
       }}
     >
-      <DialogTitle sx={{ fontWeight: 950 }}>Edit profile</DialogTitle>
+      <DialogTitle sx={{ fontWeight: 950 }}>{t("editDialog.title")}</DialogTitle>
       <DialogContent dividers sx={{ borderColor: UI.border2 }}>
         <Box component="form" id="profile-form" onSubmit={submit} noValidate>
           <Stack spacing={2}>
@@ -145,15 +148,22 @@ export default function EditProfileDialog({
               </Alert>
             ) : null}
             <TextField
-              label="Full name"
+              label={t("editDialog.fullName")}
               inputRef={nameRef}
               {...nameField}
               fullWidth
               required
               error={!!errors.name}
-              helperText={errors.name?.message || "Shown on your profile."}
+              helperText={
+                tValidation(t, errors.name?.message) || t("editDialog.nameHelper")
+              }
             />
-            <TextField label="Email" value={email || ""} fullWidth disabled />
+            <TextField
+              label={t("editDialog.email")}
+              value={email || ""}
+              fullWidth
+              disabled
+            />
             <Box>
               <Typography
                 sx={{
@@ -164,7 +174,7 @@ export default function EditProfileDialog({
                   mb: 1,
                 }}
               >
-                Profile photo (optional)
+                {t("editDialog.photoLabel")}
               </Typography>
               <Stack direction="row" spacing={2} alignItems="center">
                 <Avatar
@@ -193,7 +203,9 @@ export default function EditProfileDialog({
                       color: UI.text,
                     }}
                   >
-                    {photoFile ? "Change photo" : "Upload photo"}
+                    {photoFile
+                      ? t("editDialog.changePhoto")
+                      : t("editDialog.uploadPhoto")}
                     <input
                       ref={photoInputRef}
                       hidden
@@ -204,7 +216,7 @@ export default function EditProfileDialog({
                     />
                   </Button>
                   <Typography variant="caption" sx={{ color: UI.text3 }}>
-                    {photoFile ? photoFile.name : "JPG or PNG recommended."}
+                    {photoFile ? photoFile.name : t("editDialog.photoHint")}
                   </Typography>
                 </Stack>
                 {photoFile ? (
@@ -214,18 +226,18 @@ export default function EditProfileDialog({
                     onClick={handlePhotoClear}
                     sx={{ textTransform: "none", color: UI.text2 }}
                   >
-                    Remove
+                    {t("editDialog.remove")}
                   </Button>
                 ) : null}
               </Stack>
             </Box>
             <TextField
-              label="Region"
+              label={t("editDialog.region")}
               inputRef={regionRef}
               {...regionField}
               fullWidth
-              placeholder="Example: Jakarta, ID"
-              helperText="Used for local recommendations."
+              placeholder={t("editDialog.regionPlaceholder")}
+              helperText={t("editDialog.regionHelper")}
             />
           </Stack>
         </Box>
@@ -241,7 +253,7 @@ export default function EditProfileDialog({
             color: UI.text,
           }}
         >
-          Cancel
+          {t("actions.cancel", { ns: "common" })}
         </Button>
         <Button
           variant="contained"
@@ -254,7 +266,7 @@ export default function EditProfileDialog({
             color: "white",
           }}
         >
-          Save changes
+          {t("editDialog.save")}
         </Button>
       </DialogActions>
     </Dialog>

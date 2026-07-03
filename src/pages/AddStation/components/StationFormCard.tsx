@@ -14,7 +14,9 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
+import { tValidation } from "../../../i18n/validation";
 import type { ConnectorType } from "../../../models/model";
 import { stationFormSchema, type StationFormValues } from "../../../forms/schemas";
 import { createDefaultConnector, createDefaultPhoto } from "../stationFormUtils";
@@ -56,9 +58,10 @@ export default function StationFormCard({
   serverError,
   onSubmit,
   onCancel,
-  submitLabel = "Save station",
-  submittingLabel = "Saving...",
+  submitLabel,
+  submittingLabel,
 }: StationFormCardProps) {
+  const { t } = useTranslation("addStation");
   const {
     register,
     control,
@@ -89,6 +92,9 @@ export default function StationFormCard({
     | undefined;
   const connectorsError = connectorsErr?.root?.message ?? connectorsErr?.message;
 
+  const resolvedSubmitLabel = submitLabel ?? t("actions.saveStation");
+  const resolvedSubmittingLabel = submittingLabel ?? t("actions.saving");
+
   return (
     <Card
       variant="outlined"
@@ -106,23 +112,23 @@ export default function StationFormCard({
           <Stack spacing={2.5}>
             <Stack spacing={2}>
               <Typography sx={{ fontWeight: 800, color: UI.text }}>
-                Basics
+                {t("sections.basics")}
               </Typography>
               <TextField
-                label="Station name"
+                label={t("fields.name")}
                 {...textField("name")}
-                placeholder="e.g. Central Plaza Fast Charge"
+                placeholder={t("fields.namePlaceholder")}
                 error={!!errors.name}
-                helperText={errors.name?.message}
+                helperText={tValidation(t, errors.name?.message)}
                 fullWidth
                 sx={fieldSx}
               />
               <TextField
-                label="Address"
+                label={t("fields.address")}
                 {...textField("address")}
-                placeholder="Street, city, region"
+                placeholder={t("fields.addressPlaceholder")}
                 error={!!errors.address}
-                helperText={errors.address?.message}
+                helperText={tValidation(t, errors.address?.message)}
                 fullWidth
                 sx={fieldSx}
               />
@@ -130,10 +136,16 @@ export default function StationFormCard({
                 name="status"
                 control={control}
                 render={({ field }) => (
-                  <TextField label="Status" select fullWidth sx={fieldSx} {...field}>
+                  <TextField
+                    label={t("fields.status")}
+                    select
+                    fullWidth
+                    sx={fieldSx}
+                    {...field}
+                  >
                     {STATUS_OPTIONS.map((option) => (
                       <MenuItem key={option} value={option}>
-                        {option}
+                        {t(`status.${option.toLowerCase()}`, { ns: "common" })}
                       </MenuItem>
                     ))}
                   </TextField>
@@ -145,24 +157,24 @@ export default function StationFormCard({
 
             <Stack spacing={2}>
               <Typography sx={{ fontWeight: 800, color: UI.text }}>
-                Location
+                {t("sections.location")}
               </Typography>
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                 <TextField
-                  label="Latitude"
+                  label={t("fields.latitude")}
                   type="number"
                   {...textField("lat")}
                   error={!!errors.lat}
-                  helperText={errors.lat?.message}
+                  helperText={tValidation(t, errors.lat?.message)}
                   fullWidth
                   sx={fieldSx}
                 />
                 <TextField
-                  label="Longitude"
+                  label={t("fields.longitude")}
                   type="number"
                   {...textField("lng")}
                   error={!!errors.lng}
-                  helperText={errors.lng?.message}
+                  helperText={tValidation(t, errors.lng?.message)}
                   fullWidth
                   sx={fieldSx}
                 />
@@ -173,7 +185,7 @@ export default function StationFormCard({
                 alignItems={{ sm: "center" }}
               >
                 <Typography sx={{ color: UI.text3, fontSize: 13 }}>
-                  Click the map to set coordinates.
+                  {t("location.hint")}
                 </Typography>
                 <Box sx={{ flex: 1 }} />
                 <Button
@@ -188,12 +200,14 @@ export default function StationFormCard({
                     color: UI.text,
                   }}
                 >
-                  {location.locationLoading ? "Locating..." : "Use my location"}
+                  {location.locationLoading
+                    ? t("location.locating")
+                    : t("location.useMyLocation")}
                 </Button>
               </Stack>
               {location.addressLookupLoading ? (
                 <Typography sx={{ color: UI.text2, fontSize: 13 }}>
-                  Looking up address...
+                  {t("location.lookingUpAddress")}
                 </Typography>
               ) : null}
               {location.locationError ? (
@@ -211,7 +225,7 @@ export default function StationFormCard({
             <Stack spacing={1.5}>
               <Stack direction="row" spacing={1} alignItems="center">
                 <Typography sx={{ fontWeight: 800, color: UI.text }}>
-                  Connectors
+                  {t("sections.connectors")}
                 </Typography>
                 <Box sx={{ flex: 1 }} />
                 <Button
@@ -228,7 +242,7 @@ export default function StationFormCard({
                     color: UI.text,
                   }}
                 >
-                  Add connector
+                  {t("connectors.add")}
                 </Button>
               </Stack>
 
@@ -248,7 +262,7 @@ export default function StationFormCard({
                         <Typography
                           sx={{ fontWeight: 700, color: UI.text2, fontSize: 14 }}
                         >
-                          Connector {index + 1}
+                          {t("connectors.item", { number: index + 1 })}
                         </Typography>
                         <Box sx={{ flex: 1 }} />
                         {connectors.fields.length > 1 ? (
@@ -259,7 +273,7 @@ export default function StationFormCard({
                               borderRadius: 2,
                               border: `1px solid ${UI.border2}`,
                             }}
-                            aria-label="Remove connector"
+                            aria-label={t("connectors.remove")}
                           >
                             <DeleteOutlineIcon fontSize="small" />
                           </IconButton>
@@ -272,7 +286,7 @@ export default function StationFormCard({
                           control={control}
                           render={({ field: typeField }) => (
                             <TextField
-                              label="Type"
+                              label={t("fields.type")}
                               select
                               fullWidth
                               sx={fieldSx}
@@ -287,7 +301,7 @@ export default function StationFormCard({
                           )}
                         />
                         <TextField
-                          label="Power (kW)"
+                          label={t("fields.powerKw")}
                           type="number"
                           {...textField(`connectors.${index}.powerKW`)}
                           fullWidth
@@ -297,14 +311,14 @@ export default function StationFormCard({
 
                       <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                         <TextField
-                          label="Ports"
+                          label={t("fields.ports")}
                           type="number"
                           {...textField(`connectors.${index}.ports`)}
                           fullWidth
                           sx={fieldSx}
                         />
                         <TextField
-                          label="Available ports"
+                          label={t("fields.availablePorts")}
                           type="number"
                           {...textField(`connectors.${index}.availablePorts`)}
                           fullWidth
@@ -316,7 +330,9 @@ export default function StationFormCard({
                 ))}
               </Stack>
               {connectorsError ? (
-                <Typography sx={errorTextSx}>{connectorsError}</Typography>
+                <Typography sx={errorTextSx}>
+                  {tValidation(t, connectorsError)}
+                </Typography>
               ) : null}
             </Stack>
 
@@ -324,35 +340,35 @@ export default function StationFormCard({
 
             <Stack spacing={2}>
               <Typography sx={{ fontWeight: 800, color: UI.text }}>
-                Pricing
+                {t("sections.pricing")}
               </Typography>
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                 <TextField
-                  label="Currency"
+                  label={t("fields.currency")}
                   {...textField("pricing.currency")}
                   fullWidth
                   sx={fieldSx}
                 />
                 <TextField
-                  label="Per kWh"
+                  label={t("fields.perKwh")}
                   type="number"
                   {...textField("pricing.perKwh")}
                   error={!!errors.pricing?.perKwh}
-                  helperText={errors.pricing?.perKwh?.message}
+                  helperText={tValidation(t, errors.pricing?.perKwh?.message)}
                   fullWidth
                   sx={fieldSx}
                 />
               </Stack>
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                 <TextField
-                  label="Per minute (optional)"
+                  label={t("fields.perMinute")}
                   type="number"
                   {...textField("pricing.perMinute")}
                   fullWidth
                   sx={fieldSx}
                 />
                 <TextField
-                  label="Parking fee (optional)"
+                  label={t("fields.parkingFee")}
                   {...textField("pricing.parkingFee")}
                   fullWidth
                   sx={fieldSx}
@@ -364,12 +380,12 @@ export default function StationFormCard({
 
             <Stack spacing={2}>
               <Typography sx={{ fontWeight: 800, color: UI.text }}>
-                Amenities
+                {t("sections.amenities")}
               </Typography>
               <TextField
-                label="Amenities"
+                label={t("fields.amenities")}
                 {...textField("amenities")}
-                helperText="Comma-separated list (e.g. Restroom, Coffee, Wi-Fi)"
+                helperText={t("fields.amenitiesHelper")}
                 fullWidth
                 sx={fieldSx}
               />
@@ -380,7 +396,7 @@ export default function StationFormCard({
             <Stack spacing={1.5}>
               <Stack direction="row" spacing={1} alignItems="center">
                 <Typography sx={{ fontWeight: 800, color: UI.text }}>
-                  Photos
+                  {t("sections.photos")}
                 </Typography>
                 <Box sx={{ flex: 1 }} />
                 <Button
@@ -395,7 +411,7 @@ export default function StationFormCard({
                     color: UI.text,
                   }}
                 >
-                  Add photo
+                  {t("photos.add")}
                 </Button>
               </Stack>
               <Stack spacing={2}>
@@ -415,7 +431,7 @@ export default function StationFormCard({
                           <Typography
                             sx={{ fontWeight: 700, color: UI.text2, fontSize: 14 }}
                           >
-                            Photo
+                            {t("photos.item")}
                           </Typography>
                           <Box sx={{ flex: 1 }} />
                           <IconButton
@@ -425,22 +441,22 @@ export default function StationFormCard({
                               borderRadius: 2,
                               border: `1px solid ${UI.border2}`,
                             }}
-                            aria-label="Remove photo"
+                            aria-label={t("photos.remove")}
                           >
                             <DeleteOutlineIcon fontSize="small" />
                           </IconButton>
                         </Stack>
                         <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                           <TextField
-                            label="Label"
+                            label={t("fields.photoLabel")}
                             {...textField(`photos.${index}.label`)}
                             fullWidth
                             sx={fieldSx}
                           />
                           <TextField
-                            label="Gradient"
+                            label={t("fields.photoGradient")}
                             {...textField(`photos.${index}.gradient`)}
-                            placeholder="linear-gradient(135deg, ...)"
+                            placeholder={t("fields.photoGradientPlaceholder")}
                             fullWidth
                             sx={fieldSx}
                           />
@@ -450,7 +466,7 @@ export default function StationFormCard({
                   ))
                 ) : (
                   <Typography sx={{ color: UI.text2, fontSize: 13 }}>
-                    No photos added yet.
+                    {t("photos.empty")}
                   </Typography>
                 )}
               </Stack>
@@ -460,10 +476,10 @@ export default function StationFormCard({
 
             <Stack spacing={2}>
               <Typography sx={{ fontWeight: 800, color: UI.text }}>
-                Notes
+                {t("sections.notes")}
               </Typography>
               <TextField
-                label="Notes"
+                label={t("fields.notes")}
                 {...textField("notes")}
                 multiline
                 minRows={3}
@@ -494,7 +510,7 @@ export default function StationFormCard({
                   backgroundColor: "rgba(10,10,16,0.01)",
                 }}
               >
-                Cancel
+                {t("actions.cancel", { ns: "common" })}
               </Button>
               <Box sx={{ flex: 1 }} />
               <Button
@@ -508,7 +524,7 @@ export default function StationFormCard({
                   boxShadow: "0 12px 30px rgba(124,92,255,0.2)",
                 }}
               >
-                {isSubmitting ? submittingLabel : submitLabel}
+                {isSubmitting ? resolvedSubmittingLabel : resolvedSubmitLabel}
               </Button>
             </Stack>
           </Stack>

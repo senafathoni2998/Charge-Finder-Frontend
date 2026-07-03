@@ -1,0 +1,27 @@
+{
+  "brand": "ChargeFinder",
+  "titles": {
+    "home": "ChargeFinder",
+    "stationDetail": "Detail Stasiun",
+    "addStation": "Tambah Stasiun",
+    "editStation": "Ubah Stasiun",
+    "addUser": "Tambah Pengguna",
+    "admin": "Konsol Admin",
+    "addCar": "Tambah Mobil",
+    "profile": "Profil"
+  },
+  "loading": "Memuat data...",
+  "tooltips": {
+    "back": "Kembali",
+    "admin": "Admin",
+    "profile": "Profil",
+    "filters": "Filter"
+  },
+  "aria": {
+    "back": "Kembali",
+    "admin": "Buka konsol admin",
+    "profile": "Buka profil",
+    "filters": "Buka filter",
+    "logo": "Logo ChargeFinder"
+  }
+}

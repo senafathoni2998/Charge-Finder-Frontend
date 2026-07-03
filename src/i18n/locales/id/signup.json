@@ -1,0 +1,56 @@
+{
+  "appBar": {
+    "subtitle": "Buat akun Anda"
+  },
+  "card": {
+    "title": "Buat akun Anda",
+    "subtitle": "Simpan profil mobil Anda dan personalisasi stasiun."
+  },
+  "fields": {
+    "name": {
+      "label": "Nama",
+      "placeholder": "Nama lengkap Anda",
+      "invalid": "Masukkan nama yang valid."
+    },
+    "region": {
+      "label": "Wilayah",
+      "placeholder": "Wilayah Anda",
+      "invalid": "Masukkan wilayah yang valid."
+    },
+    "email": {
+      "label": "Email",
+      "placeholder": "nama@email.com"
+    },
+    "password": {
+      "label": "Kata sandi",
+      "placeholder": "Minimal 7 karakter",
+      "show": "Tampilkan kata sandi",
+      "hide": "Sembunyikan kata sandi"
+    },
+    "confirm": {
+      "label": "Konfirmasi kata sandi",
+      "placeholder": "Masukkan ulang kata sandi Anda",
+      "show": "Tampilkan konfirmasi kata sandi",
+      "hide": "Sembunyikan konfirmasi kata sandi"
+    }
+  },
+  "photo": {
+    "title": "Foto profil (opsional)",
+    "upload": "Unggah foto",
+    "change": "Ganti foto",
+    "hint": "JPG atau PNG disarankan.",
+    "remove": "Hapus"
+  },
+  "strength": "Kekuatan: {{label}}",
+  "strengthLabels": {
+    "weak": "Lemah",
+    "ok": "Cukup",
+    "strong": "Kuat"
+  },
+  "rememberMe": "Ingat saya",
+  "submit": "Buat akun",
+  "submitting": "Membuat",
+  "haveAccount": "Sudah punya akun?",
+  "signIn": "Masuk",
+  "terms": "Dengan membuat akun, Anda menyetujui Ketentuan dan Privasi demo."
+}

@@ -15,11 +15,13 @@ import {
 } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 import {
   addUserFormSchema,
   type AddUserFormValues,
 } from "../../../forms/schemas";
+import { tValidation } from "../../../i18n/validation";
 
 type AddUserFormCardProps = {
   serverError: string | null;
@@ -42,10 +44,13 @@ export default function AddUserFormCard({
   serverError,
   onSubmit,
   onCancel,
-  submitLabel = "Create user",
-  submittingLabel = "Creating...",
+  submitLabel,
+  submittingLabel,
 }: AddUserFormCardProps) {
+  const { t } = useTranslation("addUser");
   const [showPw, setShowPw] = useState(false);
+  const resolvedSubmitLabel = submitLabel ?? t("form.submit");
+  const resolvedSubmittingLabel = submittingLabel ?? t("form.submitting");
 
   const {
     register,
@@ -81,24 +86,24 @@ export default function AddUserFormCard({
         <Box component="form" onSubmit={submit} noValidate>
           <Stack spacing={2}>
             <TextField
-              label="Full name"
+              label={t("form.fullName")}
               inputRef={nameRef}
               {...nameField}
-              placeholder="e.g. Nadia Putri"
+              placeholder={t("form.fullNamePlaceholder")}
               fullWidth
               error={!!errors.name}
-              helperText={errors.name?.message}
+              helperText={tValidation(t, errors.name?.message)}
               sx={inputSx}
             />
             <TextField
-              label="Email"
+              label={t("form.email")}
               type="email"
               inputRef={emailRef}
               {...emailField}
-              placeholder="e.g. nadia@chargefinder.app"
+              placeholder={t("form.emailPlaceholder")}
               fullWidth
               error={!!errors.email}
-              helperText={errors.email?.message}
+              helperText={tValidation(t, errors.email?.message)}
               sx={inputSx}
             />
             <Controller
@@ -107,11 +112,11 @@ export default function AddUserFormCard({
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label="Role"
+                  label={t("form.role")}
                   select
                   fullWidth
                   error={!!errors.role}
-                  helperText={errors.role?.message}
+                  helperText={tValidation(t, errors.role?.message)}
                   sx={inputSx}
                 >
                   {ROLE_OPTIONS.map((option) => (
@@ -123,21 +128,23 @@ export default function AddUserFormCard({
               )}
             />
             <TextField
-              label="Password"
+              label={t("form.password")}
               type={showPw ? "text" : "password"}
               inputRef={passwordRef}
               {...passwordField}
-              placeholder="Set a temporary password"
+              placeholder={t("form.passwordPlaceholder")}
               fullWidth
               error={!!errors.password}
-              helperText={errors.password?.message}
+              helperText={tValidation(t, errors.password?.message)}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton
                       onClick={() => setShowPw((value) => !value)}
                       edge="end"
-                      aria-label={showPw ? "Hide password" : "Show password"}
+                      aria-label={
+                        showPw ? t("form.hidePassword") : t("form.showPassword")
+                      }
                     >
                       {showPw ? (
                         <VisibilityOffIcon sx={{ color: UI.text3 }} />
@@ -151,13 +158,13 @@ export default function AddUserFormCard({
               sx={inputSx}
             />
             <TextField
-              label="Region"
+              label={t("form.region")}
               inputRef={regionRef}
               {...regionField}
-              placeholder="e.g. Jakarta, ID"
+              placeholder={t("form.regionPlaceholder")}
               fullWidth
               error={!!errors.region}
-              helperText={errors.region?.message}
+              helperText={tValidation(t, errors.region?.message)}
               sx={inputSx}
             />
 
@@ -186,7 +193,7 @@ export default function AddUserFormCard({
                   backgroundColor: "rgba(10,10,16,0.01)",
                 }}
               >
-                Cancel
+                {t("common:actions.cancel")}
               </Button>
               <Box sx={{ flex: 1 }} />
               <Button
@@ -200,7 +207,7 @@ export default function AddUserFormCard({
                   boxShadow: "0 12px 30px rgba(124,92,255,0.2)",
                 }}
               >
-                {isSubmitting ? submittingLabel : submitLabel}
+                {isSubmitting ? resolvedSubmittingLabel : resolvedSubmitLabel}
               </Button>
             </Stack>
           </Stack>

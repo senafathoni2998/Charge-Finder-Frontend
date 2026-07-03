@@ -1,4 +1,5 @@
 import { Box, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 
 type AddUserHeaderProps = {
@@ -8,15 +9,19 @@ type AddUserHeaderProps = {
 
 // Renders the title and supporting copy for the add user flow.
 export default function AddUserHeader({
-  title = "Add user",
-  subtitle = "Invite a teammate and set their access level.",
+  title,
+  subtitle,
 }: AddUserHeaderProps) {
+  const { t } = useTranslation("addUser");
+  const resolvedTitle = title ?? t("header.title");
+  const resolvedSubtitle = subtitle ?? t("header.subtitle");
+
   return (
     <Box>
       <Typography sx={{ fontWeight: 950, color: UI.text, fontSize: 28 }}>
-        {title}
+        {resolvedTitle}
       </Typography>
-      <Typography sx={{ color: UI.text2 }}>{subtitle}</Typography>
+      <Typography sx={{ color: UI.text2 }}>{resolvedSubtitle}</Typography>
     </Box>
   );
 }

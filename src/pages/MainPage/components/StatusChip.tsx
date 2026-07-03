@@ -1,5 +1,6 @@
 import { Chip } from "@mui/material";
 import type { SxProps, Theme } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 import type { Availability } from "../../../models/model";
 
@@ -11,30 +12,31 @@ type StatusChipProps = {
 type StatusKey = Availability | "CHARGING";
 
 export default function StatusChip({ status, isChargingHere }: StatusChipProps) {
+  const { t } = useTranslation("mainPage");
   const map: Record<StatusKey, { label: string; sx: SxProps<Theme> }> = {
     CHARGING: {
-      label: "Charging",
+      label: t("status.charging"),
       sx: {
         borderColor: "rgba(0, 200, 83, 0.55)",
         backgroundColor: "rgba(0, 200, 83, 0.14)",
       },
     },
     AVAILABLE: {
-      label: "Available",
+      label: t("common:status.available"),
       sx: {
         borderColor: "rgba(0, 229, 255, 0.55)",
         backgroundColor: "rgba(0, 229, 255, 0.14)",
       },
     },
     BUSY: {
-      label: "Busy",
+      label: t("common:status.busy"),
       sx: {
         borderColor: "rgba(255, 193, 7, 0.55)",
         backgroundColor: "rgba(255, 193, 7, 0.14)",
       },
     },
     OFFLINE: {
-      label: "Offline",
+      label: t("common:status.offline"),
       sx: {
         borderColor: "rgba(244, 67, 54, 0.55)",
         backgroundColor: "rgba(244, 67, 54, 0.14)",

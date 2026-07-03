@@ -1,0 +1,65 @@
+{
+  "header": {
+    "title": "Tambah stasiun",
+    "subtitle": "Buat dan kelola detail stasiun untuk jaringan."
+  },
+  "sections": {
+    "basics": "Dasar",
+    "location": "Lokasi",
+    "connectors": "Konektor",
+    "pricing": "Tarif",
+    "amenities": "Fasilitas",
+    "photos": "Foto",
+    "notes": "Catatan"
+  },
+  "fields": {
+    "name": "Nama stasiun",
+    "namePlaceholder": "mis. Central Plaza Fast Charge",
+    "address": "Alamat",
+    "addressPlaceholder": "Jalan, kota, wilayah",
+    "status": "Status",
+    "latitude": "Lintang",
+    "longitude": "Bujur",
+    "type": "Tipe",
+    "powerKw": "Daya (kW)",
+    "ports": "Port",
+    "availablePorts": "Port tersedia",
+    "currency": "Mata uang",
+    "perKwh": "Per kWh",
+    "perMinute": "Per menit (opsional)",
+    "parkingFee": "Biaya parkir (opsional)",
+    "amenities": "Fasilitas",
+    "amenitiesHelper": "Daftar dipisahkan koma (mis. Toilet, Kopi, Wi-Fi)",
+    "photoLabel": "Label",
+    "photoGradient": "Gradien",
+    "photoGradientPlaceholder": "linear-gradient(135deg, ...)",
+    "notes": "Catatan"
+  },
+  "location": {
+    "hint": "Klik peta untuk menetapkan koordinat.",
+    "useMyLocation": "Gunakan lokasi saya",
+    "locating": "Mencari lokasi...",
+    "lookingUpAddress": "Mencari alamat..."
+  },
+  "connectors": {
+    "add": "Tambah konektor",
+    "item": "Konektor {{number}}",
+    "remove": "Hapus konektor"
+  },
+  "photos": {
+    "add": "Tambah foto",
+    "item": "Foto",
+    "remove": "Hapus foto",
+    "empty": "Belum ada foto yang ditambahkan."
+  },
+  "actions": {
+    "createStation": "Buat stasiun",
+    "creating": "Membuat...",
+    "saveStation": "Simpan stasiun",
+    "saving": "Menyimpan..."
+  },
+  "errors": {
+    "createStation": "Tidak dapat membuat stasiun.",
+    "resolveAddress": "Tidak dapat menemukan alamat."
+  }
+}

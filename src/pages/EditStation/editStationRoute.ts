@@ -1,3 +1,4 @@
+import type { TFunction } from "i18next";
 import { updateStation } from "../../api/adminStations";
 import { buildStationPayload } from "../AddStation/stationFormUtils";
 import type { StationRequestResult } from "../AddStation/addStationRoute";
@@ -12,15 +13,16 @@ type StationPayload = Omit<Station, "id"> & { id?: string };
  */
 export async function updateStationRequest(
   stationId: string,
-  values: StationFormValues
+  values: StationFormValues,
+  t: TFunction
 ): Promise<StationRequestResult> {
   if (!stationId) {
-    return { ok: false, error: "Station ID is missing." };
+    return { ok: false, error: t("errors.missingId") };
   }
   const payload = buildStationPayload(values);
   const result = await updateStation(stationId, payload as StationPayload);
   if (!result.ok) {
-    return { ok: false, error: result.error || "Could not update station." };
+    return { ok: false, error: result.error || t("errors.updateFailed") };
   }
   return { ok: true };
 }

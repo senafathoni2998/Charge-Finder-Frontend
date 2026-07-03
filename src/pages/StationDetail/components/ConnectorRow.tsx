@@ -1,10 +1,15 @@
 import { Box, Stack, Typography, Chip } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { Connector } from "../../../models/model";
 import { UI } from "../../../theme/theme";
 
 const ConnectorRow = ({ c }: { c: Connector }) => {
+  const { t } = useTranslation("stationDetail");
   const pct = c.ports ? Math.round((c.availablePorts / c.ports) * 100) : 0;
-  const availabilityText = `${c.availablePorts}/${c.ports} available`;
+  const availabilityText = t("connectors.available", {
+    available: c.availablePorts,
+    total: c.ports,
+  });
 
   return (
     <Box

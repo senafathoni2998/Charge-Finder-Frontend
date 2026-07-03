@@ -1,0 +1,39 @@
+{
+  "appBar": {
+    "tagline": "Temukan pengisi daya yang kompatibel lebih cepat"
+  },
+  "heading": {
+    "title": "Selamat datang kembali",
+    "subtitle": "Masuk untuk mengakses profil mobil dan tiket Anda."
+  },
+  "fields": {
+    "email": {
+      "label": "Email",
+      "placeholder": "anda@email.com"
+    },
+    "password": {
+      "label": "Kata sandi",
+      "placeholder": "Masukkan kata sandi Anda",
+      "show": "Tampilkan kata sandi",
+      "hide": "Sembunyikan kata sandi"
+    }
+  },
+  "actions": {
+    "forgotPassword": "Lupa kata sandi?",
+    "rememberMe": "Ingat saya",
+    "signIn": "Masuk",
+    "signingIn": "Sedang masuk"
+  },
+  "signup": {
+    "prompt": "Baru di sini?",
+    "cta": "Buat akun"
+  },
+  "terms": "Dengan masuk, Anda menyetujui Ketentuan dan Privasi demo.",
+  "toast": {
+    "forgotPassword": "Lupa kata sandi (demo). Sambungkan ke alur reset."
+  },
+  "errors": {
+    "backendNotConfigured": "URL backend belum dikonfigurasi.",
+    "loginFailed": "Gagal masuk."
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "header": {
+    "title": "Ubah mobil",
+    "subtitle": "Perbarui jenis konektor Anda agar kecocokan stasiun tetap akurat."
+  },
+  "form": {
+    "submitLabel": "Perbarui mobil",
+    "submittingLabel": "Memperbarui..."
+  },
+  "notFound": {
+    "title": "Mobil tidak ditemukan.",
+    "description": "Kembali ke profil Anda untuk memilih mobil lain.",
+    "back": "Kembali ke profil"
+  }
+}

@@ -43,7 +43,10 @@ describe('AddStationPage', () => {
         fireEvent.click(screen.getByText('submit'));
 
         await waitFor(() => expect(navigate).toHaveBeenCalledWith('/admin'));
-        expect(route.createStationRequest).toHaveBeenCalledWith({ name: 'My Station' });
+        expect(route.createStationRequest).toHaveBeenCalledWith(
+            { name: 'My Station' },
+            'Could not create station.'
+        );
     });
 
     it('shows the server error and does not navigate on failure', async () => {

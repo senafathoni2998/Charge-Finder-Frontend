@@ -1,12 +1,14 @@
 import { Box, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 import EditStationHeader from "./EditStationHeader";
 
 // Shows a loading placeholder while station data is fetched.
 export default function EditStationLoadingState() {
+  const { t } = useTranslation("editStation");
   return (
     <>
-      <EditStationHeader subtitle="Loading station data..." />
+      <EditStationHeader subtitle={t("loading.subtitle")} />
       <Box
         sx={{
           p: 2,
@@ -16,7 +18,7 @@ export default function EditStationLoadingState() {
         }}
       >
         <Typography sx={{ fontWeight: 900, color: UI.text }}>
-          Loading station details...
+          {t("loading.message")}
         </Typography>
       </Box>
     </>

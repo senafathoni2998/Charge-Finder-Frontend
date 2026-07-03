@@ -1,5 +1,6 @@
 import type { MouseEvent } from "react";
 import { Stack, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import type { AdminUser } from "../types";
 import { UI } from "../../../theme/theme";
 import UserListItem from "./UserListItem";
@@ -22,10 +23,12 @@ export default function UserList({
   onStatusAction,
   onOpenMenu,
 }: UserListProps) {
+  const { t } = useTranslation("admin");
+
   if (isLoading) {
     return (
       <Typography sx={{ color: UI.text2, fontSize: 14 }}>
-        Loading users...
+        {t("userList.loading")}
       </Typography>
     );
   }
@@ -33,7 +36,7 @@ export default function UserList({
   if (!users.length) {
     return (
       <Typography sx={{ color: UI.text2, fontSize: 14 }}>
-        {error || "No users found."}
+        {error || t("userList.empty")}
       </Typography>
     );
   }

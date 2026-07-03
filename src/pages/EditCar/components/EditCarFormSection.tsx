@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import AddCarFormCard from "../../AddCar/components/AddCarFormCard";
 import {
   CONNECTOR_OPTIONS,
@@ -24,6 +25,8 @@ export default function EditCarFormSection({
   onSubmit,
   onCancel,
 }: EditCarFormSectionProps) {
+  const { t } = useTranslation("editCar");
+
   return (
     <>
       <EditCarHeader />
@@ -35,8 +38,8 @@ export default function EditCarFormSection({
         onDismissError={onDismissError}
         onSubmit={onSubmit}
         onCancel={onCancel}
-        submitLabel="Update car"
-        submittingLabel="Updating..."
+        submitLabel={t("form.submitLabel")}
+        submittingLabel={t("form.submittingLabel")}
       />
     </>
   );

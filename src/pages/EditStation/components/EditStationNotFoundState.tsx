@@ -1,4 +1,5 @@
 import { Box, Button, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 import EditStationHeader from "./EditStationHeader";
 
@@ -12,6 +13,7 @@ export default function EditStationNotFoundState({
   errorMessage,
   onBack,
 }: EditStationNotFoundStateProps) {
+  const { t } = useTranslation("editStation");
   return (
     <>
       <EditStationHeader />
@@ -24,10 +26,10 @@ export default function EditStationNotFoundState({
         }}
       >
         <Typography sx={{ fontWeight: 900, color: UI.text }}>
-          {errorMessage || "Station not found."}
+          {errorMessage || t("notFound.message")}
         </Typography>
         <Typography sx={{ color: UI.text2, mt: 0.5 }}>
-          Head back to the admin console to select another station.
+          {t("notFound.description")}
         </Typography>
         <Button
           variant="outlined"
@@ -41,7 +43,7 @@ export default function EditStationNotFoundState({
             backgroundColor: "rgba(10,10,16,0.01)",
           }}
         >
-          Back to admin
+          {t("notFound.back")}
         </Button>
       </Box>
     </>

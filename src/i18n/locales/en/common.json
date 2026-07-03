@@ -1,0 +1,34 @@
+{
+  "language": {
+    "title": "Language",
+    "subtitle": "Choose your preferred language",
+    "indonesia": "Indonesia",
+    "english": "English",
+    "change": "Change language"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "back": "Back",
+    "confirm": "Confirm",
+    "retry": "Retry",
+    "submit": "Submit"
+  },
+  "status": {
+    "available": "Available",
+    "busy": "Busy",
+    "offline": "Offline"
+  },
+  "session": {
+    "missing": "Your session is missing. Please log in again.",
+    "expired": "Your session has expired. Please log in again."
+  },
+  "geolocation": {
+    "unsupported": "Geolocation is not supported in this environment.",
+    "failed": "Failed to get location."
+  }
+}

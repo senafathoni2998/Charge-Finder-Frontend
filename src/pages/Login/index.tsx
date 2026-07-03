@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Box, CssBaseline, Snackbar } from "@mui/material";
 import { useNavigate, useSearchParams } from "react-router";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../theme/theme";
 import type { LoginValues } from "../../forms/schemas";
 import { getRememberedLoginEmail } from "./loginStorage";
@@ -16,6 +17,7 @@ import LoginFormCard from "./components/LoginFormCard";
 export default function ChargeFinderLoginPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation("login");
 
   const [serverError, setServerError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(() =>
@@ -46,7 +48,7 @@ export default function ChargeFinderLoginPage() {
   };
 
   const handleForgotPassword = () => {
-    setToast("Forgot password (demo). Wire to reset flow.");
+    setToast(t("toast.forgotPassword"));
   };
 
   const handleNavigateToSignup = () => {

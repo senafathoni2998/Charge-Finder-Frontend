@@ -1,0 +1,158 @@
+{
+  "overview": {
+    "loading": "Loading",
+    "stationFallback": "Station",
+    "photoFallback": "Photo",
+    "compatible": "Compatible",
+    "notSupported": "Not supported",
+    "kmAway": "{{distance}} km away",
+    "updatedAgo": "Updated {{minutes}}m ago",
+    "reportIssue": "Report issue",
+    "notes": "Notes"
+  },
+  "connectors": {
+    "title": "Connectors",
+    "subtitle": "Compatibility + realtime availability per connector type",
+    "available": "{{available}}/{{total}} available"
+  },
+  "amenities": {
+    "title": "Amenities",
+    "subtitle": "Helpful things near this station"
+  },
+  "actionsCard": {
+    "title": "Actions",
+    "loginToBuy": "Log in to buy a ticket and start charging.",
+    "buyToStart": "Buy a ticket to start charging.",
+    "notCompatible": "Not compatible with your car's connector types.",
+    "openInMaps": "Open in Google Maps",
+    "chargingStatus": "Charging status",
+    "minutesAgoShort": "{{minutes}}m",
+    "busyMessage": "All ports are currently in use. You can still navigate here and queue.",
+    "offlineMessage": "This station is currently offline. Use “Open in Google Maps” for alternatives."
+  },
+  "pricing": {
+    "title": "Pricing",
+    "subtitle": "Estimated cost info (may vary by operator)",
+    "perKwh": "Per kWh",
+    "perMinute": "Per minute",
+    "parking": "Parking"
+  },
+  "coordinates": {
+    "title": "Coordinates",
+    "subtitle": "For debugging and precise navigation",
+    "latitude": "Latitude",
+    "longitude": "Longitude"
+  },
+  "paymentDialog": {
+    "title": "Charging ticket",
+    "chooseMethod": "Choose a payment method for a {{amount}} kWh ticket.",
+    "ticketSetup": "Ticket setup",
+    "ticketSizeLabel": "Ticket size (kWh)",
+    "invalidKwh": "Enter a valid kWh amount.",
+    "suggested": "Suggested: {{amount}} kWh",
+    "chargingSpeed": "Charging speed",
+    "ticketDetails": "Ticket details",
+    "ticketSize": "Ticket size",
+    "speed": "Speed",
+    "perKwh": "Per kWh",
+    "total": "Total",
+    "priceNote": "Price based on station rate.",
+    "paymentMethod": "Payment method",
+    "processing": "Processing...",
+    "updatePayment": "Update payment",
+    "buyTicket": "Buy ticket",
+    "speeds": {
+      "normalLabel": "Normal",
+      "normalHelper": "Standard charging speed.",
+      "fastLabel": "Fast",
+      "fastHelper": "Higher power delivery.",
+      "ultraLabel": "Ultra fast",
+      "ultraHelper": "Highest power option."
+    }
+  },
+  "chargingDialog": {
+    "battery": "Battery {{progress}}%",
+    "delivered": "{{delivered}} / {{ticket}} kWh",
+    "complete": "Charging complete.",
+    "estimatedTimeRemaining": "Estimated time remaining:",
+    "minShort": "min",
+    "ticketId": "Ticket ID",
+    "paidWith": "Paid with {{method}}",
+    "chargeFinderAccount": "ChargeFinder account",
+    "stopConfirmTitle": "Stop charging?",
+    "stopWarning1": "Stopping ends this session and the ticket cannot be reused.",
+    "stopWarning2": "You will need to buy a new ticket to charge again.",
+    "keepCharging": "Keep charging",
+    "stopCharging": "Stop charging",
+    "titleStopped": "Charging stopped",
+    "titleComplete": "Charging complete",
+    "titleInProgress": "Charging in progress",
+    "statusStopped": "Charging stopped. You can unplug when it is safe.",
+    "statusComplete": "Session complete. You can unplug when it is safe.",
+    "statusInProgress": "Keep the connector plugged in while we deliver your ticket.",
+    "hide": "Hide",
+    "done": "Done"
+  },
+  "startChargingDialog": {
+    "title": "Choose connector",
+    "vehicle": "Vehicle",
+    "connector": "Connector",
+    "vehicleCharging": "{{label}} (Charging)",
+    "allVehiclesCharging": "All your vehicles are currently charging.",
+    "noConnectors": "No connectors are available for this station.",
+    "startCharging": "Start charging"
+  },
+  "reportDialog": {
+    "title": "Report an issue",
+    "description": "Help improve data quality — your report will update station trust.",
+    "issueType": "Issue type",
+    "notesLabel": "Notes (optional)",
+    "notesPlaceholder": "Example: CCS2 #2 not working, error code 14",
+    "submitReport": "Submit report"
+  },
+  "shareDialog": {
+    "title": "Share",
+    "description": "Your browser doesn’t support native share here. Copy the details manually.",
+    "done": "Done"
+  },
+  "page": {
+    "chargingActionView": "View charging",
+    "chargingActionStart": "Start charging",
+    "paymentLogin": "Log in to buy ticket",
+    "paymentChange": "Change payment",
+    "paymentBuy": "Buy charging ticket",
+    "couldNotUpdatePayment": "Could not update payment.",
+    "couldNotRequestTicket": "Could not request ticket.",
+    "couldNotStartCharging": "Could not start charging.",
+    "noConnectorsAvailable": "No connectors available for this station.",
+    "allVehiclesAlreadyCharging": "All your vehicles are already charging.",
+    "selectVehicleNotCharging": "Select a vehicle that is not charging.",
+    "vehicleAlreadyCharging": "That vehicle is already charging.",
+    "couldNotStopCharging": "Could not stop charging.",
+    "stationUnavailable": "Station unavailable",
+    "couldNotLoadStation": "We couldn't load this station right now.",
+    "backToMap": "Back to map"
+  },
+  "stationData": {
+    "missingId": "Station ID is missing.",
+    "loadFailed": "Could not load station data.",
+    "notFound": "Station not found."
+  },
+  "constants": {
+    "payment": {
+      "cardLabel": "Card - Visa **** 4242",
+      "cardHelper": "Instant approval",
+      "ewalletLabel": "E-Wallet - GoPay",
+      "ewalletHelper": "Balance required",
+      "bankLabel": "Bank transfer - BCA",
+      "bankHelper": "May take 1-3 min"
+    },
+    "report": {
+      "brokenConnector": "Broken connector",
+      "occupied": "Occupied but shown available",
+      "paymentProblem": "Payment problem",
+      "stationOffline": "Station offline",
+      "other": "Other"
+    }
+  }
+}

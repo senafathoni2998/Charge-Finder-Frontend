@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import StationHeader from "../../AddStation/components/StationHeader";
 
 type EditStationHeaderProps = {
@@ -6,7 +7,13 @@ type EditStationHeaderProps = {
 
 // Renders the shared header for the edit-station flow.
 export default function EditStationHeader({
-  subtitle = "Update station details and keep the network accurate.",
+  subtitle,
 }: EditStationHeaderProps) {
-  return <StationHeader title="Edit station" subtitle={subtitle} />;
+  const { t } = useTranslation("editStation");
+  return (
+    <StationHeader
+      title={t("header.title")}
+      subtitle={subtitle ?? t("header.subtitle")}
+    />
+  );
 }

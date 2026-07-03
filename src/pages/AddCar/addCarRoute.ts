@@ -1,4 +1,5 @@
 import type { ConnectorType } from "../../models/model";
+import i18n from "../../i18n";
 import { persistActiveCarId } from "./addCarStorage";
 
 export type CarRequestResult = { ok: true } | { ok: false; error: string };
@@ -31,13 +32,16 @@ export async function createCarRequest({
 }): Promise<CarRequestResult> {
   const baseUrl = import.meta.env.VITE_APP_BACKEND_URL;
   if (!baseUrl) {
-    return { ok: false, error: "Backend URL is not configured." };
+    return {
+      ok: false,
+      error: i18n.t("client.backendNotConfigured", { ns: "api" }),
+    };
   }
   if (!email) {
-    return { ok: false, error: "Email is required." };
+    return { ok: false, error: i18n.t("cars.emailRequired", { ns: "api" }) };
   }
   if (!userId) {
-    return { ok: false, error: "User session is missing." };
+    return { ok: false, error: i18n.t("session.userMissing", { ns: "api" }) };
   }
 
   const battery = coerceBatteryCapacity(batteryCapacity);
@@ -48,7 +52,7 @@ export async function createCarRequest({
       body: JSON.stringify({
         userId,
         email,
-        name: name.trim() || "My EV",
+        name: name.trim() || i18n.t("cars.defaultName", { ns: "api" }),
         connector_type: connectorTypes,
         min_power: minKW,
         ...(battery != null ? { batteryCapacity: battery } : {}),
@@ -58,7 +62,7 @@ export async function createCarRequest({
     });
     const vehicle = await response.json().catch(() => ({}));
     if (!response.ok) {
-      return { ok: false, error: vehicle.message || "Could not save car." };
+      return { ok: false, error: vehicle.message || i18n.t("cars.saveFailed", { ns: "api" }) };
     }
 
     persistActiveCarId(vehicle?.id);
@@ -66,7 +70,7 @@ export async function createCarRequest({
   } catch (err) {
     return {
       ok: false,
-      error: err instanceof Error ? err.message : "Could not save car.",
+      error: err instanceof Error ? err.message : i18n.t("cars.saveFailed", { ns: "api" }),
     };
   }
 }

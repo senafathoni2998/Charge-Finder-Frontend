@@ -1,0 +1,19 @@
+{
+  "emailExample": "Contoh: nama@email.com",
+  "passwordTooShort": "Kata sandi minimal 7 karakter.",
+  "passwordNeedsDigit": "Tambahkan minimal satu angka.",
+  "emailInvalid": "Masukkan alamat email yang valid.",
+  "passwordRequired": "Masukkan kata sandi Anda.",
+  "passwordsNoMatch": "Kata sandi tidak cocok.",
+  "nameRequired": "Nama wajib diisi.",
+  "currentPasswordRequired": "Masukkan kata sandi Anda saat ini.",
+  "newPasswordDifferent": "Kata sandi baru harus berbeda.",
+  "nameLength": "Nama harus 2-50 karakter.",
+  "regionRequired": "Wilayah wajib diisi.",
+  "connectorRequired": "Pilih setidaknya satu jenis konektor.",
+  "stationNameRequired": "Nama stasiun wajib diisi.",
+  "addressRequired": "Alamat wajib diisi.",
+  "latLngInvalid": "Lintang dan bujur harus berupa angka yang valid.",
+  "connectorEntryInvalid": "Tambahkan setidaknya satu entri konektor yang valid.",
+  "pricingRequired": "Mata uang dan tarif per kWh wajib diisi."
+}

@@ -1,0 +1,8 @@
+{
+  "title": "Terjadi kesalahan",
+  "defaultMessage": "Kami mengalami kesalahan tak terduga saat memuat halaman ini. Silakan coba lagi.",
+  "status": "Status: {{status}}",
+  "path": "Jalur: {{path}}",
+  "goHome": "Ke beranda",
+  "goBack": "Kembali"
+}

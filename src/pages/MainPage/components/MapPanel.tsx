@@ -1,5 +1,6 @@
 import { Box, CircularProgress, IconButton } from "@mui/material";
 import MyLocationIcon from "@mui/icons-material/MyLocation";
+import { useTranslation } from "react-i18next";
 import MapCanvas from "../../../components/Map/MapCanvas";
 import { UI } from "../../../theme/theme";
 import type { StationBounds, StationWithDistance } from "../types";
@@ -82,12 +83,13 @@ function LocationButton({
   isLoading: boolean;
   onRequest: () => void;
 }) {
+  const { t } = useTranslation("mainPage");
   return (
     <IconButton
       onClick={onRequest}
       disabled={isLoading}
       sx={LOCATION_BUTTON_SX}
-      aria-label="Use my location"
+      aria-label={t("map.useMyLocation")}
     >
       {isLoading ? <CircularProgress size={18} /> : <MyLocationIcon />}
     </IconButton>

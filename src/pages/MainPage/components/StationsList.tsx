@@ -1,4 +1,5 @@
 import { Box, Chip, Stack, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 import StationCard from "./StationCard";
 import type { StationWithDistance } from "../types";
@@ -15,10 +16,11 @@ export default function StationsList({
   selectedId,
   onFocusStation,
 }: StationsListProps) {
+  const { t } = useTranslation("mainPage");
   return (
     <Stack spacing={1.25}>
       <Stack direction="row" justifyContent="space-between" alignItems="center">
-        <Typography sx={{ fontWeight: 900, color: UI.text }}>Stations</Typography>
+        <Typography sx={{ fontWeight: 900, color: UI.text }}>{t("stations.title")}</Typography>
         <Chip
           size="small"
           label={`${stations.length}`}
@@ -51,10 +53,10 @@ export default function StationsList({
             }}
           >
             <Typography sx={{ fontWeight: 900, color: UI.text }}>
-              No stations match your filters.
+              {t("stations.empty")}
             </Typography>
             <Typography variant="body2" sx={{ color: UI.text2, mt: 0.5 }}>
-              Try increasing distance, clearing connector, or lowering the minimum kW.
+              {t("stations.emptyHint")}
             </Typography>
           </Box>
         )}

@@ -1,0 +1,54 @@
+{
+  "search": {
+    "label": "Search",
+    "placeholder": "Search station or area"
+  },
+  "filters": {
+    "title": "Filters",
+    "availability": "Availability",
+    "all": "All",
+    "distance": "Distance",
+    "myCar": "My car",
+    "connectors": "Connectors",
+    "connectorsCarProfile": "Connector filters are driven by your car profile.",
+    "minimumPower": "Minimum power",
+    "minimumPowerCarProfile": "Minimum power is based on your car profile."
+  },
+  "guestMode": {
+    "title": "Guest mode",
+    "description": "Log in to save cars and personalize filters.",
+    "login": "Log in"
+  },
+  "car": {
+    "selectedCar": "Selected car",
+    "useToFilter": "Use my car to filter stations",
+    "addPrompt": "Add a car to personalize results.",
+    "addCar": "Add car"
+  },
+  "stations": {
+    "title": "Stations",
+    "empty": "No stations match your filters.",
+    "emptyHint": "Try increasing distance, clearing connector, or lowering the minimum kW."
+  },
+  "station": {
+    "distanceAway": "{{distance}} km away",
+    "updatedAgo": "Updated {{minutes}}m ago",
+    "viewDetails": "View details",
+    "openInMaps": "Open in Google Maps"
+  },
+  "status": {
+    "charging": "Charging"
+  },
+  "map": {
+    "title": "Map Explorer",
+    "hint": "Click a marker to preview a station",
+    "yourLocation": "Your location",
+    "useMyLocation": "Use my location",
+    "clusterStations": "{{total}} stations",
+    "tooltipCharging": "Charging • {{status}}",
+    "legend": {
+      "you": "You"
+    }
+  },
+  "demoHint": "These are demo stations placed near you — one for each status (Available, Busy, Offline) so you can explore every state. Real stations appear here as they’re added."
+}

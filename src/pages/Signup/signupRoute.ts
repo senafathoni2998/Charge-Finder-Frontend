@@ -1,4 +1,5 @@
 import store from "../../app/store";
+import i18n from "../../i18n";
 import { login } from "../../features/auth/authSlice";
 import { persistSignupSession } from "./signupStorage";
 
@@ -25,12 +26,18 @@ export async function signupRequest({
   image: File | null;
 }): Promise<SignupRequestResult> {
   if (image && !image.type.startsWith("image/")) {
-    return { ok: false, error: "Profile photo must be an image file." };
+    return {
+      ok: false,
+      error: i18n.t("profile.photoMustBeImage", { ns: "api" }),
+    };
   }
 
   const baseUrl = import.meta.env.VITE_APP_BACKEND_URL;
   if (!baseUrl) {
-    return { ok: false, error: "Backend URL is not configured." };
+    return {
+      ok: false,
+      error: i18n.t("client.backendNotConfigured", { ns: "api" }),
+    };
   }
 
   try {
@@ -62,7 +69,7 @@ export async function signupRequest({
     }
     const responseData = await response.json().catch(() => ({}));
     if (!response.ok) {
-      return { ok: false, error: responseData.message || "Failed to sign up." };
+      return { ok: false, error: responseData.message || i18n.t("auth.signupFailed", { ns: "api" }) };
     }
 
     const user = responseData.user || {};
@@ -112,7 +119,7 @@ export async function signupRequest({
   } catch (err) {
     return {
       ok: false,
-      error: err instanceof Error ? err.message : "Failed to sign up.",
+      error: err instanceof Error ? err.message : i18n.t("auth.signupFailed", { ns: "api" }),
     };
   }
 }

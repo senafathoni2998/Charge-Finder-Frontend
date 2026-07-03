@@ -1,3 +1,5 @@
+import i18n from "../../i18n";
+
 type VehicleRequestResult = {
   ok: boolean;
   error?: string;
@@ -21,11 +23,11 @@ export const deleteVehicleRequest = async ({
 }: DeleteVehicleParams): Promise<VehicleRequestResult> => {
   const baseUrl = import.meta.env.VITE_APP_BACKEND_URL;
   if (!baseUrl) {
-    return { ok: false, error: "Backend URL is not configured." };
+    return { ok: false, error: i18n.t("client.backendNotConfigured", { ns: "api" }) };
   }
 
   if (!vehicleId) {
-    return { ok: false, error: "Vehicle is missing." };
+    return { ok: false, error: i18n.t("vehicles.missing", { ns: "api" }) };
   }
 
   const payload: { vehicleId: string; userId?: string } = { vehicleId };
@@ -44,14 +46,14 @@ export const deleteVehicleRequest = async ({
     if (!response.ok) {
       return {
         ok: false,
-        error: responseData.message || "Could not delete car.",
+        error: responseData.message || i18n.t("cars.deleteFailed", { ns: "api" }),
       };
     }
     return { ok: true };
   } catch (err) {
     return {
       ok: false,
-      error: err instanceof Error ? err.message : "Could not delete car.",
+      error: err instanceof Error ? err.message : i18n.t("cars.deleteFailed", { ns: "api" }),
     };
   }
 };
@@ -64,11 +66,11 @@ export const setActiveVehicleRequest = async ({
 }: SetActiveVehicleParams): Promise<VehicleRequestResult> => {
   const baseUrl = import.meta.env.VITE_APP_BACKEND_URL;
   if (!baseUrl) {
-    return { ok: false, error: "Backend URL is not configured." };
+    return { ok: false, error: i18n.t("client.backendNotConfigured", { ns: "api" }) };
   }
 
   if (!vehicleId) {
-    return { ok: false, error: "Vehicle is missing." };
+    return { ok: false, error: i18n.t("vehicles.missing", { ns: "api" }) };
   }
 
   const payload: { vehicleId: string; userId?: string; active: boolean } = {
@@ -90,7 +92,7 @@ export const setActiveVehicleRequest = async ({
     if (!response.ok) {
       return {
         ok: false,
-        error: responseData.message || "Could not update active car.",
+        error: responseData.message || i18n.t("cars.setActiveFailed", { ns: "api" }),
       };
     }
     return { ok: true };
@@ -98,7 +100,7 @@ export const setActiveVehicleRequest = async ({
     return {
       ok: false,
       error:
-        err instanceof Error ? err.message : "Could not update active car.",
+        err instanceof Error ? err.message : i18n.t("cars.setActiveFailed", { ns: "api" }),
     };
   }
 };

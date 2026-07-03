@@ -1,4 +1,5 @@
 import { Box, Slider, Stack, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 
 type PowerSliderFieldProps = {
@@ -17,16 +18,17 @@ export default function PowerSliderField({
   max,
   step,
 }: PowerSliderFieldProps) {
+  const { t } = useTranslation("addCar");
   const safeValue = Number.isFinite(value) ? value : 0;
 
   return (
     <Box>
       <Stack direction="row" justifyContent="space-between" alignItems="center">
         <Typography variant="caption" sx={{ color: UI.text3 }}>
-          Preferred minimum power
+          {t("power.label")}
         </Typography>
         <Typography variant="caption" sx={{ color: UI.text2 }}>
-          {safeValue} kW
+          {t("power.value", { value: safeValue })}
         </Typography>
       </Stack>
       <Slider

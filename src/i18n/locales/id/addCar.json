@@ -1,0 +1,27 @@
+{
+  "header": {
+    "title": "Tambah mobil",
+    "subtitle": "Simpan jenis konektor Anda untuk menyesuaikan stasiun yang kompatibel."
+  },
+  "actions": {
+    "saveCar": "Simpan mobil",
+    "saving": "Menyimpan..."
+  },
+  "form": {
+    "carName": {
+      "label": "Nama mobil",
+      "placeholder": "mis. Hyundai Ioniq 5"
+    },
+    "battery": {
+      "label": "Kapasitas baterai (kWh)",
+      "placeholder": "mis. 58"
+    }
+  },
+  "connector": {
+    "label": "Jenis konektor"
+  },
+  "power": {
+    "label": "Daya minimum yang diinginkan",
+    "value": "{{value}} kW"
+  }
+}

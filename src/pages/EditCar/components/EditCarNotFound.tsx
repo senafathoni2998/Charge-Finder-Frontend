@@ -1,4 +1,5 @@
 import { Box, Button, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 import EditCarHeader from "./EditCarHeader";
 
@@ -8,6 +9,8 @@ type EditCarNotFoundProps = {
 
 // Shows the fallback message when the selected car cannot be found.
 export default function EditCarNotFound({ onBack }: EditCarNotFoundProps) {
+  const { t } = useTranslation("editCar");
+
   return (
     <>
       <EditCarHeader />
@@ -20,10 +23,10 @@ export default function EditCarNotFound({ onBack }: EditCarNotFoundProps) {
         }}
       >
         <Typography sx={{ fontWeight: 900, color: UI.text }}>
-          Car not found.
+          {t("notFound.title")}
         </Typography>
         <Typography sx={{ color: UI.text2, mt: 0.5 }}>
-          Head back to your profile to choose a different car.
+          {t("notFound.description")}
         </Typography>
         <Button
           variant="outlined"
@@ -37,7 +40,7 @@ export default function EditCarNotFound({ onBack }: EditCarNotFoundProps) {
             backgroundColor: "rgba(10,10,16,0.01)",
           }}
         >
-          Back to profile
+          {t("notFound.back")}
         </Button>
       </Box>
     </>

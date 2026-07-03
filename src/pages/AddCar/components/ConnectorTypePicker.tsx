@@ -1,4 +1,5 @@
 import { Box, Chip, Stack, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 import type { ConnectorType } from "../../../models/model";
 
@@ -16,10 +17,12 @@ export default function ConnectorTypePicker({
   onToggle,
   error,
 }: ConnectorTypePickerProps) {
+  const { t } = useTranslation("addCar");
+
   return (
     <Box>
       <Typography variant="caption" sx={{ color: UI.text3 }}>
-        Connector types
+        {t("connector.label")}
       </Typography>
       <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: "wrap" }}>
         {options.map((connector) => {

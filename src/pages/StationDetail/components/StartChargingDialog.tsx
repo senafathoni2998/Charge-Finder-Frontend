@@ -11,6 +11,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 import type { ConnectorType } from "../../../models/model";
 import type { UserCar } from "../../../features/auth/authSlice";
@@ -45,6 +46,7 @@ export default function StartChargingDialog({
   onConfirm,
   isSubmitting = false,
 }: StartChargingDialogProps) {
+  const { t } = useTranslation("stationDetail");
   const hasOptions = connectorTypes.length > 0;
   const hasVehicles = vehicles.length > 0;
   const hasAvailableVehicles =
@@ -78,7 +80,7 @@ export default function StartChargingDialog({
       }}
     >
       <DialogTitle sx={{ fontWeight: 950 }}>
-        Choose connector
+        {t("startChargingDialog.title")}
       </DialogTitle>
       <DialogContent dividers sx={{ borderColor: UI.border2 }}>
         <Stack spacing={2}>
@@ -88,7 +90,7 @@ export default function StartChargingDialog({
                 variant="caption"
                 sx={{ color: UI.text3, fontWeight: 700 }}
               >
-                Vehicle
+                {t("startChargingDialog.vehicle")}
               </Typography>
               <RadioGroup
                 value={selectedVehicleId ?? ""}
@@ -101,7 +103,9 @@ export default function StartChargingDialog({
                       ? `${vehicle.name} | ${vehicle.batteryCapacity} kWh`
                       : vehicle.name;
                     const label = isCharging
-                      ? `${baseLabel} (Charging)`
+                      ? t("startChargingDialog.vehicleCharging", {
+                          label: baseLabel,
+                        })
                       : baseLabel;
                     return (
                       <FormControlLabel
@@ -117,7 +121,7 @@ export default function StartChargingDialog({
               </RadioGroup>
               {!hasAvailableVehicles ? (
                 <Typography variant="body2" sx={{ color: UI.text2 }}>
-                  All your vehicles are currently charging.
+                  {t("startChargingDialog.allVehiclesCharging")}
                 </Typography>
               ) : null}
             </Box>
@@ -129,7 +133,7 @@ export default function StartChargingDialog({
                 variant="caption"
                 sx={{ color: UI.text3, fontWeight: 700 }}
               >
-                Connector
+                {t("startChargingDialog.connector")}
               </Typography>
               <RadioGroup
                 value={selectedConnectorType ?? ""}
@@ -151,7 +155,7 @@ export default function StartChargingDialog({
             </Box>
           ) : (
             <Typography variant="body2" sx={{ color: UI.text2 }}>
-              No connectors are available for this station.
+              {t("startChargingDialog.noConnectors")}
             </Typography>
           )}
         </Stack>
@@ -167,7 +171,7 @@ export default function StartChargingDialog({
             color: UI.text,
           }}
         >
-          Cancel
+          {t("actions.cancel", { ns: "common" })}
         </Button>
         <Button
           variant="contained"
@@ -180,7 +184,7 @@ export default function StartChargingDialog({
             color: "white",
           }}
         >
-          Start charging
+          {t("startChargingDialog.startCharging")}
         </Button>
       </DialogActions>
     </Dialog>

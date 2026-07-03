@@ -1,0 +1,65 @@
+{
+  "header": {
+    "title": "Add station",
+    "subtitle": "Create and maintain station details for the network."
+  },
+  "sections": {
+    "basics": "Basics",
+    "location": "Location",
+    "connectors": "Connectors",
+    "pricing": "Pricing",
+    "amenities": "Amenities",
+    "photos": "Photos",
+    "notes": "Notes"
+  },
+  "fields": {
+    "name": "Station name",
+    "namePlaceholder": "e.g. Central Plaza Fast Charge",
+    "address": "Address",
+    "addressPlaceholder": "Street, city, region",
+    "status": "Status",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "type": "Type",
+    "powerKw": "Power (kW)",
+    "ports": "Ports",
+    "availablePorts": "Available ports",
+    "currency": "Currency",
+    "perKwh": "Per kWh",
+    "perMinute": "Per minute (optional)",
+    "parkingFee": "Parking fee (optional)",
+    "amenities": "Amenities",
+    "amenitiesHelper": "Comma-separated list (e.g. Restroom, Coffee, Wi-Fi)",
+    "photoLabel": "Label",
+    "photoGradient": "Gradient",
+    "photoGradientPlaceholder": "linear-gradient(135deg, ...)",
+    "notes": "Notes"
+  },
+  "location": {
+    "hint": "Click the map to set coordinates.",
+    "useMyLocation": "Use my location",
+    "locating": "Locating...",
+    "lookingUpAddress": "Looking up address..."
+  },
+  "connectors": {
+    "add": "Add connector",
+    "item": "Connector {{number}}",
+    "remove": "Remove connector"
+  },
+  "photos": {
+    "add": "Add photo",
+    "item": "Photo",
+    "remove": "Remove photo",
+    "empty": "No photos added yet."
+  },
+  "actions": {
+    "createStation": "Create station",
+    "creating": "Creating...",
+    "saveStation": "Save station",
+    "saving": "Saving..."
+  },
+  "errors": {
+    "createStation": "Could not create station.",
+    "resolveAddress": "Could not resolve address."
+  }
+}

@@ -1,4 +1,5 @@
 import store from "../../app/store";
+import i18n from "../../i18n";
 import { login } from "../../features/auth/authSlice";
 import { persistLoginSession } from "./loginStorage";
 
@@ -20,7 +21,10 @@ export async function loginRequest({
 }): Promise<LoginRequestResult> {
   const baseUrl = import.meta.env.VITE_APP_BACKEND_URL;
   if (!baseUrl) {
-    return { ok: false, error: "Backend URL is not configured." };
+    return {
+      ok: false,
+      error: i18n.t("errors.backendNotConfigured", { ns: "login" }),
+    };
   }
 
   try {
@@ -35,7 +39,11 @@ export async function loginRequest({
     });
     const responseData = await response.json().catch(() => ({}));
     if (!response.ok) {
-      return { ok: false, error: responseData.message || "Failed to log in." };
+      return {
+        ok: false,
+        error:
+          responseData.message || i18n.t("errors.loginFailed", { ns: "login" }),
+      };
     }
 
     const user = responseData.user || {};
@@ -85,7 +93,10 @@ export async function loginRequest({
   } catch (err) {
     return {
       ok: false,
-      error: err instanceof Error ? err.message : "Failed to log in.",
+      error:
+        err instanceof Error
+          ? err.message
+          : i18n.t("errors.loginFailed", { ns: "login" }),
     };
   }
 }

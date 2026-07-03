@@ -1,0 +1,24 @@
+{
+  "header": {
+    "title": "Tambah pengguna",
+    "subtitle": "Undang rekan tim dan tetapkan tingkat aksesnya."
+  },
+  "form": {
+    "fullName": "Nama lengkap",
+    "fullNamePlaceholder": "mis. Nadia Putri",
+    "email": "Email",
+    "emailPlaceholder": "mis. nadia@chargefinder.app",
+    "role": "Peran",
+    "password": "Kata sandi",
+    "passwordPlaceholder": "Atur kata sandi sementara",
+    "showPassword": "Tampilkan kata sandi",
+    "hidePassword": "Sembunyikan kata sandi",
+    "region": "Wilayah",
+    "regionPlaceholder": "mis. Jakarta, ID",
+    "submit": "Buat pengguna",
+    "submitting": "Membuat..."
+  },
+  "errors": {
+    "createFailed": "Tidak dapat menambahkan pengguna."
+  }
+}

@@ -1,6 +1,7 @@
 import type { MouseEvent } from "react";
 import { Box, Chip, Divider, IconButton, Stack, Typography } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import { useTranslation } from "react-i18next";
 import type { Station } from "../../../models/model";
 import { UI } from "../../../theme/theme";
 import { minutesAgo } from "../../../utils/time";
@@ -27,6 +28,7 @@ export default function StationListItem({
   station,
   onOpenMenu,
 }: StationListItemProps) {
+  const { t } = useTranslation("admin");
   const { totalPorts, availablePorts, connectorLabels } =
     getStationDisplayMeta(station);
 
@@ -52,7 +54,10 @@ export default function StationListItem({
             sx={{ mt: 0.5 }}
           >
             <Chip
-              label={`${availablePorts}/${totalPorts} ports`}
+              label={t("stationItem.ports", {
+                available: availablePorts,
+                total: totalPorts,
+              })}
               size="small"
               sx={{
                 borderRadius: 999,
@@ -65,7 +70,9 @@ export default function StationListItem({
               {connectorLabels}
             </Typography>
             <Typography sx={{ color: UI.text3, fontSize: 12 }}>
-              Updated {minutesAgo(station.lastUpdatedISO)}m ago
+              {t("stationItem.updated", {
+                minutes: minutesAgo(station.lastUpdatedISO),
+              })}
             </Typography>
           </Stack>
         </Box>
@@ -83,7 +90,7 @@ export default function StationListItem({
           <IconButton
             onClick={(event) => onOpenMenu(event, station)}
             sx={{ borderRadius: 2.5, border: `1px solid ${UI.border2}` }}
-            aria-label="Station actions"
+            aria-label={t("stationItem.actionsAria")}
           >
             <MoreVertIcon fontSize="small" />
           </IconButton>

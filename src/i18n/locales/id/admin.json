@@ -1,0 +1,98 @@
+{
+  "header": {
+    "title": "Pusat Kendali Admin",
+    "subtitle": "Kelola stasiun, pengguna, dan kesehatan operasional di satu tempat.",
+    "roleChip": "Peran: Admin",
+    "addStation": "Tambah stasiun",
+    "inviteUser": "Undang pengguna"
+  },
+  "snapshot": {
+    "title": "Ringkasan operasional",
+    "subtitle": "Tinjau sinyal utama dan jaga jaringan tetap sehat.",
+    "chips": {
+      "synced": "Stasiun tersinkron",
+      "security": "Pemeriksaan keamanan lolos",
+      "lastSync": "Sinkronisasi terakhir 5m lalu"
+    }
+  },
+  "stats": {
+    "stations": {
+      "label": "Stasiun",
+      "caption": "{{count}} daring"
+    },
+    "offlineAlerts": {
+      "label": "Peringatan stasiun nonaktif",
+      "caption": "Perlu ditinjau"
+    },
+    "users": {
+      "label": "Pengguna",
+      "caption": "{{count}} aktif"
+    },
+    "admins": {
+      "label": "Admin",
+      "caption": "Akses istimewa"
+    }
+  },
+  "stationCard": {
+    "title": "Manajemen stasiun",
+    "subtitle": "Tinjau ketersediaan, ubah detail, dan selesaikan masalah.",
+    "filters": "Filter",
+    "filtersActive": "Filter ({{count}})",
+    "newStation": "Stasiun baru",
+    "searchPlaceholder": "Cari stasiun, ID, atau kota"
+  },
+  "filters": {
+    "title": "Filter",
+    "reset": "Atur ulang filter",
+    "availability": "Ketersediaan",
+    "all": "Semua",
+    "connectors": "Konektor",
+    "minimumPower": "Daya minimum"
+  },
+  "stationList": {
+    "loading": "Memuat stasiun",
+    "empty": "Tidak ada stasiun ditemukan.",
+    "emptyFiltered": "Tidak ada stasiun yang cocok dengan filter saat ini."
+  },
+  "stationItem": {
+    "ports": "{{available}}/{{total}} port",
+    "updated": "Diperbarui {{minutes}}m lalu",
+    "actionsAria": "Aksi stasiun"
+  },
+  "userCard": {
+    "title": "Manajemen pengguna",
+    "subtitle": "Kelola peran, akses, dan kesehatan akun.",
+    "addUser": "Tambah pengguna",
+    "searchPlaceholder": "Cari pengguna atau email"
+  },
+  "userList": {
+    "loading": "Memuat pengguna...",
+    "empty": "Tidak ada pengguna ditemukan."
+  },
+  "userItem": {
+    "lastActive": "Terakhir aktif: {{value}}",
+    "actionsAria": "Aksi pengguna"
+  },
+  "users": {
+    "actions": {
+      "suspend": "Tangguhkan",
+      "activate": "Aktifkan",
+      "approve": "Setujui"
+    },
+    "justNow": "Baru saja",
+    "minutesAgo": "{{minutes}}m lalu",
+    "notAvailable": "N/A",
+    "defaultName": "Pengguna"
+  },
+  "confirm": {
+    "deleteStation": "Hapus stasiun {{name}}? Tindakan ini tidak dapat dibatalkan.",
+    "deleteUser": "Hapus pengguna {{name}}? Tindakan ini tidak dapat dibatalkan."
+  },
+  "errors": {
+    "loadStations": "Tidak dapat memuat stasiun.",
+    "deleteStation": "Tidak dapat menghapus stasiun.",
+    "loadUsers": "Tidak dapat memuat pengguna.",
+    "updateUser": "Tidak dapat memperbarui pengguna.",
+    "deleteUser": "Tidak dapat menghapus pengguna."
+  }
+}

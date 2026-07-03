@@ -20,8 +20,10 @@ import EmailIcon from "@mui/icons-material/Email";
 import LockIcon from "@mui/icons-material/Lock";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 import { loginSchema, type LoginValues } from "../../../forms/schemas";
+import { tValidation } from "../../../i18n/validation";
 
 type LoginFormCardProps = {
   defaultEmail: string;
@@ -44,6 +46,7 @@ export default function LoginFormCard({
   onForgotPassword,
   onNavigateToSignup,
 }: LoginFormCardProps) {
+  const { t } = useTranslation("login");
   const [remember, setRemember] = useState(true);
   const [showPw, setShowPw] = useState(false);
 
@@ -90,10 +93,10 @@ export default function LoginFormCard({
                 lineHeight: 1.15,
               }}
             >
-              Welcome back
+              {t("heading.title")}
             </Typography>
             <Typography sx={{ color: UI.text2, mt: 0.5 }}>
-              Sign in to access your car profile and tickets.
+              {t("heading.subtitle")}
             </Typography>
           </Box>
 
@@ -114,14 +117,14 @@ export default function LoginFormCard({
           <Box component="form" onSubmit={submit} noValidate>
             <Stack spacing={1.5}>
               <TextField
-                label="Email"
-                placeholder="your@email.com"
+                label={t("fields.email.label")}
+                placeholder={t("fields.email.placeholder")}
                 inputRef={emailRef}
                 {...emailField}
                 autoComplete="email"
                 fullWidth
                 error={!!errors.email}
-                helperText={errors.email?.message ?? " "}
+                helperText={tValidation(t, errors.email?.message) || " "}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -138,15 +141,15 @@ export default function LoginFormCard({
               />
 
               <TextField
-                label="Password"
-                placeholder="Enter your password"
+                label={t("fields.password.label")}
+                placeholder={t("fields.password.placeholder")}
                 inputRef={passwordRef}
                 {...passwordField}
                 autoComplete="current-password"
                 fullWidth
                 type={showPw ? "text" : "password"}
                 error={!!errors.password}
-                helperText={errors.password?.message ?? " "}
+                helperText={tValidation(t, errors.password?.message) || " "}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -158,7 +161,11 @@ export default function LoginFormCard({
                       <IconButton
                         onClick={() => setShowPw((value) => !value)}
                         edge="end"
-                        aria-label={showPw ? "Hide password" : "Show password"}
+                        aria-label={
+                          showPw
+                            ? t("fields.password.hide")
+                            : t("fields.password.show")
+                        }
                       >
                         {showPw ? (
                           <VisibilityOffIcon sx={{ color: UI.text3 }} />
@@ -191,7 +198,7 @@ export default function LoginFormCard({
                   underline="hover"
                   sx={{ color: UI.text2, fontWeight: 800, fontSize: 13 }}
                 >
-                  Forgot password?
+                  {t("actions.forgotPassword")}
                 </Link>
               </Stack>
 
@@ -223,7 +230,7 @@ export default function LoginFormCard({
                         fontSize: 13,
                       }}
                     >
-                      Remember me
+                      {t("actions.rememberMe")}
                     </Typography>
                   }
                   sx={{ m: 0 }}
@@ -245,7 +252,7 @@ export default function LoginFormCard({
                     boxShadow: "0 14px 40px rgba(124,92,255,0.16)",
                   }}
                 >
-                  {isSubmitting ? "Signing in" : "Sign in"}
+                  {isSubmitting ? t("actions.signingIn") : t("actions.signIn")}
                 </Button>
               </Stack>
 
@@ -259,7 +266,7 @@ export default function LoginFormCard({
                 }}
               >
                 <Typography variant="body2" sx={{ color: UI.text2 }}>
-                  New here?{" "}
+                  {t("signup.prompt")}{" "}
                   <Link
                     component="button"
                     type="button"
@@ -270,7 +277,7 @@ export default function LoginFormCard({
                       color: "rgba(124,92,255,0.95)",
                     }}
                   >
-                    Create an account
+                    {t("signup.cta")}
                   </Link>
                 </Typography>
               </Box>
@@ -278,7 +285,7 @@ export default function LoginFormCard({
           </Box>
 
           <Typography variant="caption" sx={{ color: UI.text3 }}>
-            By signing in, you agree to the demo Terms and Privacy.
+            {t("terms")}
           </Typography>
         </Stack>
       </CardContent>

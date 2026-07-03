@@ -1,0 +1,6 @@
+{
+  "title": "Charge Finder - Pencari Stasiun Pengisian Kendaraan Listrik | Proyek Portofolio Demo Full-Stack",
+  "titleSuffix": "Charge Finder Demo",
+  "description": "Aplikasi web demo full-stack yang membantu pemilik kendaraan listrik menemukan stasiun pengisian daya terdekat. Frontend: React, TypeScript, Leaflet. Backend: Node.js, Express, Redis, MongoDB. Proyek portofolio yang menampilkan keterampilan pengembangan web full-stack modern.",
+  "keywords": "pengisian daya EV, kendaraan listrik, stasiun pengisian daya, React, TypeScript, Node.js, Express.js, Redis, MongoDB, full-stack, MERN, proyek portofolio, demo pengembangan web, peta Leaflet, REST API"
+}

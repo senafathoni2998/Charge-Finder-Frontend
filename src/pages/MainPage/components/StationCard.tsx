@@ -1,4 +1,5 @@
 import { Box, Card, CardContent, Stack, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 import ConnectorChip from "./ConnectorChip";
 import StatusChip from "./StatusChip";
@@ -12,7 +13,9 @@ type StationCardProps = {
   focusStation: (station: StationWithDistance) => void;
 };
 
-const StationCard = ({ s, selectedId, focusStation }: StationCardProps) => (
+const StationCard = ({ s, selectedId, focusStation }: StationCardProps) => {
+  const { t } = useTranslation("mainPage");
+  return (
     <Card
       variant="outlined"
       onClick={() => focusStation(s)}
@@ -66,15 +69,16 @@ const StationCard = ({ s, selectedId, focusStation }: StationCardProps) => (
             alignItems="center"
           >
             <Typography variant="body2" sx={{ color: UI.text2 }}>
-              {s.distanceKm.toFixed(1)} km away
+              {t("station.distanceAway", { distance: s.distanceKm.toFixed(1) })}
             </Typography>
             <Typography variant="caption" sx={{ color: UI.text3 }}>
-              Updated {minutesAgo(s.lastUpdatedISO)}m ago
+              {t("station.updatedAgo", { minutes: minutesAgo(s.lastUpdatedISO) })}
             </Typography>
           </Stack>
         </Stack>
       </CardContent>
     </Card>
   );
+};
 
   export default   StationCard;

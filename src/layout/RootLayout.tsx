@@ -14,14 +14,17 @@ import PersonIcon from "@mui/icons-material/Person";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import { useTranslation } from "react-i18next";
 import { UI } from "../theme/theme";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { setSidebarOpen } from "../features/app/appSlice";
+import { LanguageSwitcher } from "../components";
 
 export default function RootLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const navigation = useNavigation();
+  const { t } = useTranslation("nav");
   const showBack = location.pathname !== "/";
   const isMapPage = location.pathname === "/";
   const hideProfileButton = location.pathname.startsWith("/profile");
@@ -33,17 +36,17 @@ export default function RootLayout() {
   const isRouteLoading = navigation.state === "loading";
   const navTitle = (() => {
     const path = location.pathname;
-    if (path === "/") return "ChargeFinder";
-    if (path.startsWith("/station/")) return "Station Details";
-    if (path.startsWith("/admin/stations/new")) return "Add Station";
+    if (path === "/") return t("titles.home");
+    if (path.startsWith("/station/")) return t("titles.stationDetail");
+    if (path.startsWith("/admin/stations/new")) return t("titles.addStation");
     if (path.startsWith("/admin/stations/") && path.endsWith("/edit")) {
-      return "Edit Station";
+      return t("titles.editStation");
     }
-    if (path.startsWith("/admin/users/new")) return "Add User";
-    if (path.startsWith("/admin")) return "Admin Console";
-    if (path.startsWith("/profile/cars/new")) return "Add Car";
-    if (path.startsWith("/profile")) return "Profile";
-    return "ChargeFinder";
+    if (path.startsWith("/admin/users/new")) return t("titles.addUser");
+    if (path.startsWith("/admin")) return t("titles.admin");
+    if (path.startsWith("/profile/cars/new")) return t("titles.addCar");
+    if (path.startsWith("/profile")) return t("titles.profile");
+    return t("titles.home");
   })();
   const navigateBack = () => {
     const path = location.pathname;
@@ -67,7 +70,7 @@ export default function RootLayout() {
         <Stack spacing={1} alignItems="center">
           <CircularProgress size={32} sx={{ color: "rgba(124,92,255,0.9)" }} />
           <Typography sx={{ fontWeight: 700, color: UI.text }}>
-            Loading data...
+            {t("loading")}
           </Typography>
         </Stack>
       </Backdrop>
@@ -83,7 +86,7 @@ export default function RootLayout() {
       >
         <Toolbar sx={{ gap: 1.25 }}>
           {showBack && (
-            <Tooltip title="Back">
+            <Tooltip title={t("tooltips.back")}>
               <IconButton
                 onClick={navigateBack}
                 sx={{
@@ -92,7 +95,7 @@ export default function RootLayout() {
                   backgroundColor: "rgba(10,10,16,0.03)",
                   color: UI.text,
                 }}
-                aria-label="Go back"
+                aria-label={t("aria.back")}
               >
                 <ArrowBackIcon />
               </IconButton>
@@ -114,7 +117,7 @@ export default function RootLayout() {
             <Box
               component="img"
               src="/app-logo.svg"
-              alt="ChargeFinder logo"
+              alt={t("aria.logo")}
               sx={{ width: 22, height: 22 }}
             />
           </Box>
@@ -126,8 +129,10 @@ export default function RootLayout() {
 
           <Box sx={{ flex: 1 }} />
 
+          <LanguageSwitcher color={UI.text} />
+
           {isAdmin && (
-            <Tooltip title="Admin">
+            <Tooltip title={t("tooltips.admin")}>
               <IconButton
                 onClick={() => navigate("/admin")}
                 sx={{
@@ -139,7 +144,7 @@ export default function RootLayout() {
                     backgroundColor: "rgba(10,10,16,0.03)",
                   },
                 }}
-                aria-label="Open admin console"
+                aria-label={t("aria.admin")}
               >
                 <AdminPanelSettingsIcon />
               </IconButton>
@@ -147,7 +152,7 @@ export default function RootLayout() {
           )}
 
           {isMapPage && !hideProfileButton && (
-            <Tooltip title="Profile">
+            <Tooltip title={t("tooltips.profile")}>
               <IconButton
                 onClick={() => navigate("/profile")}
                 sx={{
@@ -158,7 +163,7 @@ export default function RootLayout() {
                     backgroundColor: "rgba(10,10,16,0.03)",
                   },
                 }}
-                aria-label="Open profile"
+                aria-label={t("aria.profile")}
               >
                 <PersonIcon />
               </IconButton>
@@ -166,7 +171,7 @@ export default function RootLayout() {
           )}
 
           {isMapPage && !isMdUp && (
-            <Tooltip title="Filters">
+            <Tooltip title={t("tooltips.filters")}>
               <IconButton
                 onClick={() => dispatch(setSidebarOpen(true))}
                 sx={{
@@ -177,7 +182,7 @@ export default function RootLayout() {
                     backgroundColor: "rgba(10,10,16,0.03)",
                   },
                 }}
-                aria-label="Open filters"
+                aria-label={t("aria.filters")}
               >
                 <FilterListIcon />
               </IconButton>

@@ -1,3 +1,4 @@
+import type { TFunction } from "i18next";
 import { minutesAgo } from "../../utils/time";
 import { UI } from "../../theme/theme";
 import type { AdminUser } from "./types";
@@ -24,30 +25,36 @@ const normalizeRoleValue = (value: unknown): string => {
 };
 
 // Builds a fallback display name from an email address.
-const formatNameFromEmail = (email: string) => {
+const formatNameFromEmail = (t: TFunction, email: string) => {
   const [prefix] = email.split("@");
   const cleaned = prefix.replace(/[^a-zA-Z0-9]+/g, " ").trim();
-  return cleaned || "User";
+  return cleaned || t("users.defaultName", { ns: "admin" });
 };
 
 // Formats last-active timestamps into a compact display label.
-const formatLastActive = (value: unknown): string => {
+const formatLastActive = (t: TFunction, value: unknown): string => {
   if (typeof value === "number") {
     const parsed = new Date(value);
     if (!Number.isNaN(parsed.getTime())) {
-      return `${minutesAgo(parsed.toISOString())}m ago`;
+      return t("users.minutesAgo", {
+        ns: "admin",
+        minutes: minutesAgo(parsed.toISOString()),
+      });
     }
   }
   if (typeof value === "string") {
     const trimmed = value.trim();
-    if (!trimmed) return "N/A";
+    if (!trimmed) return t("users.notAvailable", { ns: "admin" });
     const parsed = Date.parse(trimmed);
     if (!Number.isNaN(parsed)) {
-      return `${minutesAgo(new Date(parsed).toISOString())}m ago`;
+      return t("users.minutesAgo", {
+        ns: "admin",
+        minutes: minutesAgo(new Date(parsed).toISOString()),
+      });
     }
     return trimmed;
   }
-  return "N/A";
+  return t("users.notAvailable", { ns: "admin" });
 };
 
 // Converts raw status fields into a normalized admin status value.
@@ -82,7 +89,10 @@ const normalizeUserStatus = (
 };
 
 // Normalizes raw API payloads into the AdminUser shape.
-export const normalizeAdminUser = (data: unknown): AdminUser | null => {
+export const normalizeAdminUser = (
+  t: TFunction,
+  data: unknown
+): AdminUser | null => {
   if (!isRecord(data)) return null;
   const id = toCleanString(data.id ?? data.userId ?? data._id);
   if (!id) return null;
@@ -94,6 +104,7 @@ export const normalizeAdminUser = (data: unknown): AdminUser | null => {
     normalizeRoleValue(data.role ?? data.roles ?? data.userRole) || "user";
   const status = normalizeUserStatus(data);
   const lastActive = formatLastActive(
+    t,
     data.lastActive ??
       data.last_active ??
       data.lastLogin ??
@@ -103,7 +114,7 @@ export const normalizeAdminUser = (data: unknown): AdminUser | null => {
       data.updated_at
   );
   const finalEmail = email || "unknown@chargefinder.app";
-  const finalName = name || formatNameFromEmail(finalEmail);
+  const finalName = name || formatNameFromEmail(t, finalEmail);
 
   return {
     id,
@@ -123,10 +134,11 @@ export const nextStatusForUser = (status: AdminUser["status"]) => {
 };
 
 // Maps a user status to the action label shown in the UI.
-export const userActionLabel = (status: AdminUser["status"]) => {
-  if (status === "active") return "Suspend";
-  if (status === "suspended") return "Activate";
-  return "Approve";
+export const userActionLabel = (t: TFunction, status: AdminUser["status"]) => {
+  if (status === "active") return t("users.actions.suspend", { ns: "admin" });
+  if (status === "suspended")
+    return t("users.actions.activate", { ns: "admin" });
+  return t("users.actions.approve", { ns: "admin" });
 };
 
 // Defines the station status chip colors for the admin list.

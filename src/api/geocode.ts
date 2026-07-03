@@ -1,3 +1,4 @@
+import i18n from "../i18n";
 import { apiRequest } from "./client";
 
 type ReverseGeocodeResult = {
@@ -13,7 +14,11 @@ export const reverseGeocode = async (
   signal?: AbortSignal
 ): Promise<ReverseGeocodeResult> => {
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-    return { ok: false, address: null, error: "Invalid coordinates." };
+    return {
+      ok: false,
+      address: null,
+      error: i18n.t("geocode.invalidCoordinates", { ns: "api" }),
+    };
   }
 
   const url = new URL("https://nominatim.openstreetmap.org/reverse");
@@ -28,7 +33,7 @@ export const reverseGeocode = async (
     absolute: true,
     headers: { Accept: "application/json" },
     signal,
-    fallbackError: "Could not resolve address.",
+    fallbackError: i18n.t("geocode.resolveFailed", { ns: "api" }),
   });
   if (!res.ok) {
     return { ok: false, address: null, error: res.error };
@@ -39,7 +44,11 @@ export const reverseGeocode = async (
       ? res.data.display_name.trim()
       : "";
   if (!address) {
-    return { ok: false, address: null, error: "No address found." };
+    return {
+      ok: false,
+      address: null,
+      error: i18n.t("geocode.noAddress", { ns: "api" }),
+    };
   }
   return { ok: true, address };
 };

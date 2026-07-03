@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import ElectricBoltIcon from "@mui/icons-material/ElectricBolt";
 import LaunchIcon from "@mui/icons-material/Launch";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 import { minutesAgo } from "../../../utils/time";
 import { statusColor } from "../../../utils/map";
@@ -48,6 +49,7 @@ export default function ActionsCard({
   chargingError,
   chargingLoading = false,
 }: ActionsCardProps) {
+  const { t } = useTranslation("stationDetail");
   return (
     <Card
       variant="outlined"
@@ -61,7 +63,7 @@ export default function ActionsCard({
     >
       <CardContent sx={{ p: 2.25 }}>
         <Stack spacing={1.5}>
-          <Typography sx={{ fontWeight: 950, color: UI.text }}>Actions</Typography>
+          <Typography sx={{ fontWeight: 950, color: UI.text }}>{t("actionsCard.title")}</Typography>
           <Button
             variant="contained"
             disabled={!canCharge || chargingLoading}
@@ -84,16 +86,16 @@ export default function ActionsCard({
           ) : null}
           {!isAuthenticated ? (
             <Typography variant="caption" sx={{ color: UI.text3 }}>
-              Log in to buy a ticket and start charging.
+              {t("actionsCard.loginToBuy")}
             </Typography>
           ) : !hasTicket ? (
             <Typography variant="caption" sx={{ color: UI.text3 }}>
-              Buy a ticket to start charging.
+              {t("actionsCard.buyToStart")}
             </Typography>
           ) : null}
           {activeCar && isCompatible === false ? (
             <Typography variant="caption" sx={{ color: UI.text3 }}>
-              Not compatible with your car's connector types.
+              {t("actionsCard.notCompatible")}
             </Typography>
           ) : null}
 
@@ -108,14 +110,14 @@ export default function ActionsCard({
               color: UI.text,
             }}
           >
-            Open in Google Maps
+            {t("actionsCard.openInMaps")}
           </Button>
 
           <Divider sx={{ borderColor: UI.border2 }} />
 
           <Stack spacing={0.75}>
             <Typography variant="caption" sx={{ color: UI.text3, fontWeight: 750 }}>
-              Charging status
+              {t("actionsCard.chargingStatus")}
             </Typography>
             {loading || !station ? (
               <Skeleton variant="rounded" height={44} />
@@ -147,7 +149,9 @@ export default function ActionsCard({
                   </Typography>
                   <Box sx={{ flex: 1 }} />
                   <Typography variant="caption" sx={{ color: UI.text3, fontWeight: 750 }}>
-                    {minutesAgo(station.lastUpdatedISO)}m
+                    {t("actionsCard.minutesAgoShort", {
+                      minutes: minutesAgo(station.lastUpdatedISO),
+                    })}
                   </Typography>
                 </Stack>
               </Box>
@@ -156,8 +160,8 @@ export default function ActionsCard({
             {!loading && station && station.status !== "AVAILABLE" ? (
               <Typography variant="body2" sx={{ color: UI.text2 }}>
                 {station.status === "BUSY"
-                  ? "All ports are currently in use. You can still navigate here and queue."
-                  : "This station is currently offline. Use \u201cOpen in Google Maps\u201d for alternatives."}
+                  ? t("actionsCard.busyMessage")
+                  : t("actionsCard.offlineMessage")}
               </Typography>
             ) : null}
           </Stack>

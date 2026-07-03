@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { fetchStations } from "../../../api/stations";
 import type { Station } from "../../../models/model";
 
@@ -12,6 +13,7 @@ type EditStationLoaderState = {
 export default function useEditStationLoader(
   stationId: string | undefined
 ): EditStationLoaderState {
+  const { t } = useTranslation("editStation");
   const [station, setStation] = useState<Station | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -20,7 +22,7 @@ export default function useEditStationLoader(
   useEffect(() => {
     if (!stationId) {
       setStation(null);
-      setError("Station ID is missing.");
+      setError(t("errors.missingId"));
       setLoading(false);
       return;
     }
@@ -36,7 +38,7 @@ export default function useEditStationLoader(
       if (!active) return;
       if (!result.ok) {
         setStation(null);
-        setError(result.error || "Could not load stations.");
+        setError(result.error || t("errors.loadFailed"));
         setLoading(false);
         return;
       }
@@ -44,7 +46,7 @@ export default function useEditStationLoader(
         result.stations.find((item) => item.id === stationId) ?? null;
       if (!match) {
         setStation(null);
-        setError("Station not found.");
+        setError(t("errors.notFound"));
         setLoading(false);
         return;
       }
@@ -57,7 +59,7 @@ export default function useEditStationLoader(
       active = false;
       controller.abort();
     };
-  }, [stationId]);
+  }, [stationId, t]);
 
   return { station, loading, error };
 }

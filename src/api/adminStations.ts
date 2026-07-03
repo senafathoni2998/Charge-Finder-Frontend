@@ -1,4 +1,5 @@
 import type { Station } from "../models/model";
+import i18n from "../i18n";
 import { apiRequest } from "./client";
 
 type StationPayload = Omit<Station, "id"> & { id?: string };
@@ -25,7 +26,7 @@ export const createStation = async (
     method: "POST",
     body: payload,
     signal,
-    fallbackError: "Could not create station.",
+    fallbackError: i18n.t("stations.createFailed", { ns: "api" }),
   });
   if (!res.ok) {
     return { ok: false, station: null, error: res.error };
@@ -41,14 +42,18 @@ export const updateStation = async (
   signal?: AbortSignal
 ): Promise<StationMutationResult> => {
   if (!stationId) {
-    return { ok: false, station: null, error: "Station ID is missing." };
+    return {
+      ok: false,
+      station: null,
+      error: i18n.t("stations.idMissing", { ns: "api" }),
+    };
   }
 
   const res = await apiRequest<StationResponse>("/stations/update-station", {
     method: "PATCH",
     body: { ...payload, stationId },
     signal,
-    fallbackError: "Could not update station.",
+    fallbackError: i18n.t("stations.updateFailed", { ns: "api" }),
   });
   if (!res.ok) {
     return { ok: false, station: null, error: res.error };
@@ -63,14 +68,14 @@ export const deleteStation = async (
   signal?: AbortSignal
 ): Promise<StationDeleteResult> => {
   if (!stationId) {
-    return { ok: false, error: "Station ID is missing." };
+    return { ok: false, error: i18n.t("stations.idMissing", { ns: "api" }) };
   }
 
   const res = await apiRequest("/stations/delete-station", {
     method: "DELETE",
     body: { stationId },
     signal,
-    fallbackError: "Could not delete station.",
+    fallbackError: i18n.t("stations.deleteFailed", { ns: "api" }),
   });
   if (!res.ok) {
     return { ok: false, error: res.error };

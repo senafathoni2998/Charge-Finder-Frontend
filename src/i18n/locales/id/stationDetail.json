@@ -1,0 +1,158 @@
+{
+  "overview": {
+    "loading": "Memuat",
+    "stationFallback": "Stasiun",
+    "photoFallback": "Foto",
+    "compatible": "Kompatibel",
+    "notSupported": "Tidak didukung",
+    "kmAway": "Berjarak {{distance}} km",
+    "updatedAgo": "Diperbarui {{minutes}}m lalu",
+    "reportIssue": "Laporkan masalah",
+    "notes": "Catatan"
+  },
+  "connectors": {
+    "title": "Konektor",
+    "subtitle": "Kompatibilitas + ketersediaan real-time per jenis konektor",
+    "available": "{{available}}/{{total}} tersedia"
+  },
+  "amenities": {
+    "title": "Fasilitas",
+    "subtitle": "Hal-hal bermanfaat di dekat stasiun ini"
+  },
+  "actionsCard": {
+    "title": "Tindakan",
+    "loginToBuy": "Masuk untuk membeli tiket dan mulai mengisi daya.",
+    "buyToStart": "Beli tiket untuk mulai mengisi daya.",
+    "notCompatible": "Tidak kompatibel dengan jenis konektor mobil Anda.",
+    "openInMaps": "Buka di Google Maps",
+    "chargingStatus": "Status pengisian",
+    "minutesAgoShort": "{{minutes}}m",
+    "busyMessage": "Semua port sedang digunakan. Anda tetap dapat menuju ke sini dan mengantre.",
+    "offlineMessage": "Stasiun ini sedang nonaktif. Gunakan “Buka di Google Maps” untuk alternatif."
+  },
+  "pricing": {
+    "title": "Tarif",
+    "subtitle": "Perkiraan info biaya (dapat bervariasi menurut operator)",
+    "perKwh": "Per kWh",
+    "perMinute": "Per menit",
+    "parking": "Parkir"
+  },
+  "coordinates": {
+    "title": "Koordinat",
+    "subtitle": "Untuk debugging dan navigasi presisi",
+    "latitude": "Lintang",
+    "longitude": "Bujur"
+  },
+  "paymentDialog": {
+    "title": "Tiket pengisian daya",
+    "chooseMethod": "Pilih metode pembayaran untuk tiket {{amount}} kWh.",
+    "ticketSetup": "Pengaturan tiket",
+    "ticketSizeLabel": "Ukuran tiket (kWh)",
+    "invalidKwh": "Masukkan jumlah kWh yang valid.",
+    "suggested": "Disarankan: {{amount}} kWh",
+    "chargingSpeed": "Kecepatan pengisian",
+    "ticketDetails": "Detail tiket",
+    "ticketSize": "Ukuran tiket",
+    "speed": "Kecepatan",
+    "perKwh": "Per kWh",
+    "total": "Total",
+    "priceNote": "Harga berdasarkan tarif stasiun.",
+    "paymentMethod": "Metode pembayaran",
+    "processing": "Memproses...",
+    "updatePayment": "Perbarui pembayaran",
+    "buyTicket": "Beli tiket",
+    "speeds": {
+      "normalLabel": "Normal",
+      "normalHelper": "Kecepatan pengisian standar.",
+      "fastLabel": "Cepat",
+      "fastHelper": "Penyaluran daya lebih tinggi.",
+      "ultraLabel": "Sangat cepat",
+      "ultraHelper": "Opsi daya tertinggi."
+    }
+  },
+  "chargingDialog": {
+    "battery": "Baterai {{progress}}%",
+    "delivered": "{{delivered}} / {{ticket}} kWh",
+    "complete": "Pengisian daya selesai.",
+    "estimatedTimeRemaining": "Perkiraan waktu tersisa:",
+    "minShort": "mnt",
+    "ticketId": "ID Tiket",
+    "paidWith": "Dibayar dengan {{method}}",
+    "chargeFinderAccount": "Akun ChargeFinder",
+    "stopConfirmTitle": "Hentikan pengisian daya?",
+    "stopWarning1": "Menghentikan akan mengakhiri sesi ini dan tiket tidak dapat digunakan kembali.",
+    "stopWarning2": "Anda perlu membeli tiket baru untuk mengisi daya lagi.",
+    "keepCharging": "Lanjutkan mengisi daya",
+    "stopCharging": "Hentikan pengisian daya",
+    "titleStopped": "Pengisian daya dihentikan",
+    "titleComplete": "Pengisian daya selesai",
+    "titleInProgress": "Pengisian daya berlangsung",
+    "statusStopped": "Pengisian daya dihentikan. Anda dapat mencabut saat aman.",
+    "statusComplete": "Sesi selesai. Anda dapat mencabut saat aman.",
+    "statusInProgress": "Tetap sambungkan konektor selama kami menyalurkan tiket Anda.",
+    "hide": "Sembunyikan",
+    "done": "Selesai"
+  },
+  "startChargingDialog": {
+    "title": "Pilih konektor",
+    "vehicle": "Kendaraan",
+    "connector": "Konektor",
+    "vehicleCharging": "{{label}} (Mengisi daya)",
+    "allVehiclesCharging": "Semua kendaraan Anda sedang mengisi daya.",
+    "noConnectors": "Tidak ada konektor yang tersedia untuk stasiun ini.",
+    "startCharging": "Mulai mengisi daya"
+  },
+  "reportDialog": {
+    "title": "Laporkan masalah",
+    "description": "Bantu tingkatkan kualitas data — laporan Anda akan memperbarui kepercayaan stasiun.",
+    "issueType": "Jenis masalah",
+    "notesLabel": "Catatan (opsional)",
+    "notesPlaceholder": "Contoh: CCS2 #2 tidak berfungsi, kode error 14",
+    "submitReport": "Kirim laporan"
+  },
+  "shareDialog": {
+    "title": "Bagikan",
+    "description": "Browser Anda tidak mendukung berbagi bawaan di sini. Salin detailnya secara manual.",
+    "done": "Selesai"
+  },
+  "page": {
+    "chargingActionView": "Lihat pengisian daya",
+    "chargingActionStart": "Mulai mengisi daya",
+    "paymentLogin": "Masuk untuk membeli tiket",
+    "paymentChange": "Ubah pembayaran",
+    "paymentBuy": "Beli tiket pengisian daya",
+    "couldNotUpdatePayment": "Tidak dapat memperbarui pembayaran.",
+    "couldNotRequestTicket": "Tidak dapat meminta tiket.",
+    "couldNotStartCharging": "Tidak dapat memulai pengisian daya.",
+    "noConnectorsAvailable": "Tidak ada konektor yang tersedia untuk stasiun ini.",
+    "allVehiclesAlreadyCharging": "Semua kendaraan Anda sudah mengisi daya.",
+    "selectVehicleNotCharging": "Pilih kendaraan yang tidak sedang mengisi daya.",
+    "vehicleAlreadyCharging": "Kendaraan itu sudah mengisi daya.",
+    "couldNotStopCharging": "Tidak dapat menghentikan pengisian daya.",
+    "stationUnavailable": "Stasiun tidak tersedia",
+    "couldNotLoadStation": "Kami tidak dapat memuat stasiun ini saat ini.",
+    "backToMap": "Kembali ke peta"
+  },
+  "stationData": {
+    "missingId": "ID stasiun tidak ada.",
+    "loadFailed": "Tidak dapat memuat data stasiun.",
+    "notFound": "Stasiun tidak ditemukan."
+  },
+  "constants": {
+    "payment": {
+      "cardLabel": "Kartu - Visa **** 4242",
+      "cardHelper": "Persetujuan instan",
+      "ewalletLabel": "Dompet digital - GoPay",
+      "ewalletHelper": "Perlu saldo",
+      "bankLabel": "Transfer bank - BCA",
+      "bankHelper": "Dapat memakan waktu 1-3 mnt"
+    },
+    "report": {
+      "brokenConnector": "Konektor rusak",
+      "occupied": "Terisi tetapi ditampilkan tersedia",
+      "paymentProblem": "Masalah pembayaran",
+      "stationOffline": "Stasiun nonaktif",
+      "other": "Lainnya"
+    }
+  }
+}

@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { Box } from "@mui/material";
 import { useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
 import EvStationIcon from "@mui/icons-material/EvStation";
 import PeopleIcon from "@mui/icons-material/People";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
@@ -20,6 +21,7 @@ import useUserManagement from "./hooks/useUserManagement";
 // Admin dashboard container that wires data hooks and page sections.
 export default function AdminPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation("admin");
   const stationState = useStationManagement();
   const userState = useUserManagement();
 
@@ -39,31 +41,31 @@ export default function AdminPage() {
     const adminCount = userState.users.filter((u) => u.role === "admin").length;
     return [
       {
-        label: "Stations",
+        label: t("stats.stations.label"),
         value: totalStations,
-        caption: `${availableStations} online`,
+        caption: t("stats.stations.caption", { count: availableStations }),
         icon: <EvStationIcon fontSize="small" />,
       },
       {
-        label: "Offline alerts",
+        label: t("stats.offlineAlerts.label"),
         value: offlineStations,
-        caption: "Need review",
+        caption: t("stats.offlineAlerts.caption"),
         icon: <WarningAmberIcon fontSize="small" />,
       },
       {
-        label: "Users",
+        label: t("stats.users.label"),
         value: totalUsers,
-        caption: `${activeUsers} active`,
+        caption: t("stats.users.caption", { count: activeUsers }),
         icon: <PeopleIcon fontSize="small" />,
       },
       {
-        label: "Admins",
+        label: t("stats.admins.label"),
         value: adminCount,
-        caption: "Privileged access",
+        caption: t("stats.admins.caption"),
         icon: <VerifiedUserIcon fontSize="small" />,
       },
     ];
-  }, [stationState.stations, userState.users]);
+  }, [stationState.stations, userState.users, t]);
 
   // Navigates to the add-station flow.
   const handleAddStation = () => {

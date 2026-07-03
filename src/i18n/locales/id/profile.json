@@ -1,0 +1,92 @@
+{
+  "page": {
+    "title": "Profil",
+    "subtitle": "Kelola akun dan preferensi pengisian daya Anda"
+  },
+  "toast": {
+    "passwordUpdated": "Kata sandi diperbarui.",
+    "historyError": "Tidak dapat memuat riwayat pengisian daya.",
+    "setActiveError": "Tidak dapat memperbarui mobil aktif.",
+    "deleteError": "Tidak dapat menghapus mobil."
+  },
+  "overview": {
+    "defaultName": "Pengemudi",
+    "active": "Aktif",
+    "name": "Nama",
+    "email": "Email",
+    "plan": "Paket",
+    "planValue": "Pengemudi • Gratis",
+    "region": "Wilayah",
+    "editProfile": "Ubah profil",
+    "changePassword": "Ubah kata sandi",
+    "signOut": "Keluar"
+  },
+  "cars": {
+    "defaultName": "EV Saya",
+    "title": "Mobil Anda",
+    "subtitle": "Pilih mobil aktif untuk mempersonalisasi filter",
+    "addNew": "Tambah mobil baru",
+    "battery": "Baterai {{percent}}%",
+    "charging": "Mengisi daya",
+    "active": "Aktif",
+    "actionsAria": "Tindakan mobil",
+    "noConnectors": "Tidak ada konektor yang dipilih",
+    "minPower": "Daya minimum yang diutamakan: {{power}} kW",
+    "batteryCapacity": "Kapasitas baterai: {{capacity}} kWh",
+    "emptyTitle": "Belum ada mobil ditambahkan",
+    "emptySubtitle": "Tambahkan EV pertama Anda untuk mempersonalisasi stasiun yang kompatibel",
+    "menu": {
+      "use": "Gunakan mobil ini",
+      "remove": "Hapus"
+    }
+  },
+  "history": {
+    "title": "Riwayat pengisian daya",
+    "subtitle": "Sesi dari 3 hari terakhir",
+    "unknownTime": "Waktu tidak diketahui",
+    "errorTitle": "Tidak dapat memuat riwayat",
+    "emptyTitle": "Tidak ada sesi pengisian daya terbaru",
+    "emptySubtitle": "Pengisian daya 3 hari terakhir Anda akan muncul di sini",
+    "sessionFallback": "Sesi pengisian daya",
+    "progress": "Progres {{percent}}%",
+    "battery": "Baterai {{percent}}%",
+    "vehicle": "Kendaraan: {{name}}",
+    "connector": "Konektor: {{type}}",
+    "outcome": {
+      "ended": "Berakhir",
+      "completed": "Selesai",
+      "cancelled": "Dibatalkan"
+    }
+  },
+  "editDialog": {
+    "title": "Ubah profil",
+    "fullName": "Nama lengkap",
+    "nameHelper": "Ditampilkan di profil Anda.",
+    "email": "Email",
+    "photoLabel": "Foto profil (opsional)",
+    "changePhoto": "Ubah foto",
+    "uploadPhoto": "Unggah foto",
+    "photoHint": "JPG atau PNG disarankan.",
+    "remove": "Hapus",
+    "region": "Wilayah",
+    "regionPlaceholder": "Contoh: Jakarta, ID",
+    "regionHelper": "Digunakan untuk rekomendasi lokal.",
+    "save": "Simpan perubahan"
+  },
+  "passwordDialog": {
+    "title": "Ubah kata sandi",
+    "current": "Kata sandi saat ini",
+    "new": "Kata sandi baru",
+    "confirm": "Konfirmasi kata sandi baru",
+    "showPassword": "Tampilkan kata sandi",
+    "hidePassword": "Sembunyikan kata sandi",
+    "strength": "Kekuatan: {{label}}",
+    "strengthLabels": {
+      "weak": "Lemah",
+      "ok": "Cukup",
+      "strong": "Kuat"
+    },
+    "requirements": "Gunakan 8+ karakter, huruf, dan angka.",
+    "update": "Perbarui kata sandi"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "header": {
+    "title": "Add a car",
+    "subtitle": "Save your connector types to personalize compatible stations."
+  },
+  "actions": {
+    "saveCar": "Save car",
+    "saving": "Saving..."
+  },
+  "form": {
+    "carName": {
+      "label": "Car name",
+      "placeholder": "e.g. Hyundai Ioniq 5"
+    },
+    "battery": {
+      "label": "Battery capacity (kWh)",
+      "placeholder": "e.g. 58"
+    }
+  },
+  "connector": {
+    "label": "Connector types"
+  },
+  "power": {
+    "label": "Preferred minimum power",
+    "value": "{{value}} kW"
+  }
+}

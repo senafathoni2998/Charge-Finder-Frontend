@@ -1,4 +1,5 @@
 import { Skeleton, Stack } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import type { Station } from "../types";
 import ConnectorRow from "./ConnectorRow";
 import SectionCard from "./SectionCard";
@@ -13,10 +14,11 @@ export default function ConnectorsSection({
   loading,
   station,
 }: ConnectorsSectionProps) {
+  const { t } = useTranslation("stationDetail");
   return (
     <SectionCard
-      title="Connectors"
-      subtitle="Compatibility + realtime availability per connector type"
+      title={t("connectors.title")}
+      subtitle={t("connectors.subtitle")}
     >
       {loading || !station ? (
         <Stack spacing={1.2}>

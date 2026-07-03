@@ -9,6 +9,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 
 type ReportDialogProps = {
@@ -33,6 +34,7 @@ export default function ReportDialog({
   onSubmit,
   issueTypes,
 }: ReportDialogProps) {
+  const { t } = useTranslation("stationDetail");
   return (
     <Dialog
       open={open}
@@ -49,15 +51,15 @@ export default function ReportDialog({
         },
       }}
     >
-      <DialogTitle sx={{ fontWeight: 950 }}>Report an issue</DialogTitle>
+      <DialogTitle sx={{ fontWeight: 950 }}>{t("reportDialog.title")}</DialogTitle>
       <DialogContent dividers sx={{ borderColor: UI.border2 }}>
         <Stack spacing={1.5}>
           <Typography variant="body2" sx={{ color: UI.text2 }}>
-            Help improve data quality \u2014 your report will update station trust.
+            {t("reportDialog.description")}
           </Typography>
           <TextField
             select
-            label="Issue type"
+            label={t("reportDialog.issueType")}
             value={reportType}
             onChange={(event) => onReportTypeChange(event.target.value)}
             fullWidth
@@ -69,13 +71,13 @@ export default function ReportDialog({
             ))}
           </TextField>
           <TextField
-            label="Notes (optional)"
+            label={t("reportDialog.notesLabel")}
             value={reportNote}
             onChange={(event) => onReportNoteChange(event.target.value)}
             fullWidth
             multiline
             minRows={3}
-            placeholder="Example: CCS2 #2 not working, error code 14"
+            placeholder={t("reportDialog.notesPlaceholder")}
           />
         </Stack>
       </DialogContent>
@@ -90,7 +92,7 @@ export default function ReportDialog({
             color: UI.text,
           }}
         >
-          Cancel
+          {t("actions.cancel", { ns: "common" })}
         </Button>
         <Button
           variant="contained"
@@ -102,7 +104,7 @@ export default function ReportDialog({
             color: "white",
           }}
         >
-          Submit report
+          {t("reportDialog.submitReport")}
         </Button>
       </DialogActions>
     </Dialog>

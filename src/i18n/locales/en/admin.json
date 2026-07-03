@@ -1,0 +1,98 @@
+{
+  "header": {
+    "title": "Admin Control Center",
+    "subtitle": "Manage stations, users, and operational health in one place.",
+    "roleChip": "Role: Admin",
+    "addStation": "Add station",
+    "inviteUser": "Invite user"
+  },
+  "snapshot": {
+    "title": "Operational snapshot",
+    "subtitle": "Review key signals and keep the network healthy.",
+    "chips": {
+      "synced": "Stations synced",
+      "security": "Security checks passed",
+      "lastSync": "Last sync 5m ago"
+    }
+  },
+  "stats": {
+    "stations": {
+      "label": "Stations",
+      "caption": "{{count}} online"
+    },
+    "offlineAlerts": {
+      "label": "Offline alerts",
+      "caption": "Need review"
+    },
+    "users": {
+      "label": "Users",
+      "caption": "{{count}} active"
+    },
+    "admins": {
+      "label": "Admins",
+      "caption": "Privileged access"
+    }
+  },
+  "stationCard": {
+    "title": "Station management",
+    "subtitle": "Review availability, edit details, and resolve issues.",
+    "filters": "Filters",
+    "filtersActive": "Filters ({{count}})",
+    "newStation": "New station",
+    "searchPlaceholder": "Search stations, IDs, or cities"
+  },
+  "filters": {
+    "title": "Filters",
+    "reset": "Reset filters",
+    "availability": "Availability",
+    "all": "All",
+    "connectors": "Connectors",
+    "minimumPower": "Minimum power"
+  },
+  "stationList": {
+    "loading": "Loading stations",
+    "empty": "No stations found.",
+    "emptyFiltered": "No stations match the current filters."
+  },
+  "stationItem": {
+    "ports": "{{available}}/{{total}} ports",
+    "updated": "Updated {{minutes}}m ago",
+    "actionsAria": "Station actions"
+  },
+  "userCard": {
+    "title": "User management",
+    "subtitle": "Manage roles, access, and account health.",
+    "addUser": "Add user",
+    "searchPlaceholder": "Search users or emails"
+  },
+  "userList": {
+    "loading": "Loading users...",
+    "empty": "No users found."
+  },
+  "userItem": {
+    "lastActive": "Last active: {{value}}",
+    "actionsAria": "User actions"
+  },
+  "users": {
+    "actions": {
+      "suspend": "Suspend",
+      "activate": "Activate",
+      "approve": "Approve"
+    },
+    "justNow": "Just now",
+    "minutesAgo": "{{minutes}}m ago",
+    "notAvailable": "N/A",
+    "defaultName": "User"
+  },
+  "confirm": {
+    "deleteStation": "Delete station {{name}}? This cannot be undone.",
+    "deleteUser": "Delete user {{name}}? This cannot be undone."
+  },
+  "errors": {
+    "loadStations": "Could not load stations.",
+    "deleteStation": "Could not delete station.",
+    "loadUsers": "Could not load users.",
+    "updateUser": "Could not update user.",
+    "deleteUser": "Could not delete user."
+  }
+}

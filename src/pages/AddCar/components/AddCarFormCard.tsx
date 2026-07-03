@@ -1,9 +1,11 @@
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, Card, CardContent, Divider, Stack, TextField } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 import type { ConnectorType } from "../../../models/model";
 import { carFormSchema, type CarFormValues } from "../../../forms/schemas";
+import { tValidation } from "../../../i18n/validation";
 import ConnectorTypePicker from "./ConnectorTypePicker";
 import PowerSliderField from "./PowerSliderField";
 import AddCarActions from "./AddCarActions";
@@ -32,6 +34,7 @@ export default function AddCarFormCard({
   submitLabel,
   submittingLabel,
 }: AddCarFormCardProps) {
+  const { t } = useTranslation("addCar");
   const {
     register,
     handleSubmit,
@@ -76,10 +79,10 @@ export default function AddCarFormCard({
         <Box component="form" onSubmit={submit} noValidate>
           <Stack spacing={2}>
             <TextField
-              label="Car name"
+              label={t("form.carName.label")}
               inputRef={nameRef}
               {...nameField}
-              placeholder="e.g. Hyundai Ioniq 5"
+              placeholder={t("form.carName.placeholder")}
               fullWidth
               sx={inputSx}
             />
@@ -98,7 +101,7 @@ export default function AddCarFormCard({
                         : [...field.value, connector],
                     )
                   }
-                  error={errors.connectorTypes?.message ?? null}
+                  error={tValidation(t, errors.connectorTypes?.message) || null}
                 />
               )}
             />
@@ -118,11 +121,11 @@ export default function AddCarFormCard({
             />
 
             <TextField
-              label="Battery capacity (kWh)"
+              label={t("form.battery.label")}
               type="number"
               inputRef={batteryRef}
               {...batteryField}
-              placeholder="e.g. 58"
+              placeholder={t("form.battery.placeholder")}
               fullWidth
               inputProps={{ min: 0, step: 1 }}
               sx={inputSx}

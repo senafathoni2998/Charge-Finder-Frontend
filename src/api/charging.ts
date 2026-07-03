@@ -1,4 +1,5 @@
 import type { ConnectorType } from "../models/model";
+import i18n from "../i18n";
 import { apiRequest } from "./client";
 
 type ChargingRequestParams = {
@@ -41,7 +42,7 @@ export const startChargingSession = async ({
   signal,
 }: ChargingRequestParams): Promise<ChargingRequestResult> => {
   if (!stationId) {
-    return { ok: false, error: "Station is missing." };
+    return { ok: false, error: i18n.t("stations.missing", { ns: "api" }) };
   }
 
   const payload: Record<string, unknown> = { stationId };
@@ -52,7 +53,7 @@ export const startChargingSession = async ({
     method: "POST",
     body: payload,
     signal,
-    fallbackError: "Could not start charging.",
+    fallbackError: i18n.t("charging.startFailed", { ns: "api" }),
   });
   if (!res.ok) {
     return { ok: false, error: res.error };
@@ -67,18 +68,18 @@ export const updateChargingProgress = async ({
   signal,
 }: ChargingProgressParams): Promise<ChargingProgressResult> => {
   if (!stationId) {
-    return { ok: false, error: "Station is missing." };
+    return { ok: false, error: i18n.t("stations.missing", { ns: "api" }) };
   }
 
   if (!Number.isFinite(progressPercent)) {
-    return { ok: false, error: "Progress percent is invalid." };
+    return { ok: false, error: i18n.t("charging.progressInvalid", { ns: "api" }) };
   }
 
   const res = await apiRequest<TicketResponse>("/stations/charging-progress", {
     method: "PATCH",
     body: { stationId, progressPercent },
     signal,
-    fallbackError: "Could not update charging progress.",
+    fallbackError: i18n.t("charging.updateProgressFailed", { ns: "api" }),
   });
   if (!res.ok) {
     return { ok: false, error: res.error };
@@ -93,7 +94,7 @@ export const completeChargingSession = async ({
   signal,
 }: ChargingRequestParams): Promise<ChargingRequestResult> => {
   if (!stationId) {
-    return { ok: false, error: "Station is missing." };
+    return { ok: false, error: i18n.t("stations.missing", { ns: "api" }) };
   }
 
   const payload = cancel ? { stationId, cancel: true } : { stationId };
@@ -102,7 +103,7 @@ export const completeChargingSession = async ({
     method: "POST",
     body: payload,
     signal,
-    fallbackError: "Could not complete charging.",
+    fallbackError: i18n.t("charging.completeFailed", { ns: "api" }),
   });
   if (!res.ok) {
     return { ok: false, error: res.error };
@@ -123,14 +124,14 @@ export const cancelChargingSession = async ({
   signal,
 }: ChargingRequestParams): Promise<ChargingRequestResult> => {
   if (!stationId) {
-    return { ok: false, error: "Station is missing." };
+    return { ok: false, error: i18n.t("stations.missing", { ns: "api" }) };
   }
 
   const res = await apiRequest<TicketResponse>("/stations/cancel-charging", {
     method: "POST",
     body: { stationId },
     signal,
-    fallbackError: "Could not cancel charging.",
+    fallbackError: i18n.t("charging.cancelFailed", { ns: "api" }),
   });
   if (!res.ok) {
     return { ok: false, error: res.error };

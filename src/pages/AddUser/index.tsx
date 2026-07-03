@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Box, Stack } from "@mui/material";
 import { useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../theme/theme";
 import type { AddUserFormValues } from "../../forms/schemas";
 import { createUserRequest } from "./addUserRoute";
@@ -11,18 +12,22 @@ import AddUserFormCard from "./components/AddUserFormCard";
 // (react-hook-form); this page owns the submit side-effect and navigation.
 export default function AddUserPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation("addUser");
   const [serverError, setServerError] = useState<string | null>(null);
 
   // Validated by zodResolver(addUserFormSchema) before this runs.
   const handleSubmit = async (values: AddUserFormValues) => {
     setServerError(null);
-    const result = await createUserRequest({
-      name: values.name,
-      email: values.email,
-      role: values.role,
-      password: values.password,
-      region: values.region,
-    });
+    const result = await createUserRequest(
+      {
+        name: values.name,
+        email: values.email,
+        role: values.role,
+        password: values.password,
+        region: values.region,
+      },
+      t("errors.createFailed"),
+    );
     if (result.ok) {
       navigate("/admin");
     } else {

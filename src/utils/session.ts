@@ -1,3 +1,5 @@
+import i18n from "../i18n";
+
 type SessionStatus = "valid" | "missing" | "expired";
 
 type SessionCheckResult = {
@@ -7,8 +9,6 @@ type SessionCheckResult = {
 
 const AUTH_TOKEN_KEY = "cf_auth_token";
 const SESSION_MESSAGE_KEY = "cf_session_message";
-const MISSING_MESSAGE = "Your session is missing. Please log in again.";
-const EXPIRED_MESSAGE = "Your session has expired. Please log in again.";
 
 const readStoredToken = (): string | null => {
   if (typeof window === "undefined") return null;
@@ -52,7 +52,10 @@ export const checkSessionStatus = (
 ): SessionCheckResult => {
   const token = tokenOverride ?? readStoredToken();
   if (!token) {
-    return { status: "missing", message: MISSING_MESSAGE };
+    return {
+      status: "missing",
+      message: i18n.t("session.missing", { ns: "common" }),
+    };
   }
 
   const payload = decodeJwtPayload(token);
@@ -66,7 +69,10 @@ export const checkSessionStatus = (
   }
 
   if (Date.now() >= expiresAt) {
-    return { status: "expired", message: EXPIRED_MESSAGE };
+    return {
+      status: "expired",
+      message: i18n.t("session.expired", { ns: "common" }),
+    };
   }
 
   return { status: "valid", message: null };

@@ -1,0 +1,8 @@
+{
+  "title": "Something went wrong",
+  "defaultMessage": "We hit an unexpected error while loading this page. Please try again.",
+  "status": "Status: {{status}}",
+  "path": "Path: {{path}}",
+  "goHome": "Go to home",
+  "goBack": "Go back"
+}

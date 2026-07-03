@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 import type { AdminUser } from "../types";
 import UserList from "./UserList";
@@ -37,6 +38,8 @@ export default function UserManagementCard({
   onOpenMenu,
   onAddUser,
 }: UserManagementCardProps) {
+  const { t } = useTranslation("admin");
+
   return (
     <Card
       variant="outlined"
@@ -56,10 +59,10 @@ export default function UserManagementCard({
           >
             <Box sx={{ minWidth: 0 }}>
               <Typography sx={{ fontWeight: 900, color: UI.text }}>
-                User management
+                {t("userCard.title")}
               </Typography>
               <Typography sx={{ color: UI.text2, fontSize: 14 }}>
-                Manage roles, access, and account health.
+                {t("userCard.subtitle")}
               </Typography>
             </Box>
             <Box sx={{ flex: 1 }} />
@@ -74,12 +77,12 @@ export default function UserManagementCard({
                 color: UI.text,
               }}
             >
-              Add user
+              {t("userCard.addUser")}
             </Button>
           </Stack>
 
           <TextField
-            placeholder="Search users or emails"
+            placeholder={t("userCard.searchPlaceholder")}
             size="small"
             fullWidth
             InputProps={{

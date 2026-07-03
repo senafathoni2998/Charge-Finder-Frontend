@@ -1,13 +1,15 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { buildMapsUrl, getSharePayload } from "../utils";
-import { REPORT_ISSUE_TYPES } from "../constants";
+import { getReportIssueTypes } from "../constants";
 import type { Station } from "../types";
 
 /** Report-issue + share/open-in-maps UI state and handlers for a station. */
 export function useReportShare(station: Station | null) {
+  const { t } = useTranslation("stationDetail");
   const [reportOpen, setReportOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-  const [reportType, setReportType] = useState(REPORT_ISSUE_TYPES[0]);
+  const [reportType, setReportType] = useState(() => getReportIssueTypes(t)[0]);
   const [reportNote, setReportNote] = useState("");
 
   const openGoogleMaps = () => {

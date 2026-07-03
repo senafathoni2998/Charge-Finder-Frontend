@@ -1,3 +1,4 @@
+import i18n from "../i18n";
 import { apiRequest } from "./client";
 
 type FetchChargingHistoryResult = {
@@ -12,7 +13,11 @@ export const fetchChargingHistory = async (
 ): Promise<FetchChargingHistoryResult> => {
   const res = await apiRequest<{ history?: Record<string, unknown>[] }>(
     "/profile/charging-history",
-    { method: "GET", signal, fallbackError: "Could not load charging history." }
+    {
+      method: "GET",
+      signal,
+      fallbackError: i18n.t("history.loadFailed", { ns: "api" }),
+    }
   );
   if (!res.ok) {
     return { ok: false, history: [], error: res.error };

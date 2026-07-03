@@ -1,0 +1,69 @@
+{
+  "client": {
+    "backendNotConfigured": "Backend URL is not configured.",
+    "requestFailed": "Request failed, please try again.",
+    "timedOut": "Request timed out.",
+    "cancelled": "Request was cancelled."
+  },
+  "stations": {
+    "loadFailed": "Could not load stations.",
+    "idMissing": "Station ID is missing.",
+    "loadOneFailed": "Could not load station.",
+    "notFound": "Station not found.",
+    "missing": "Station is missing.",
+    "createFailed": "Could not create station.",
+    "updateFailed": "Could not update station.",
+    "deleteFailed": "Could not delete station."
+  },
+  "charging": {
+    "startFailed": "Could not start charging.",
+    "progressInvalid": "Progress percent is invalid.",
+    "updateProgressFailed": "Could not update charging progress.",
+    "completeFailed": "Could not complete charging.",
+    "cancelFailed": "Could not cancel charging."
+  },
+  "history": {
+    "loadFailed": "Could not load charging history."
+  },
+  "geocode": {
+    "invalidCoordinates": "Invalid coordinates.",
+    "resolveFailed": "Could not resolve address.",
+    "noAddress": "No address found."
+  },
+  "tickets": {
+    "requestFailed": "Could not request ticket.",
+    "loadActiveFailed": "Could not load active ticket."
+  },
+  "users": {
+    "loadFailed": "Could not load users.",
+    "idMissing": "User ID is missing.",
+    "updateFailed": "Could not update user.",
+    "deleteFailed": "Could not delete user.",
+    "createFailed": "Could not create user.",
+    "addFailed": "Could not add user."
+  },
+  "vehicles": {
+    "missing": "Vehicle is missing.",
+    "loadFailed": "Could not load vehicle.",
+    "notFound": "Vehicle not found."
+  },
+  "session": {
+    "userMissing": "User session is missing."
+  },
+  "profile": {
+    "photoMustBeImage": "Profile photo must be an image file.",
+    "updateFailed": "Could not update profile.",
+    "passwordUpdateFailed": "Failed to update password."
+  },
+  "cars": {
+    "defaultName": "My EV",
+    "emailRequired": "Email is required.",
+    "saveFailed": "Could not save car.",
+    "updateFailed": "Could not update car.",
+    "deleteFailed": "Could not delete car.",
+    "setActiveFailed": "Could not update active car."
+  },
+  "auth": {
+    "signupFailed": "Failed to sign up."
+  }
+}

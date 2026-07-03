@@ -1,0 +1,39 @@
+{
+  "appBar": {
+    "tagline": "Find compatible chargers faster"
+  },
+  "heading": {
+    "title": "Welcome back",
+    "subtitle": "Sign in to access your car profile and tickets."
+  },
+  "fields": {
+    "email": {
+      "label": "Email",
+      "placeholder": "your@email.com"
+    },
+    "password": {
+      "label": "Password",
+      "placeholder": "Enter your password",
+      "show": "Show password",
+      "hide": "Hide password"
+    }
+  },
+  "actions": {
+    "forgotPassword": "Forgot password?",
+    "rememberMe": "Remember me",
+    "signIn": "Sign in",
+    "signingIn": "Signing in"
+  },
+  "signup": {
+    "prompt": "New here?",
+    "cta": "Create an account"
+  },
+  "terms": "By signing in, you agree to the demo Terms and Privacy.",
+  "toast": {
+    "forgotPassword": "Forgot password (demo). Wire to reset flow."
+  },
+  "errors": {
+    "backendNotConfigured": "Backend URL is not configured.",
+    "loginFailed": "Failed to log in."
+  }
+}

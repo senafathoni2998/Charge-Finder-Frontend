@@ -1,0 +1,15 @@
+{
+  "header": {
+    "title": "Edit car",
+    "subtitle": "Update your connector types to keep station matches accurate."
+  },
+  "form": {
+    "submitLabel": "Update car",
+    "submittingLabel": "Updating..."
+  },
+  "notFound": {
+    "title": "Car not found.",
+    "description": "Head back to your profile to choose a different car.",
+    "back": "Back to profile"
+  }
+}

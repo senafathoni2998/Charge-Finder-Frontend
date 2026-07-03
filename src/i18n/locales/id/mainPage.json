@@ -1,0 +1,54 @@
+{
+  "search": {
+    "label": "Cari",
+    "placeholder": "Cari stasiun atau area"
+  },
+  "filters": {
+    "title": "Filter",
+    "availability": "Ketersediaan",
+    "all": "Semua",
+    "distance": "Jarak",
+    "myCar": "Mobil saya",
+    "connectors": "Konektor",
+    "connectorsCarProfile": "Filter konektor mengikuti profil mobil Anda.",
+    "minimumPower": "Daya minimum",
+    "minimumPowerCarProfile": "Daya minimum mengikuti profil mobil Anda."
+  },
+  "guestMode": {
+    "title": "Mode tamu",
+    "description": "Masuk untuk menyimpan mobil dan menyesuaikan filter.",
+    "login": "Masuk"
+  },
+  "car": {
+    "selectedCar": "Mobil terpilih",
+    "useToFilter": "Gunakan mobil saya untuk memfilter stasiun",
+    "addPrompt": "Tambahkan mobil untuk menyesuaikan hasil.",
+    "addCar": "Tambah mobil"
+  },
+  "stations": {
+    "title": "Stasiun",
+    "empty": "Tidak ada stasiun yang cocok dengan filter Anda.",
+    "emptyHint": "Coba tambah jarak, hapus konektor, atau turunkan kW minimum."
+  },
+  "station": {
+    "distanceAway": "{{distance}} km dari sini",
+    "updatedAgo": "Diperbarui {{minutes}}m lalu",
+    "viewDetails": "Lihat detail",
+    "openInMaps": "Buka di Google Maps"
+  },
+  "status": {
+    "charging": "Mengisi daya"
+  },
+  "map": {
+    "title": "Penjelajah Peta",
+    "hint": "Klik penanda untuk melihat pratinjau stasiun",
+    "yourLocation": "Lokasi Anda",
+    "useMyLocation": "Gunakan lokasi saya",
+    "clusterStations": "{{total}} stasiun",
+    "tooltipCharging": "Mengisi daya • {{status}}",
+    "legend": {
+      "you": "Anda"
+    }
+  },
+  "demoHint": "Ini adalah stasiun demo yang ditempatkan di dekat Anda — satu untuk setiap status (Tersedia, Sibuk, Nonaktif) sehingga Anda dapat menjelajahi setiap keadaan. Stasiun asli akan muncul di sini saat ditambahkan."
+}

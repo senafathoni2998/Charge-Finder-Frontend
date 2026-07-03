@@ -1,0 +1,24 @@
+{
+  "header": {
+    "title": "Add user",
+    "subtitle": "Invite a teammate and set their access level."
+  },
+  "form": {
+    "fullName": "Full name",
+    "fullNamePlaceholder": "e.g. Nadia Putri",
+    "email": "Email",
+    "emailPlaceholder": "e.g. nadia@chargefinder.app",
+    "role": "Role",
+    "password": "Password",
+    "passwordPlaceholder": "Set a temporary password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "region": "Region",
+    "regionPlaceholder": "e.g. Jakarta, ID",
+    "submit": "Create user",
+    "submitting": "Creating..."
+  },
+  "errors": {
+    "createFailed": "Could not add user."
+  }
+}

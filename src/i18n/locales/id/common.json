@@ -1,0 +1,34 @@
+{
+  "language": {
+    "title": "Bahasa",
+    "subtitle": "Pilih bahasa yang Anda inginkan",
+    "indonesia": "Indonesia",
+    "english": "English",
+    "change": "Ubah bahasa"
+  },
+  "actions": {
+    "save": "Simpan",
+    "cancel": "Batal",
+    "close": "Tutup",
+    "delete": "Hapus",
+    "edit": "Ubah",
+    "add": "Tambah",
+    "back": "Kembali",
+    "confirm": "Konfirmasi",
+    "retry": "Coba lagi",
+    "submit": "Kirim"
+  },
+  "status": {
+    "available": "Tersedia",
+    "busy": "Sibuk",
+    "offline": "Nonaktif"
+  },
+  "session": {
+    "missing": "Sesi Anda tidak ditemukan. Silakan masuk kembali.",
+    "expired": "Sesi Anda telah berakhir. Silakan masuk kembali."
+  },
+  "geolocation": {
+    "unsupported": "Geolokasi tidak didukung di lingkungan ini.",
+    "failed": "Gagal mendapatkan lokasi."
+  }
+}

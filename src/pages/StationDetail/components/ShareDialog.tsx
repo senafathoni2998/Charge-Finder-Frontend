@@ -7,6 +7,7 @@ import {
   DialogTitle,
   Typography,
 } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 import type { Station } from "../types";
 
@@ -22,6 +23,7 @@ export default function ShareDialog({
   onClose,
   station,
 }: ShareDialogProps) {
+  const { t } = useTranslation("stationDetail");
   return (
     <Dialog
       open={open}
@@ -38,11 +40,10 @@ export default function ShareDialog({
         },
       }}
     >
-      <DialogTitle sx={{ fontWeight: 950 }}>Share</DialogTitle>
+      <DialogTitle sx={{ fontWeight: 950 }}>{t("shareDialog.title")}</DialogTitle>
       <DialogContent dividers sx={{ borderColor: UI.border2 }}>
         <Typography variant="body2" sx={{ color: UI.text2 }}>
-          Your browser doesn\u2019t support native share here. Copy the details
-          manually.
+          {t("shareDialog.description")}
         </Typography>
         <Box
           sx={{
@@ -70,7 +71,7 @@ export default function ShareDialog({
             color: "white",
           }}
         >
-          Done
+          {t("shareDialog.done")}
         </Button>
       </DialogActions>
     </Dialog>

@@ -12,6 +12,8 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import { UI } from "../../../theme/theme";
 import { formatCurrency } from "../../../utils/distance";
 import type { PaymentMethod } from "../types";
@@ -22,14 +24,28 @@ import InfoRow from "./InfoRow";
 // CONSTANTS
 // ============================================================================
 
-const SPEED_OPTIONS: Array<{
+const getSpeedOptions = (
+  t: TFunction
+): Array<{
   value: ChargingSpeed;
   label: string;
   helper: string;
-}> = [
-  { value: "NORMAL", label: "Normal", helper: "Standard charging speed." },
-  { value: "FAST", label: "Fast", helper: "Higher power delivery." },
-  { value: "ULTRA_FAST", label: "Ultra fast", helper: "Highest power option." },
+}> => [
+  {
+    value: "NORMAL",
+    label: t("paymentDialog.speeds.normalLabel"),
+    helper: t("paymentDialog.speeds.normalHelper"),
+  },
+  {
+    value: "FAST",
+    label: t("paymentDialog.speeds.fastLabel"),
+    helper: t("paymentDialog.speeds.fastHelper"),
+  },
+  {
+    value: "ULTRA_FAST",
+    label: t("paymentDialog.speeds.ultraLabel"),
+    helper: t("paymentDialog.speeds.ultraHelper"),
+  },
 ];
 
 const INFO_SECTION_SX = {
@@ -235,6 +251,8 @@ function TicketSetupSection({
   chargingSpeed: ChargingSpeed;
   onChargingSpeedChange: (value: ChargingSpeed) => void;
 }) {
+  const { t } = useTranslation("stationDetail");
+  const speedOptions = getSpeedOptions(t);
   const hasInput = ticketKwhInput.trim().length > 0;
 
   return (
@@ -244,12 +262,12 @@ function TicketSetupSection({
           variant="subtitle2"
           sx={{ color: UI.text, fontWeight: 800, letterSpacing: 0.3 }}
         >
-          Ticket setup
+          {t("paymentDialog.ticketSetup")}
         </Typography>
 
         {/* Ticket size input */}
         <TextField
-          label="Ticket size (kWh)"
+          label={t("paymentDialog.ticketSizeLabel")}
           type="number"
           value={ticketKwhInput}
           onChange={(event) => onTicketKwhChange(event.target.value)}
@@ -257,9 +275,9 @@ function TicketSetupSection({
           error={!ticketKwhValid}
           helperText={
             !ticketKwhValid
-              ? "Enter a valid kWh amount."
+              ? t("paymentDialog.invalidKwh")
               : !hasInput
-              ? `Suggested: ${ticketKwhSuggested} kWh`
+              ? t("paymentDialog.suggested", { amount: ticketKwhSuggested })
               : " "
           }
           sx={{
@@ -276,7 +294,7 @@ function TicketSetupSection({
             variant="subtitle2"
             sx={{ color: UI.text2, fontWeight: 800, letterSpacing: 0.2 }}
           >
-            Charging speed
+            {t("paymentDialog.chargingSpeed")}
           </Typography>
           <RadioGroup
             value={chargingSpeed}
@@ -285,7 +303,7 @@ function TicketSetupSection({
             }
             sx={{ gap: 1, mt: 1 }}
           >
-            {SPEED_OPTIONS.map((option) => (
+            {speedOptions.map((option) => (
               <SpeedOption
                 key={option.value}
                 value={option.value}
@@ -316,14 +334,16 @@ function TicketDetailsSection({
   currency: string | null;
   ticketPriceLabel: string;
 }) {
+  const { t } = useTranslation("stationDetail");
+  const speedOptions = getSpeedOptions(t);
   const perKwhLabel =
     Number.isFinite(pricePerKwh) && currency
       ? formatCurrency(currency, Number(pricePerKwh))
       : "—";
 
   const speedLabel =
-    SPEED_OPTIONS.find((option) => option.value === chargingSpeed)?.label ??
-    "Normal";
+    speedOptions.find((option) => option.value === chargingSpeed)?.label ??
+    speedOptions[0].label;
 
   return (
     <Box sx={INFO_SECTION_SX}>
@@ -332,14 +352,14 @@ function TicketDetailsSection({
           variant="subtitle2"
           sx={{ color: UI.text, fontWeight: 800, letterSpacing: 0.3 }}
         >
-          Ticket details
+          {t("paymentDialog.ticketDetails")}
         </Typography>
-        <InfoRow label="Ticket size" value={`${ticketKwh} kWh`} />
-        <InfoRow label="Speed" value={speedLabel} />
-        <InfoRow label="Per kWh" value={perKwhLabel} />
-        <InfoRow label="Total" value={ticketPriceLabel} />
+        <InfoRow label={t("paymentDialog.ticketSize")} value={`${ticketKwh} kWh`} />
+        <InfoRow label={t("paymentDialog.speed")} value={speedLabel} />
+        <InfoRow label={t("paymentDialog.perKwh")} value={perKwhLabel} />
+        <InfoRow label={t("paymentDialog.total")} value={ticketPriceLabel} />
         <Typography variant="caption" sx={{ color: UI.text3 }}>
-          Price based on station rate.
+          {t("paymentDialog.priceNote")}
         </Typography>
       </Stack>
     </Box>
@@ -356,6 +376,7 @@ function PaymentMethodSection({
   paymentMethods: PaymentMethod[];
   onPaymentChange: (value: string) => void;
 }) {
+  const { t } = useTranslation("stationDetail");
   return (
     <Box sx={INFO_SECTION_SX}>
       <Stack spacing={1}>
@@ -363,7 +384,7 @@ function PaymentMethodSection({
           variant="subtitle2"
           sx={{ color: UI.text, fontWeight: 800, letterSpacing: 0.3 }}
         >
-          Payment method
+          {t("paymentDialog.paymentMethod")}
         </Typography>
         <RadioGroup
           value={selectedPaymentId}
@@ -394,6 +415,7 @@ function PaymentMethodSection({
  * PaymentDialog - Dialog for purchasing or updating a charging ticket.
  */
 export default function PaymentDialog(props: PaymentDialogProps) {
+  const { t } = useTranslation("stationDetail");
   // ===== EXTRACT PROPS =====
   const { dialogState, ticketConfig, pricing, paymentSelection } = props;
 
@@ -411,10 +433,10 @@ export default function PaymentDialog(props: PaymentDialogProps) {
 
   // ===== DERIVED VALUES =====
   const confirmLabel = isSubmitting
-    ? "Processing..."
+    ? t("paymentDialog.processing")
     : hasTicket
-    ? "Update payment"
-    : "Buy ticket";
+    ? t("paymentDialog.updatePayment")
+    : t("paymentDialog.buyTicket");
 
   const isFormDisabled = !canSubmit || isSubmitting || !ticketKwhValid;
 
@@ -428,14 +450,14 @@ export default function PaymentDialog(props: PaymentDialogProps) {
     >
       {/* ===== DIALOG HEADER ===== */}
       <DialogTitle sx={{ fontWeight: 950, fontSize: 22 }}>
-        Charging ticket
+        {t("paymentDialog.title")}
       </DialogTitle>
 
       {/* ===== DIALOG CONTENT ===== */}
       <DialogContent dividers sx={{ borderColor: UI.border2 }}>
         <Stack spacing={2}>
           <Typography variant="body2" sx={{ color: UI.text3 }}>
-            Choose a payment method for a {ticketKwh} kWh ticket.
+            {t("paymentDialog.chooseMethod", { amount: ticketKwh })}
           </Typography>
 
           {/* Ticket setup: size and speed */}
@@ -485,7 +507,7 @@ export default function PaymentDialog(props: PaymentDialogProps) {
             color: UI.text,
           }}
         >
-          Cancel
+          {t("actions.cancel", { ns: "common" })}
         </Button>
         <Button
           variant="contained"

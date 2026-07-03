@@ -1,5 +1,7 @@
 import { useCallback, useState } from "react";
 
+import i18n from "../i18n";
+
 export function useGeoLocation() {
   const [loc, setLoc] = useState<{ lat: number; lng: number } | null>(null);
   const [loading, setLoading] = useState(false);
@@ -8,7 +10,7 @@ export function useGeoLocation() {
 
   const request = useCallback(() => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
-      setError("Geolocation is not supported in this environment.");
+      setError(i18n.t("geolocation.unsupported", { ns: "common" }));
       setLoading(false);
       setRequestId((prev) => prev + 1);
       return;
@@ -22,7 +24,7 @@ export function useGeoLocation() {
         setRequestId((prev) => prev + 1);
       },
       (err) => {
-        setError(err.message || "Failed to get location.");
+        setError(err.message || i18n.t("geolocation.failed", { ns: "common" }));
         setLoading(false);
         setRequestId((prev) => prev + 1);
       },

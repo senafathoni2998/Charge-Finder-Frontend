@@ -1,3 +1,4 @@
+import i18n from "../i18n";
 import { apiRequest } from "./client";
 
 type FetchVehicleResult = {
@@ -12,12 +13,20 @@ export const fetchVehicleById = async (
   signal?: AbortSignal
 ): Promise<FetchVehicleResult> => {
   if (!vehicleId) {
-    return { ok: false, vehicle: null, error: "Vehicle is missing." };
+    return {
+      ok: false,
+      vehicle: null,
+      error: i18n.t("vehicles.missing", { ns: "api" }),
+    };
   }
 
   const res = await apiRequest<{ vehicle?: Record<string, unknown> } | null>(
     `/vehicles/${encodeURIComponent(vehicleId)}`,
-    { method: "GET", signal, fallbackError: "Could not load vehicle." }
+    {
+      method: "GET",
+      signal,
+      fallbackError: i18n.t("vehicles.loadFailed", { ns: "api" }),
+    }
   );
   if (!res.ok) {
     return { ok: false, vehicle: null, error: res.error };
@@ -29,7 +38,11 @@ export const fetchVehicleById = async (
       ? (data as { vehicle?: Record<string, unknown> }).vehicle ?? data
       : null;
   if (!vehicle || typeof vehicle !== "object") {
-    return { ok: false, vehicle: null, error: "Vehicle not found." };
+    return {
+      ok: false,
+      vehicle: null,
+      error: i18n.t("vehicles.notFound", { ns: "api" }),
+    };
   }
 
   return { ok: true, vehicle: vehicle as Record<string, unknown> };

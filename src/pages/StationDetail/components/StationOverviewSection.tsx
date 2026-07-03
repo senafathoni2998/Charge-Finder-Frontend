@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Box, Button, Chip, Skeleton, Stack, Typography, useMediaQuery } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import LaunchIcon from "@mui/icons-material/Launch";
 import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import { UI } from "../../../theme/theme";
@@ -29,9 +30,12 @@ export default function StationOverviewSection({
   distanceKm,
   onReportIssue,
 }: StationOverviewSectionProps) {
+  const { t } = useTranslation("stationDetail");
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const isMobile = useMediaQuery("(max-width: 600px)");
-  const title = loading ? `Loading` : (station?.name ?? "Station");
+  const title = loading
+    ? t("overview.loading")
+    : (station?.name ?? t("overview.stationFallback"));
   const subtitle = loading ? "" : station?.address;
 
   const photos = station?.photos ?? [];
@@ -61,7 +65,7 @@ export default function StationOverviewSection({
             {activeCar && activeCar.connectorTypes.length ? (
               <Chip
                 size="small"
-                label={isCompatible ? "Compatible" : "Not supported"}
+                label={isCompatible ? t("overview.compatible") : t("overview.notSupported")}
                 sx={{
                   borderRadius: 999,
                   backgroundColor: isCompatible
@@ -92,7 +96,7 @@ export default function StationOverviewSection({
             <Box sx={{ position: "relative" }}>
               <MiniPhoto
                 key={currentPhotoIndex}
-                label={photos[currentPhotoIndex]?.label ?? "Photo"}
+                label={photos[currentPhotoIndex]?.label ?? t("overview.photoFallback")}
                 gradient={photos[currentPhotoIndex]?.gradient ?? UI.brandGrad}
               />
               {/* Navigation dots */}
@@ -127,15 +131,15 @@ export default function StationOverviewSection({
           ) : (
             <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25}>
               <MiniPhoto
-                label={photos[0]?.label ?? "Photo"}
+                label={photos[0]?.label ?? t("overview.photoFallback")}
                 gradient={photos[0]?.gradient ?? UI.brandGrad}
               />
               <MiniPhoto
-                label={photos[1]?.label ?? "Photo"}
+                label={photos[1]?.label ?? t("overview.photoFallback")}
                 gradient={photos[1]?.gradient ?? UI.brandGrad}
               />
               <MiniPhoto
-                label={photos[2]?.label ?? "Photo"}
+                label={photos[2]?.label ?? t("overview.photoFallback")}
                 gradient={photos[2]?.gradient ?? UI.brandGrad}
               />
             </Stack>
@@ -148,7 +152,11 @@ export default function StationOverviewSection({
           >
             <Chip
               icon={<LaunchIcon />}
-              label={distanceKm ? `${distanceKm.toFixed(1)} km away` : "\u2014"}
+              label={
+                distanceKm
+                  ? t("overview.kmAway", { distance: distanceKm.toFixed(1) })
+                  : "\u2014"
+              }
               sx={{
                 borderRadius: 999,
                 backgroundColor: "rgba(10,10,16,0.04)",
@@ -159,7 +167,9 @@ export default function StationOverviewSection({
               }}
             />
             <Chip
-              label={`Updated ${minutesAgo(station.lastUpdatedISO)}m ago`}
+              label={t("overview.updatedAgo", {
+                minutes: minutesAgo(station.lastUpdatedISO),
+              })}
               sx={{
                 borderRadius: 999,
                 backgroundColor: "rgba(10,10,16,0.04)",
@@ -182,7 +192,7 @@ export default function StationOverviewSection({
                 alignSelf: { xs: "stretch", sm: "auto" },
               }}
             >
-              Report issue
+              {t("overview.reportIssue")}
             </Button>
           </Stack>
 
@@ -196,7 +206,7 @@ export default function StationOverviewSection({
               }}
             >
               <Typography sx={{ fontWeight: 900, color: UI.text }}>
-                Notes
+                {t("overview.notes")}
               </Typography>
               <Typography variant="body2" sx={{ color: UI.text2, mt: 0.5 }}>
                 {station.notes}

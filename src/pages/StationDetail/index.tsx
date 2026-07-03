@@ -11,6 +11,7 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { useLocation, useNavigate, useParams } from "react-router";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../theme/theme";
 import {
   cancelChargingSession,
@@ -27,8 +28,8 @@ import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { logout, setCars } from "../../features/auth/authSlice";
 import { clearAuthStorage, persistCarsToStorage } from "../Profile/profileStorage";
 import {
-  PAYMENT_METHODS,
-  REPORT_ISSUE_TYPES,
+  getPaymentMethods,
+  getReportIssueTypes,
   TICKET_KWH,
   TOTAL_CHARGE_MINUTES,
 } from "./constants";
@@ -83,6 +84,7 @@ export default function StationDetailPage() {
     defaultMatches: true,
   });
 
+  const { t } = useTranslation("stationDetail");
   const { id: stationId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -91,11 +93,15 @@ export default function StationDetailPage() {
   const cars = useAppSelector((state) => state.auth.cars);
   const activeCarId = useAppSelector((state) => state.auth.activeCarId);
 
+  const paymentMethods = useMemo(() => getPaymentMethods(t), [t]);
+  const reportIssueTypes = useMemo(() => getReportIssueTypes(t), [t]);
+  const chargeFinderAccountLabel = t("chargingDialog.chargeFinderAccount");
+
   // Demo selector for canvas. In your app, stationId will come from route params.
   //   const [stationId, setStationId] = useState("st-001");
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [selectedPaymentId, setSelectedPaymentId] = useState(
-    PAYMENT_METHODS[0].id
+    paymentMethods[0].id
   );
   const [chargingSpeed, setChargingSpeed] = useState<ChargingSpeed>("NORMAL");
   const [ticketKwhInput, setTicketKwhInput] = useState("");
@@ -145,9 +151,9 @@ export default function StationDetailPage() {
 
   const selectedPayment = useMemo(
     () =>
-      PAYMENT_METHODS.find((method) => method.id === selectedPaymentId) ??
-      PAYMENT_METHODS[0],
-    [selectedPaymentId]
+      paymentMethods.find((method) => method.id === selectedPaymentId) ??
+      paymentMethods[0],
+    [paymentMethods, selectedPaymentId]
   );
 
   const remainingMinutes = Math.max(
@@ -276,6 +282,10 @@ export default function StationDetailPage() {
   useEffect(() => {
     ticketPriceLabelRef.current = ticketPriceLabel;
   }, [ticketPriceLabel]);
+  const chargeFinderAccountLabelRef = useRef(chargeFinderAccountLabel);
+  useEffect(() => {
+    chargeFinderAccountLabelRef.current = chargeFinderAccountLabel;
+  }, [chargeFinderAccountLabel]);
   const deliveredKwh =
     Math.round(((ticketKwh * chargingProgress) / 100) * 10) / 10;
 
@@ -287,12 +297,14 @@ export default function StationDetailPage() {
   const canStartCharging = canCharge && chargingStatus !== "charging";
   const isCharging = chargingStatus === "charging";
   const chargingActionLabel =
-    chargingStatus === "charging" ? "View charging" : "Start charging";
+    chargingStatus === "charging"
+      ? t("page.chargingActionView")
+      : t("page.chargingActionStart");
   const paymentActionLabel = !isAuthenticated
-    ? "Log in to buy ticket"
+    ? t("page.paymentLogin")
     : ticket
-    ? "Change payment"
-    : "Buy charging ticket";
+    ? t("page.paymentChange")
+    : t("page.paymentBuy");
 
   const handleTicketKwhChange = (value: string) => {
     setTicketKwhInput(value);
@@ -336,7 +348,8 @@ export default function StationDetailPage() {
 
       const normalizedTicket = buildTicketFromServer(
         payload,
-        ticketPriceLabelRef.current
+        ticketPriceLabelRef.current,
+        chargeFinderAccountLabelRef.current
       );
       setTicket(normalizedTicket);
       if (normalizedTicket.progressPercent != null) {
@@ -423,8 +436,8 @@ export default function StationDetailPage() {
 
     if (!result.ok) {
       const fallbackMessage = ticket
-        ? "Could not update payment."
-        : "Could not request ticket.";
+        ? t("page.couldNotUpdatePayment")
+        : t("page.couldNotRequestTicket");
       const message = result.error || fallbackMessage;
       setTicketRequestError(message);
       setTicketErrorToast(message);
@@ -481,7 +494,7 @@ export default function StationDetailPage() {
       vehicleId: vehicleId ?? undefined,
     });
     if (!result.ok) {
-      setChargingRequestError(result.error || "Could not start charging.");
+      setChargingRequestError(result.error || t("page.couldNotStartCharging"));
       setChargingBatteryPercent(null);
       setChargingRequestLoading(false);
       return;
@@ -495,7 +508,8 @@ export default function StationDetailPage() {
         null;
       const normalizedTicket = buildTicketFromServer(
         ticketPayload,
-        ticketPriceLabel
+        ticketPriceLabel,
+        chargeFinderAccountLabel
       );
       setTicket(normalizedTicket);
       if (batteryPercentFromTicket != null) {
@@ -543,11 +557,11 @@ export default function StationDetailPage() {
     }
     if (!ensureSessionValid()) return;
     if (!availableConnectorTypes.length) {
-      setChargingRequestError("No connectors available for this station.");
+      setChargingRequestError(t("page.noConnectorsAvailable"));
       return;
     }
     if (cars.length > 0 && !hasAvailableVehicles) {
-      setChargingRequestError("All your vehicles are already charging.");
+      setChargingRequestError(t("page.allVehiclesAlreadyCharging"));
       return;
     }
     setChargingRequestError(null);
@@ -558,13 +572,13 @@ export default function StationDetailPage() {
     if (!selectedConnectorType) return;
     if (cars.length > 0) {
       if (!selectedVehicleId) {
-        setChargingRequestError("Select a vehicle that is not charging.");
+        setChargingRequestError(t("page.selectVehicleNotCharging"));
         return;
       }
       const selectedVehicle =
         cars.find((car) => car.id === selectedVehicleId) ?? null;
       if (selectedVehicle && isVehicleCharging(selectedVehicle)) {
-        setChargingRequestError("That vehicle is already charging.");
+        setChargingRequestError(t("page.vehicleAlreadyCharging"));
         return;
       }
     }
@@ -614,7 +628,7 @@ export default function StationDetailPage() {
       });
       if (!fallback.ok) {
         setChargingRequestError(
-          fallback.error || result.error || "Could not stop charging."
+          fallback.error || result.error || t("page.couldNotStopCharging")
         );
         setChargingRequestLoading(false);
         return;
@@ -764,7 +778,8 @@ export default function StationDetailPage() {
       if (ticketPayload) {
         const normalizedTicket = buildTicketFromServer(
           ticketPayload,
-          ticketPriceLabelRef.current
+          ticketPriceLabelRef.current,
+          chargeFinderAccountLabelRef.current
         );
         setTicket(normalizedTicket);
         if (normalizedTicket.progressPercent != null) {
@@ -852,10 +867,10 @@ export default function StationDetailPage() {
             <CardContent sx={{ p: { xs: 2.25, sm: 3 } }}>
               <Stack spacing={1.5}>
                 <Typography sx={{ fontWeight: 900, color: UI.text, fontSize: 22 }}>
-                  Station unavailable
+                  {t("page.stationUnavailable")}
                 </Typography>
                 <Typography sx={{ color: UI.text2 }}>
-                  {loadError || "We couldn't load this station right now."}
+                  {loadError || t("page.couldNotLoadStation")}
                 </Typography>
                 <Button
                   variant="outlined"
@@ -868,7 +883,7 @@ export default function StationDetailPage() {
                     alignSelf: "flex-start",
                   }}
                 >
-                  Back to map
+                  {t("page.backToMap")}
                 </Button>
               </Stack>
             </CardContent>
@@ -963,7 +978,7 @@ export default function StationDetailPage() {
           {
             selectedPaymentId,
             onPaymentChange: setSelectedPaymentId,
-            paymentMethods: PAYMENT_METHODS,
+            paymentMethods,
           } satisfies PaymentSelection
         }
       />
@@ -1012,7 +1027,7 @@ export default function StationDetailPage() {
         onReportTypeChange={setReportType}
         onReportNoteChange={setReportNote}
         onSubmit={submitReport}
-        issueTypes={REPORT_ISSUE_TYPES}
+        issueTypes={reportIssueTypes}
       />
 
       <ShareDialog

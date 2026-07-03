@@ -5,6 +5,16 @@ import type { StationFormValues } from '../../../forms/schemas';
 
 vi.mock('../../../api/adminStations', () => ({ updateStation: vi.fn() }));
 
+// Fake translator: returns the English strings for the module's own keys so the
+// exact-message assertions stay valid; other keys fall through to the key.
+const t = ((key: string) => {
+    const map: Record<string, string> = {
+        'errors.missingId': 'Station ID is missing.',
+        'errors.updateFailed': 'Could not update station.',
+    };
+    return map[key] ?? key;
+}) as any;
+
 const values: StationFormValues = {
     name: 'Test Station',
     address: '123 Test St',
@@ -26,7 +36,7 @@ describe('updateStationRequest', () => {
     });
 
     it('returns an error when stationId is missing', async () => {
-        const result = await updateStationRequest('', values);
+        const result = await updateStationRequest('', values, t);
         expect(result).toEqual({ ok: false, error: 'Station ID is missing.' });
         expect(api.updateStation).not.toHaveBeenCalled();
     });
@@ -34,7 +44,7 @@ describe('updateStationRequest', () => {
     it('calls updateStation with the built payload', async () => {
         vi.mocked(api.updateStation).mockResolvedValue({ ok: true } as any);
 
-        const result = await updateStationRequest('s1', values);
+        const result = await updateStationRequest('s1', values, t);
 
         expect(result).toEqual({ ok: true });
         expect(api.updateStation).toHaveBeenCalledTimes(1);
@@ -49,7 +59,7 @@ describe('updateStationRequest', () => {
             error: 'Update failed',
         } as any);
 
-        expect(await updateStationRequest('s1', values)).toEqual({
+        expect(await updateStationRequest('s1', values, t)).toEqual({
             ok: false,
             error: 'Update failed',
         });

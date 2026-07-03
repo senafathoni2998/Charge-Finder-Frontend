@@ -1,6 +1,7 @@
 import { ListItemIcon, Menu, MenuItem } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import { useTranslation } from "react-i18next";
 import type { Station } from "../../../models/model";
 
 type StationActionsMenuProps = {
@@ -21,6 +22,7 @@ export default function StationActionsMenu({
   onEdit,
   onDelete,
 }: StationActionsMenuProps) {
+  const { t } = useTranslation("admin");
   const open = Boolean(anchorEl);
 
   // Handles the edit action and closes the menu.
@@ -46,7 +48,7 @@ export default function StationActionsMenu({
         <ListItemIcon>
           <EditOutlinedIcon fontSize="small" />
         </ListItemIcon>
-        Edit
+        {t("actions.edit", { ns: "common" })}
       </MenuItem>
       <MenuItem
         onClick={handleDelete}
@@ -59,7 +61,7 @@ export default function StationActionsMenu({
             sx={{ color: "rgba(244,67,54,0.95)" }}
           />
         </ListItemIcon>
-        Delete
+        {t("actions.delete", { ns: "common" })}
       </MenuItem>
     </Menu>
   );

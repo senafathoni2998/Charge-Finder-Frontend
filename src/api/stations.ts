@@ -1,4 +1,5 @@
 import type { Station } from "../models/model";
+import i18n from "../i18n";
 import { apiRequest } from "./client";
 
 type FetchStationsResult = {
@@ -41,7 +42,7 @@ export const fetchStations = async (
   const res = await apiRequest<{ stations?: Station[] }>(path, {
     method: "GET",
     signal,
-    fallbackError: "Could not load stations.",
+    fallbackError: i18n.t("stations.loadFailed", { ns: "api" }),
   });
   if (!res.ok) {
     return { ok: false, stations: [], error: res.error };
@@ -56,12 +57,20 @@ export const fetchStationById = async (
   signal?: AbortSignal
 ): Promise<FetchStationResult> => {
   if (!stationId) {
-    return { ok: false, station: null, error: "Station ID is missing." };
+    return {
+      ok: false,
+      station: null,
+      error: i18n.t("stations.idMissing", { ns: "api" }),
+    };
   }
 
   const res = await apiRequest<{ station?: Station } | null>(
     `/stations/${encodeURIComponent(stationId)}`,
-    { method: "GET", signal, fallbackError: "Could not load station." }
+    {
+      method: "GET",
+      signal,
+      fallbackError: i18n.t("stations.loadOneFailed", { ns: "api" }),
+    }
   );
   if (!res.ok) {
     return { ok: false, station: null, error: res.error };
@@ -73,7 +82,11 @@ export const fetchStationById = async (
       ? (data as { station?: Station }).station ?? data
       : null;
   if (!station || typeof station !== "object") {
-    return { ok: false, station: null, error: "Station not found." };
+    return {
+      ok: false,
+      station: null,
+      error: i18n.t("stations.notFound", { ns: "api" }),
+    };
   }
 
   return { ok: true, station: station as Station };

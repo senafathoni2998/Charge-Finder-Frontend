@@ -1,0 +1,27 @@
+{
+  "brand": "ChargeFinder",
+  "titles": {
+    "home": "ChargeFinder",
+    "stationDetail": "Station Details",
+    "addStation": "Add Station",
+    "editStation": "Edit Station",
+    "addUser": "Add User",
+    "admin": "Admin Console",
+    "addCar": "Add Car",
+    "profile": "Profile"
+  },
+  "loading": "Loading data...",
+  "tooltips": {
+    "back": "Back",
+    "admin": "Admin",
+    "profile": "Profile",
+    "filters": "Filters"
+  },
+  "aria": {
+    "back": "Go back",
+    "admin": "Open admin console",
+    "profile": "Open profile",
+    "filters": "Open filters",
+    "logo": "ChargeFinder logo"
+  }
+}

@@ -1,8 +1,11 @@
 import { Box, Card, CardContent, Chip, Stack, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 
 // Shows the operational snapshot hero card.
 export default function OperationalSnapshotCard() {
+  const { t } = useTranslation("admin");
+
   return (
     <Card
       variant="outlined"
@@ -23,10 +26,10 @@ export default function OperationalSnapshotCard() {
         >
           <Box sx={{ minWidth: 0 }}>
             <Typography sx={{ fontWeight: 800, color: UI.text, fontSize: 20 }}>
-              Operational snapshot
+              {t("snapshot.title")}
             </Typography>
             <Typography sx={{ color: UI.text2 }}>
-              Review key signals and keep the network healthy.
+              {t("snapshot.subtitle")}
             </Typography>
           </Box>
           <Box sx={{ flex: 1 }} />
@@ -36,7 +39,7 @@ export default function OperationalSnapshotCard() {
             alignItems={{ sm: "center" }}
           >
             <Chip
-              label="Stations synced"
+              label={t("snapshot.chips.synced")}
               sx={{
                 borderRadius: 999,
                 backgroundColor: "rgba(0,229,255,0.12)",
@@ -46,7 +49,7 @@ export default function OperationalSnapshotCard() {
               }}
             />
             <Chip
-              label="Security checks passed"
+              label={t("snapshot.chips.security")}
               sx={{
                 borderRadius: 999,
                 backgroundColor: "rgba(10,10,16,0.05)",
@@ -56,7 +59,7 @@ export default function OperationalSnapshotCard() {
               }}
             />
             <Chip
-              label="Last sync 5m ago"
+              label={t("snapshot.chips.lastSync")}
               sx={{
                 borderRadius: 999,
                 backgroundColor: "rgba(124,92,255,0.12)",

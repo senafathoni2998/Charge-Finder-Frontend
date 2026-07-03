@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Box, Snackbar, Stack, Typography } from "@mui/material";
 import { useLoaderData, useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
+import i18n from "../../i18n";
 import { UI } from "../../theme/theme";
+import { LanguageCard } from "../../components";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import {
   removeCar,
@@ -86,7 +89,7 @@ const normalizeVehicle = (vehicle: unknown): UserCar | null => {
   const name =
     typeof data.name === "string" && data.name.trim()
       ? data.name.trim()
-      : "My EV";
+      : i18n.t("cars.defaultName", { ns: "profile" });
   const connectorTypes = Array.isArray(data.connector_type)
     ? (data.connector_type as UserCar["connectorTypes"])
     : [];
@@ -207,6 +210,7 @@ const isVehicleCharging = (car: UserCar) =>
 export default function ProfilePage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { t } = useTranslation("profile");
   const loaderData = useLoaderData() as ProfileLoaderData | null;
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
   const email = useAppSelector((state) => state.auth.email);
@@ -251,7 +255,7 @@ export default function ProfilePage() {
       const result = await fetchChargingHistory(controller.signal);
       if (!active) return;
       if (!result.ok) {
-        setHistoryError(result.error || "Could not load charging history.");
+        setHistoryError(result.error || t("toast.historyError"));
         setHistoryItems([]);
         setHistoryLoading(false);
         return;
@@ -268,16 +272,18 @@ export default function ProfilePage() {
       active = false;
       controller.abort();
     };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, t]);
 
   const profileImageUrl = resolveAssetUrl(loaderData?.user?.image);
 
   const displayName = useMemo(() => {
     if (profileName && profileName.trim()) return profileName.trim();
-    if (!email) return "Driver";
+    if (!email) return t("overview.defaultName");
     const [name] = email.split("@");
-    return name ? name.replace(/[^a-zA-Z0-9]+/g, " ").trim() : "Driver";
-  }, [email, profileName]);
+    return name
+      ? name.replace(/[^a-zA-Z0-9]+/g, " ").trim()
+      : t("overview.defaultName");
+  }, [email, profileName, t]);
 
   const regionLabel = profileRegion?.trim() || "Jakarta, ID";
 
@@ -425,7 +431,7 @@ export default function ProfilePage() {
       newPassword: values.newPassword,
     });
     if (result.ok) {
-      setPasswordToast("Password updated.");
+      setPasswordToast(t("toast.passwordUpdated"));
       setPasswordOpen(false);
     } else {
       setPasswordError(result.error);
@@ -436,7 +442,7 @@ export default function ProfilePage() {
     setCarError(null);
     const result = await setActiveVehicleRequest({ vehicleId: carId, userId });
     if (!result.ok) {
-      setCarError(result.error || "Could not update active car.");
+      setCarError(result.error || t("toast.setActiveError"));
       return;
     }
     dispatch(setActiveCar(carId));
@@ -451,7 +457,7 @@ export default function ProfilePage() {
     setCarError(null);
     const result = await deleteVehicleRequest({ vehicleId: carId, userId });
     if (!result.ok) {
-      setCarError(result.error || "Could not delete car.");
+      setCarError(result.error || t("toast.deleteError"));
       return;
     }
 
@@ -475,10 +481,10 @@ export default function ProfilePage() {
         <Stack spacing={{ xs: 2, sm: 2.5, md: 3 }}>
           <Box sx={{ mb: { xs: 0, sm: 0.5 } }}>
             <Typography sx={{ fontWeight: 950, color: UI.text, fontSize: { xs: 22, sm: 26, md: 32 } }}>
-              Profile
+              {t("page.title")}
             </Typography>
             <Typography sx={{ color: UI.text2, fontSize: { xs: 13, sm: 14 } }}>
-              Manage your account and charging preferences
+              {t("page.subtitle")}
             </Typography>
           </Box>
 
@@ -491,6 +497,8 @@ export default function ProfilePage() {
             onEditProfile={handleOpenProfileEditor}
             onChangePassword={handleOpenPasswordEditor}
           />
+
+          <LanguageCard />
 
           <CarsCard
             cars={cars}

@@ -47,7 +47,10 @@ describe('AddUserPage', () => {
         fireEvent.click(screen.getByText('Create'));
 
         await waitFor(() =>
-            expect(createUserRequest).toHaveBeenCalledWith(VALUES)
+            expect(createUserRequest).toHaveBeenCalledWith(
+                VALUES,
+                'Could not add user.'
+            )
         );
         expect(mockNavigate).toHaveBeenCalledWith('/admin');
     });

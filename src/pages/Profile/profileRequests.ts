@@ -1,3 +1,5 @@
+import i18n from "../../i18n";
+
 export type ProfileRequestResult = { ok: true } | { ok: false; error: string };
 
 /**
@@ -17,15 +19,15 @@ export async function updateProfileRequest({
   image: File | null;
 }): Promise<ProfileRequestResult> {
   if (!userId) {
-    return { ok: false, error: "User session is missing." };
+    return { ok: false, error: i18n.t("session.userMissing", { ns: "api" }) };
   }
   if (image && !image.type.startsWith("image/")) {
-    return { ok: false, error: "Profile photo must be an image file." };
+    return { ok: false, error: i18n.t("profile.photoMustBeImage", { ns: "api" }) };
   }
 
   const baseUrl = import.meta.env.VITE_APP_BACKEND_URL;
   if (!baseUrl) {
-    return { ok: false, error: "Backend URL is not configured." };
+    return { ok: false, error: i18n.t("client.backendNotConfigured", { ns: "api" }) };
   }
 
   try {
@@ -44,14 +46,14 @@ export async function updateProfileRequest({
     if (!response.ok) {
       return {
         ok: false,
-        error: responseData.message || "Could not update profile.",
+        error: responseData.message || i18n.t("profile.updateFailed", { ns: "api" }),
       };
     }
     return { ok: true };
   } catch (err) {
     return {
       ok: false,
-      error: err instanceof Error ? err.message : "Could not update profile.",
+      error: err instanceof Error ? err.message : i18n.t("profile.updateFailed", { ns: "api" }),
     };
   }
 }
@@ -70,12 +72,12 @@ export async function changePasswordRequest({
   newPassword: string;
 }): Promise<ProfileRequestResult> {
   if (!userId) {
-    return { ok: false, error: "User session is missing." };
+    return { ok: false, error: i18n.t("session.userMissing", { ns: "api" }) };
   }
 
   const baseUrl = import.meta.env.VITE_APP_BACKEND_URL;
   if (!baseUrl) {
-    return { ok: false, error: "Backend URL is not configured." };
+    return { ok: false, error: i18n.t("client.backendNotConfigured", { ns: "api" }) };
   }
 
   try {
@@ -93,14 +95,14 @@ export async function changePasswordRequest({
     if (!response.ok) {
       return {
         ok: false,
-        error: responseData.message || "Failed to update password.",
+        error: responseData.message || i18n.t("profile.passwordUpdateFailed", { ns: "api" }),
       };
     }
     return { ok: true };
   } catch (err) {
     return {
       ok: false,
-      error: err instanceof Error ? err.message : "Failed to update password.",
+      error: err instanceof Error ? err.message : i18n.t("profile.passwordUpdateFailed", { ns: "api" }),
     };
   }
 }

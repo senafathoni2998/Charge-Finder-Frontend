@@ -1,0 +1,7 @@
+{
+  "title": "404 - Halaman tidak ditemukan",
+  "description": "Halaman yang Anda cari tidak ada atau telah dipindahkan.",
+  "requestedPath": "Jalur yang diminta: {{path}}",
+  "goHome": "Ke beranda",
+  "goBack": "Kembali"
+}

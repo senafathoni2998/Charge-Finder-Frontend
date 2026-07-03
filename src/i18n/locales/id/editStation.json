@@ -1,0 +1,25 @@
+{
+  "header": {
+    "title": "Ubah stasiun",
+    "subtitle": "Perbarui detail stasiun dan jaga agar jaringan tetap akurat."
+  },
+  "form": {
+    "submit": "Perbarui stasiun",
+    "submitting": "Memperbarui..."
+  },
+  "loading": {
+    "subtitle": "Memuat data stasiun...",
+    "message": "Memuat detail stasiun..."
+  },
+  "notFound": {
+    "message": "Stasiun tidak ditemukan.",
+    "description": "Kembali ke konsol admin untuk memilih stasiun lain.",
+    "back": "Kembali ke admin"
+  },
+  "errors": {
+    "missingId": "ID stasiun tidak ada.",
+    "loadFailed": "Tidak dapat memuat stasiun.",
+    "notFound": "Stasiun tidak ditemukan.",
+    "updateFailed": "Tidak dapat memperbarui stasiun."
+  }
+}

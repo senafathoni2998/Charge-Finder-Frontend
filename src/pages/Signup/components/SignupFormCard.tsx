@@ -30,9 +30,11 @@ import PersonIcon from "@mui/icons-material/Person";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { LocationCity } from "@mui/icons-material";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 import { isValidName, strengthLabel, toneChipSx } from "../../../utils/validate";
 import { signupFormSchema, type SignupFormValues } from "../../../forms/schemas";
+import { tValidation } from "../../../i18n/validation";
 
 type SignupFormCardProps = {
   serverError: string | null;
@@ -52,6 +54,7 @@ export default function SignupFormCard({
   onSubmit,
   onNavigateToLogin,
 }: SignupFormCardProps) {
+  const { t } = useTranslation("signup");
   const [remember, setRemember] = useState(true);
   const [showPw, setShowPw] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -152,10 +155,10 @@ export default function SignupFormCard({
                 lineHeight: 1.15,
               }}
             >
-              Create your account
+              {t("card.title")}
             </Typography>
             <Typography sx={{ color: UI.text2, mt: 0.5 }}>
-              Save your car profile and personalize stations.
+              {t("card.subtitle")}
             </Typography>
           </Box>
 
@@ -176,14 +179,14 @@ export default function SignupFormCard({
           <Box component="form" onSubmit={submit} noValidate>
             <Stack spacing={1.5}>
               <TextField
-                placeholder="Your full name"
-                label="Name"
+                placeholder={t("fields.name.placeholder")}
+                label={t("fields.name.label")}
                 inputRef={nameRef}
                 {...nameField}
                 autoComplete="name"
                 fullWidth
                 error={nameInvalid}
-                helperText={nameInvalid ? "Please enter a valid name." : " "}
+                helperText={nameInvalid ? t("fields.name.invalid") : " "}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -200,15 +203,15 @@ export default function SignupFormCard({
               />
 
               <TextField
-                placeholder="Your Region"
-                label="Region"
+                placeholder={t("fields.region.placeholder")}
+                label={t("fields.region.label")}
                 inputRef={regionRef}
                 {...regionField}
                 autoComplete="address-level1"
                 fullWidth
                 error={regionInvalid}
                 helperText={
-                  regionInvalid ? "Please enter a valid region." : " "
+                  regionInvalid ? t("fields.region.invalid") : " "
                 }
                 InputProps={{
                   startAdornment: (
@@ -234,7 +237,7 @@ export default function SignupFormCard({
                     letterSpacing: 0.2,
                   }}
                 >
-                  Profile photo (optional)
+                  {t("photo.title")}
                 </Typography>
                 <Stack direction="row" spacing={1.5} alignItems="center">
                   <Avatar
@@ -263,7 +266,7 @@ export default function SignupFormCard({
                         color: UI.text,
                       }}
                     >
-                      {photoFile ? "Change photo" : "Upload photo"}
+                      {photoFile ? t("photo.change") : t("photo.upload")}
                       <input
                         ref={photoInputRef}
                         hidden
@@ -274,7 +277,7 @@ export default function SignupFormCard({
                       />
                     </Button>
                     <Typography variant="caption" sx={{ color: UI.text3 }}>
-                      {photoFile ? photoFile.name : "JPG or PNG recommended."}
+                      {photoFile ? photoFile.name : t("photo.hint")}
                     </Typography>
                   </Stack>
                   {photoFile ? (
@@ -284,21 +287,21 @@ export default function SignupFormCard({
                       onClick={handlePhotoClear}
                       sx={{ textTransform: "none", color: UI.text2 }}
                     >
-                      Remove
+                      {t("photo.remove")}
                     </Button>
                   ) : null}
                 </Stack>
               </Stack>
 
               <TextField
-                label="Email"
-                placeholder="name@email.com"
+                label={t("fields.email.label")}
+                placeholder={t("fields.email.placeholder")}
                 inputRef={emailRef}
                 {...emailField}
                 autoComplete="email"
                 fullWidth
                 error={!!errors.email}
-                helperText={errors.email?.message ?? " "}
+                helperText={tValidation(t, errors.email?.message) || " "}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -315,15 +318,15 @@ export default function SignupFormCard({
               />
 
               <TextField
-                label="Password"
-                placeholder="At least 7 characters"
+                label={t("fields.password.label")}
+                placeholder={t("fields.password.placeholder")}
                 inputRef={passwordRef}
                 {...passwordField}
                 autoComplete="new-password"
                 fullWidth
                 type={showPw ? "text" : "password"}
                 error={!!errors.password}
-                helperText={errors.password?.message ?? " "}
+                helperText={tValidation(t, errors.password?.message) || " "}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -335,7 +338,11 @@ export default function SignupFormCard({
                       <IconButton
                         onClick={() => setShowPw((value) => !value)}
                         edge="end"
-                        aria-label={showPw ? "Hide password" : "Show password"}
+                        aria-label={
+                          showPw
+                            ? t("fields.password.hide")
+                            : t("fields.password.show")
+                        }
                       >
                         {showPw ? (
                           <VisibilityOffIcon sx={{ color: UI.text3 }} />
@@ -355,15 +362,15 @@ export default function SignupFormCard({
               />
 
               <TextField
-                label="Confirm password"
-                placeholder="Re-enter your password"
+                label={t("fields.confirm.label")}
+                placeholder={t("fields.confirm.placeholder")}
                 inputRef={confirmRef}
                 {...confirmField}
                 autoComplete="new-password"
                 fullWidth
                 type={showConfirm ? "text" : "password"}
                 error={!!errors.confirm}
-                helperText={errors.confirm?.message ?? " "}
+                helperText={tValidation(t, errors.confirm?.message) || " "}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -377,8 +384,8 @@ export default function SignupFormCard({
                         edge="end"
                         aria-label={
                           showConfirm
-                            ? "Hide confirm password"
-                            : "Show confirm password"
+                            ? t("fields.confirm.hide")
+                            : t("fields.confirm.show")
                         }
                       >
                         {showConfirm ? (
@@ -407,7 +414,9 @@ export default function SignupFormCard({
                 <Chip
                   size="small"
                   variant="outlined"
-                  label={`Strength: ${pwStrength.label}`}
+                  label={t("strength", {
+                    label: t(`strengthLabels.${pwStrength.tone}`),
+                  })}
                   sx={{
                     borderRadius: 999,
                     color: UI.text,
@@ -446,7 +455,7 @@ export default function SignupFormCard({
                         fontSize: 13,
                       }}
                     >
-                      Remember me
+                      {t("rememberMe")}
                     </Typography>
                   }
                   sx={{ m: 0 }}
@@ -468,14 +477,14 @@ export default function SignupFormCard({
                     boxShadow: "0 14px 40px rgba(124,92,255,0.16)",
                   }}
                 >
-                  {isSubmitting ? "Creating" : "Create account"}
+                  {isSubmitting ? t("submitting") : t("submit")}
                 </Button>
               </Stack>
 
               <Divider sx={{ borderColor: UI.border2, my: 0.75 }} />
 
               <Typography variant="body2" sx={{ color: UI.text2 }}>
-                Already have an account?{" "}
+                {t("haveAccount")}{" "}
                 <Link
                   component="button"
                   type="button"
@@ -486,14 +495,14 @@ export default function SignupFormCard({
                     color: "rgba(124,92,255,0.95)",
                   }}
                 >
-                  Sign in
+                  {t("signIn")}
                 </Link>
               </Typography>
             </Stack>
           </Box>
 
           <Typography variant="caption" sx={{ color: UI.text3 }}>
-            By creating an account, you agree to the demo Terms and Privacy.
+            {t("terms")}
           </Typography>
         </Stack>
       </CardContent>

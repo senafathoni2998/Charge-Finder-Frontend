@@ -1,4 +1,5 @@
 import { Button, Divider, Skeleton, Stack, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 import { formatCurrency } from "../../../utils/distance";
 import type { Station } from "../types";
@@ -21,8 +22,9 @@ export default function PricingSection({
   paymentDisabled,
   onPaymentOpen,
 }: PricingSectionProps) {
+  const { t } = useTranslation("stationDetail");
   return (
-    <SectionCard title="Pricing" subtitle="Estimated cost info (may vary by operator)">
+    <SectionCard title={t("pricing.title")} subtitle={t("pricing.subtitle")}>
       {loading || !station ? (
         <Stack spacing={1}>
           <Skeleton variant="rounded" height={18} />
@@ -48,7 +50,7 @@ export default function PricingSection({
           </Button>
           <Divider sx={{ borderColor: UI.border2 }} />
           <InfoRow
-            label="Per kWh"
+            label={t("pricing.perKwh")}
             value={
               station.pricing.perKwh
                 ? formatCurrency(station.pricing.currency, station.pricing.perKwh)
@@ -56,7 +58,7 @@ export default function PricingSection({
             }
           />
           <InfoRow
-            label="Per minute"
+            label={t("pricing.perMinute")}
             value={
               station.pricing.perMinute
                 ? formatCurrency(
@@ -66,7 +68,7 @@ export default function PricingSection({
                 : "\u2014"
             }
           />
-          <InfoRow label="Parking" value={station.pricing.parkingFee ?? "\u2014"} />
+          <InfoRow label={t("pricing.parking")} value={station.pricing.parkingFee ?? "\u2014"} />
         </Stack>
       )}
     </SectionCard>

@@ -1,5 +1,6 @@
 import type { MouseEvent } from "react";
 import { Stack, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import type { Station } from "../../../models/model";
 import { UI } from "../../../theme/theme";
 import StationListItem from "./StationListItem";
@@ -20,10 +21,12 @@ export default function StationList({
   error,
   onOpenMenu,
 }: StationListProps) {
+  const { t } = useTranslation("admin");
+
   if (isLoading) {
     return (
       <Typography sx={{ color: UI.text2, fontSize: 14 }}>
-        Loading stations
+        {t("stationList.loading")}
       </Typography>
     );
   }
@@ -33,8 +36,8 @@ export default function StationList({
       <Typography sx={{ color: UI.text2, fontSize: 14 }}>
         {error ||
           (allStationsCount
-            ? "No stations match the current filters."
-            : "No stations found.")}
+            ? t("stationList.emptyFiltered")
+            : t("stationList.empty"))}
       </Typography>
     );
   }

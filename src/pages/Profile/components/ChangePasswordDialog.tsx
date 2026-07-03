@@ -19,7 +19,9 @@ import {
 import LockIcon from "@mui/icons-material/Lock";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
+import { tValidation } from "../../../i18n/validation";
 import { strengthLabel, toneChipSx } from "../../../utils/validate";
 import {
   changePasswordFormSchema,
@@ -49,6 +51,7 @@ export default function ChangePasswordDialog({
   onDismissError,
   onSubmit,
 }: ChangePasswordDialogProps) {
+  const { t } = useTranslation("profile");
   const [showCurrentPw, setShowCurrentPw] = useState(false);
   const [showNewPw, setShowNewPw] = useState(false);
   const [showConfirmPw, setShowConfirmPw] = useState(false);
@@ -105,7 +108,7 @@ export default function ChangePasswordDialog({
         },
       }}
     >
-      <DialogTitle sx={{ fontWeight: 950 }}>Change password</DialogTitle>
+      <DialogTitle sx={{ fontWeight: 950 }}>{t("passwordDialog.title")}</DialogTitle>
       <DialogContent dividers sx={{ borderColor: UI.border2 }}>
         <Box component="form" id="password-form" onSubmit={submit} noValidate>
           <Stack spacing={2}>
@@ -115,14 +118,14 @@ export default function ChangePasswordDialog({
               </Alert>
             ) : null}
             <TextField
-              label="Current password"
+              label={t("passwordDialog.current")}
               inputRef={currentRef}
               {...currentField}
               autoComplete="current-password"
               fullWidth
               type={showCurrentPw ? "text" : "password"}
               error={!!errors.currentPassword}
-              helperText={errors.currentPassword?.message ?? " "}
+              helperText={tValidation(t, errors.currentPassword?.message) || " "}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -134,7 +137,11 @@ export default function ChangePasswordDialog({
                     <IconButton
                       onClick={() => setShowCurrentPw((value) => !value)}
                       edge="end"
-                      aria-label={showCurrentPw ? "Hide password" : "Show password"}
+                      aria-label={
+                        showCurrentPw
+                          ? t("passwordDialog.hidePassword")
+                          : t("passwordDialog.showPassword")
+                      }
                     >
                       {showCurrentPw ? (
                         <VisibilityOffIcon sx={{ color: UI.text3 }} />
@@ -148,14 +155,14 @@ export default function ChangePasswordDialog({
               sx={inputSx}
             />
             <TextField
-              label="New password"
+              label={t("passwordDialog.new")}
               inputRef={newRef}
               {...newField}
               autoComplete="new-password"
               fullWidth
               type={showNewPw ? "text" : "password"}
               error={!!errors.newPassword}
-              helperText={errors.newPassword?.message ?? " "}
+              helperText={tValidation(t, errors.newPassword?.message) || " "}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -167,7 +174,11 @@ export default function ChangePasswordDialog({
                     <IconButton
                       onClick={() => setShowNewPw((value) => !value)}
                       edge="end"
-                      aria-label={showNewPw ? "Hide password" : "Show password"}
+                      aria-label={
+                        showNewPw
+                          ? t("passwordDialog.hidePassword")
+                          : t("passwordDialog.showPassword")
+                      }
                     >
                       {showNewPw ? (
                         <VisibilityOffIcon sx={{ color: UI.text3 }} />
@@ -185,7 +196,11 @@ export default function ChangePasswordDialog({
                 <Chip
                   size="small"
                   variant="outlined"
-                  label={`Strength: ${newPwStrength.label}`}
+                  label={t("passwordDialog.strength", {
+                    label: t(
+                      `passwordDialog.strengthLabels.${newPwStrength.tone}`,
+                    ),
+                  })}
                   sx={{
                     borderRadius: 999,
                     color: UI.text,
@@ -196,18 +211,18 @@ export default function ChangePasswordDialog({
                 />
               ) : null}
               <Typography variant="caption" sx={{ color: UI.text3 }}>
-                Use 8+ characters, letters, and numbers.
+                {t("passwordDialog.requirements")}
               </Typography>
             </Stack>
             <TextField
-              label="Confirm new password"
+              label={t("passwordDialog.confirm")}
               inputRef={confirmRef}
               {...confirmField}
               autoComplete="new-password"
               fullWidth
               type={showConfirmPw ? "text" : "password"}
               error={!!errors.confirmPassword}
-              helperText={errors.confirmPassword?.message ?? " "}
+              helperText={tValidation(t, errors.confirmPassword?.message) || " "}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -219,7 +234,11 @@ export default function ChangePasswordDialog({
                     <IconButton
                       onClick={() => setShowConfirmPw((value) => !value)}
                       edge="end"
-                      aria-label={showConfirmPw ? "Hide password" : "Show password"}
+                      aria-label={
+                        showConfirmPw
+                          ? t("passwordDialog.hidePassword")
+                          : t("passwordDialog.showPassword")
+                      }
                     >
                       {showConfirmPw ? (
                         <VisibilityOffIcon sx={{ color: UI.text3 }} />
@@ -246,7 +265,7 @@ export default function ChangePasswordDialog({
             color: UI.text,
           }}
         >
-          Cancel
+          {t("actions.cancel", { ns: "common" })}
         </Button>
         <Button
           variant="contained"
@@ -259,7 +278,7 @@ export default function ChangePasswordDialog({
             color: "white",
           }}
         >
-          Update password
+          {t("passwordDialog.update")}
         </Button>
       </DialogActions>
     </Dialog>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Box, Stack } from "@mui/material";
 import { useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../theme/theme";
 import { CONNECTOR_OPTIONS } from "../MainPage/constants";
 import type { StationFormValues } from "../../forms/schemas";
@@ -13,6 +14,7 @@ import StationFormCard from "./components/StationFormCard";
 // in StationFormCard (react-hook-form).
 export default function AddStationPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation("addStation");
   const [serverError, setServerError] = useState<string | null>(null);
   const defaultConnectorType = CONNECTOR_OPTIONS[0] ?? "CCS2";
   const [defaultValues] = useState<StationFormValues>(() =>
@@ -21,7 +23,7 @@ export default function AddStationPage() {
 
   const handleSubmit = async (values: StationFormValues) => {
     setServerError(null);
-    const result = await createStationRequest(values);
+    const result = await createStationRequest(values, t("errors.createStation"));
     if (result.ok) {
       navigate("/admin");
       return;
@@ -48,8 +50,8 @@ export default function AddStationPage() {
             serverError={serverError}
             onSubmit={handleSubmit}
             onCancel={() => navigate("/admin")}
-            submitLabel="Create station"
-            submittingLabel="Creating..."
+            submitLabel={t("actions.createStation")}
+            submittingLabel={t("actions.creating")}
           />
         </Stack>
       </Box>

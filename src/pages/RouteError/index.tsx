@@ -6,6 +6,7 @@ import {
   useNavigate,
   useRouteError,
 } from "react-router";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../theme/theme";
 
 // Route error boundary that renders helpful feedback for failed routes.
@@ -13,6 +14,7 @@ export default function RouteErrorPage() {
   const error = useRouteError();
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation("routeError");
 
   // Navigates back to the last page.
   const handleGoBack = () => {
@@ -24,9 +26,8 @@ export default function RouteErrorPage() {
     navigate("/", { replace: true });
   };
 
-  let title = "Something went wrong";
-  let message =
-    "We hit an unexpected error while loading this page. Please try again.";
+  const title = t("title");
+  let message = t("defaultMessage");
   let statusLabel: string | null = null;
 
   if (isRouteErrorResponse(error)) {
@@ -82,12 +83,12 @@ export default function RouteErrorPage() {
               </Typography>
               {statusLabel ? (
                 <Typography sx={{ color: UI.text3, fontSize: 13 }}>
-                  Status: {statusLabel}
+                  {t("status", { status: statusLabel })}
                 </Typography>
               ) : null}
               <Typography sx={{ color: UI.text2 }}>{message}</Typography>
               <Typography sx={{ color: UI.text3, fontSize: 13 }}>
-                Path: {location.pathname}
+                {t("path", { path: location.pathname })}
               </Typography>
               <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
                 <Button
@@ -100,7 +101,7 @@ export default function RouteErrorPage() {
                     boxShadow: "0 12px 24px rgba(124,92,255,0.2)",
                   }}
                 >
-                  Go to home
+                  {t("goHome")}
                 </Button>
                 <Button
                   variant="outlined"
@@ -112,7 +113,7 @@ export default function RouteErrorPage() {
                     color: UI.text,
                   }}
                 >
-                  Go back
+                  {t("goBack")}
                 </Button>
               </Stack>
             </Stack>

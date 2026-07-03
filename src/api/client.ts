@@ -3,6 +3,8 @@
 // timeout, and abort handling — so individual api functions only build a request and
 // shape the response.
 
+import i18n from "../i18n";
+
 export type ApiResult<T> =
   | { ok: true; status: number; data: T }
   | { ok: false; status: number; error: string; aborted?: boolean };
@@ -37,14 +39,18 @@ export async function apiRequest<T = unknown>(
     headers,
     credentials = "include",
     absolute = false,
-    fallbackError = "Request failed, please try again.",
+    fallbackError = i18n.t("client.requestFailed", { ns: "api" }),
   } = options;
 
   let url = path;
   if (!absolute) {
     const baseUrl = import.meta.env.VITE_APP_BACKEND_URL;
     if (!baseUrl) {
-      return { ok: false, status: 0, error: "Backend URL is not configured." };
+      return {
+        ok: false,
+        status: 0,
+        error: i18n.t("client.backendNotConfigured", { ns: "api" }),
+      };
     }
     url = `${baseUrl}${path}`;
   }
@@ -94,10 +100,20 @@ export async function apiRequest<T = unknown>(
     return { ok: true, status: response.status, data: data as T };
   } catch (err) {
     if (timedOut) {
-      return { ok: false, status: 0, aborted: true, error: "Request timed out." };
+      return {
+        ok: false,
+        status: 0,
+        aborted: true,
+        error: i18n.t("client.timedOut", { ns: "api" }),
+      };
     }
     if (controller.signal.aborted) {
-      return { ok: false, status: 0, aborted: true, error: "Request was cancelled." };
+      return {
+        ok: false,
+        status: 0,
+        aborted: true,
+        error: i18n.t("client.cancelled", { ns: "api" }),
+      };
     }
     return {
       ok: false,

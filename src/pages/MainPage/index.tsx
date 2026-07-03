@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 // NOTE: This page uses react-router for navigation in the full app.
 import { Alert, Box, Drawer, Snackbar, useMediaQuery } from "@mui/material";
 import { useLocation, useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
 import { fetchStationById, fetchStations } from "../../api/stations";
 import { UI } from "../../theme/theme";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
@@ -42,6 +43,7 @@ export default function MainPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { t } = useTranslation("mainPage");
 
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<FilterStatus>("");
@@ -460,9 +462,7 @@ export default function MainPage() {
           onClose={() => setShowDemoHint(false)}
           sx={{ maxWidth: 460 }}
         >
-          These are demo stations placed near you — one for each status
-          (Available, Busy, Offline) so you can explore every state. Real
-          stations appear here as they’re added.
+          {t("demoHint")}
         </Alert>
       </Snackbar>
     </Box>

@@ -1,4 +1,5 @@
 import { Chip, Skeleton, Stack } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 import type { Station } from "../types";
 import SectionCard from "./SectionCard";
@@ -13,8 +14,9 @@ export default function AmenitiesSection({
   loading,
   station,
 }: AmenitiesSectionProps) {
+  const { t } = useTranslation("stationDetail");
   return (
-    <SectionCard title="Amenities" subtitle="Helpful things near this station">
+    <SectionCard title={t("amenities.title")} subtitle={t("amenities.subtitle")}>
       {loading || !station ? (
         <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
           {Array.from({ length: 6 }).map((_, index) => (

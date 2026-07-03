@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { UseFormSetValue } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { reverseGeocode } from "../../../api/geocode";
 import { useGeoLocation } from "../../../hooks/geolocation-hook";
 import type { StationFormValues } from "../../../forms/schemas";
@@ -27,6 +28,7 @@ export default function useStationLocationField(
   lat: string,
   lng: string
 ): StationLocationField {
+  const { t } = useTranslation("addStation");
   const geo = useGeoLocation();
   const [useMyLocation, setUseMyLocation] = useState(false);
   const [addressLookupError, setAddressLookupError] = useState<string | null>(
@@ -70,9 +72,9 @@ export default function useStationLocationField(
         });
         return;
       }
-      setAddressLookupError(result.error || "Could not resolve address.");
+      setAddressLookupError(result.error || t("errors.resolveAddress"));
     },
-    [setValue]
+    [setValue, t]
   );
 
   const onMapPick = useCallback(

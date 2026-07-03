@@ -1,0 +1,19 @@
+{
+  "emailExample": "Example: name@email.com",
+  "passwordTooShort": "Password must be at least 7 characters.",
+  "passwordNeedsDigit": "Add at least one number.",
+  "emailInvalid": "Please enter a valid email address.",
+  "passwordRequired": "Please enter your password.",
+  "passwordsNoMatch": "Passwords do not match.",
+  "nameRequired": "Name is required.",
+  "currentPasswordRequired": "Enter your current password.",
+  "newPasswordDifferent": "New password must be different.",
+  "nameLength": "Name must be 2-50 characters.",
+  "regionRequired": "Region is required.",
+  "connectorRequired": "Select at least one connector type.",
+  "stationNameRequired": "Station name is required.",
+  "addressRequired": "Address is required.",
+  "latLngInvalid": "Latitude and longitude must be valid numbers.",
+  "connectorEntryInvalid": "Add at least one valid connector entry.",
+  "pricingRequired": "Pricing currency and per kWh are required."
+}

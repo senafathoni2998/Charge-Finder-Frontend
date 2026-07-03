@@ -1,6 +1,7 @@
 import type { MouseEvent } from "react";
 import { Box, Button, Chip, Divider, IconButton, Stack, Typography } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import { useTranslation } from "react-i18next";
 import type { AdminUser } from "../types";
 import { UI } from "../../../theme/theme";
 import { roleChipStyles, userActionLabel, userStatusChipStyles } from "../utils";
@@ -19,6 +20,8 @@ export default function UserListItem({
   onStatusAction,
   onOpenMenu,
 }: UserListItemProps) {
+  const { t } = useTranslation("admin");
+
   return (
     <Box>
       <Stack
@@ -34,7 +37,7 @@ export default function UserListItem({
             {user.email}
           </Typography>
           <Typography sx={{ color: UI.text3, fontSize: 12 }}>
-            Last active: {user.lastActive}
+            {t("userItem.lastActive", { value: user.lastActive })}
           </Typography>
         </Box>
         <Box sx={{ flex: 1 }} />
@@ -72,13 +75,13 @@ export default function UserListItem({
                 color: UI.text,
               }}
             >
-              {userActionLabel(user.status)}
+              {userActionLabel(t, user.status)}
             </Button>
           ) : null}
           <IconButton
             onClick={(event) => onOpenMenu(event, user)}
             sx={{ borderRadius: 2.5, border: `1px solid ${UI.border2}` }}
-            aria-label="User actions"
+            aria-label={t("userItem.actionsAria")}
           >
             <MoreVertIcon fontSize="small" />
           </IconButton>

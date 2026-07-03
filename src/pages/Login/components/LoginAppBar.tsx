@@ -1,5 +1,6 @@
 import { AppBar, Box, IconButton, Toolbar, Typography } from "@mui/material";
 import ElectricBoltIcon from "@mui/icons-material/ElectricBolt";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 
 type LoginAppBarProps = {
@@ -8,6 +9,7 @@ type LoginAppBarProps = {
 
 // Renders the login page header with branding.
 export default function LoginAppBar({ onNavigateHome }: LoginAppBarProps) {
+  const { t } = useTranslation("login");
   return (
     <AppBar
       position="sticky"
@@ -47,7 +49,7 @@ export default function LoginAppBar({ onNavigateHome }: LoginAppBarProps) {
             ChargeFinder
           </Typography>
           <Typography variant="caption" sx={{ color: UI.text3 }}>
-            Find compatible chargers faster
+            {t("appBar.tagline")}
           </Typography>
         </Box>
         <Box sx={{ flex: 1 }} />

@@ -1,4 +1,5 @@
 import { Box, Button, Stack } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 
 type AddCarActionsProps = {
@@ -12,9 +13,13 @@ type AddCarActionsProps = {
 export default function AddCarActions({
   isSubmitting,
   onCancel,
-  submitLabel = "Save car",
-  submittingLabel = "Saving...",
+  submitLabel,
+  submittingLabel,
 }: AddCarActionsProps) {
+  const { t } = useTranslation("addCar");
+  const resolvedSubmitLabel = submitLabel ?? t("actions.saveCar");
+  const resolvedSubmittingLabel = submittingLabel ?? t("actions.saving");
+
   return (
     <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{ sm: "center" }}>
       <Button
@@ -28,7 +33,7 @@ export default function AddCarActions({
           backgroundColor: "rgba(10,10,16,0.01)",
         }}
       >
-        Cancel
+        {t("actions.cancel", { ns: "common" })}
       </Button>
       <Box sx={{ flex: 1 }} />
       <Button
@@ -42,7 +47,7 @@ export default function AddCarActions({
           color: "white",
         }}
       >
-        {isSubmitting ? submittingLabel : submitLabel}
+        {isSubmitting ? resolvedSubmittingLabel : resolvedSubmitLabel}
       </Button>
     </Stack>
   );
