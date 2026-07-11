@@ -30,6 +30,11 @@ const lazyAddCar = async () => {
   return { Component: module.default };
 };
 
+const lazyTrip = async () => {
+  const module = await import("../pages/Trip");
+  return { Component: module.default };
+};
+
 const lazyEditCar = async () => {
   const module = await import("../pages/EditCar");
   return { Component: module.default };
@@ -88,6 +93,11 @@ const router = createBrowserRouter([
       {
         Component: RequireAuth,
         children: [
+          {
+            path: "trip",
+            lazy: lazyTrip,
+            errorElement: routeErrorElement,
+          },
           {
             path: "profile",
             lazy: lazyProfile,
