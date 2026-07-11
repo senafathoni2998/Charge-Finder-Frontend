@@ -1,19 +1,26 @@
 import { useTranslation } from "react-i18next";
 import { CONNECTOR_OPTIONS } from "../../MainPage/constants";
 import type { StationFormValues } from "../../../forms/schemas";
-import StationFormCard from "../../AddStation/components/StationFormCard";
+import StationFormCard, {
+  type StationImageSelection,
+} from "../../AddStation/components/StationFormCard";
 import EditStationHeader from "./EditStationHeader";
 
 type EditStationFormSectionProps = {
   defaultValues: StationFormValues;
+  initialImageUrl?: string | null;
   serverError: string | null;
-  onSubmit: (values: StationFormValues) => void | Promise<void>;
+  onSubmit: (
+    values: StationFormValues,
+    image: StationImageSelection
+  ) => void | Promise<void>;
   onCancel: () => void;
 };
 
 // Renders the edit-station header with the shared react-hook-form card.
 export default function EditStationFormSection({
   defaultValues,
+  initialImageUrl = null,
   serverError,
   onSubmit,
   onCancel,
@@ -27,6 +34,7 @@ export default function EditStationFormSection({
         defaultValues={defaultValues}
         connectorOptions={CONNECTOR_OPTIONS}
         defaultConnectorType={defaultConnectorType}
+        initialImageUrl={initialImageUrl}
         serverError={serverError}
         onSubmit={onSubmit}
         onCancel={onCancel}
