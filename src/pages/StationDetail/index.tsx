@@ -28,6 +28,7 @@ import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { logout, setCars } from "../../features/auth/authSlice";
 import { clearAuthStorage, persistCarsToStorage } from "../Profile/profileStorage";
 import {
+  DEFAULT_NOTIFY_AT_PERCENT,
   getPaymentMethods,
   getReportIssueTypes,
   TICKET_KWH,
@@ -57,6 +58,10 @@ import ShareDialog from "./components/ShareDialog";
 import { checkSessionStatus } from "../../utils/session";
 import StartChargingDialog from "./components/StartChargingDialog";
 import ReviewsSection from "./components/ReviewsSection";
+import {
+  requestNotificationPermission,
+  showBrowserNotification,
+} from "../../utils/notifications";
 import {
   buildChargingSocketUrl,
   buildTicketFromServer,
@@ -130,8 +135,39 @@ export default function StationDetailPage() {
     number | null
   >(null);
   const [sessionMessage, setSessionMessage] = useState<string | null>(null);
+  // Charge notifications: opt-in "notify me at %" threshold + the in-app toast text.
+  const [notifyAtPercent, setNotifyAtPercent] = useState<number | null>(
+    DEFAULT_NOTIFY_AT_PERCENT
+  );
+  const [chargeNotice, setChargeNotice] = useState<string | null>(null);
   const chargingCompleteRequested = useRef(false);
   const chargingVehicleIdRef = useRef<string | null>(null);
+
+  // "Latest callback" ref so the WebSocket handler (subscribed on [stationId] only)
+  // can build notification text from the CURRENT station name / translations without
+  // re-opening the socket on every re-render.
+  const chargeNotifyRef = useRef<
+    (kind: "target" | "complete", percent?: number) => void
+  >(() => {});
+  chargeNotifyRef.current = (kind, percent) => {
+    const stationName = station?.name ?? t("overview.stationFallback");
+    if (kind === "complete") {
+      const body = t("notify.completeBody", { station: stationName });
+      showBrowserNotification(t("notify.completeTitle"), {
+        body,
+        tag: `charge-complete-${stationId ?? ""}`,
+      });
+      setChargeNotice(body);
+      return;
+    }
+    const pct = percent ?? 0;
+    const body = t("notify.targetBody", { percent: pct, station: stationName });
+    showBrowserNotification(t("notify.targetTitle", { percent: pct }), {
+      body,
+      tag: `charge-target-${stationId ?? ""}`,
+    });
+    setChargeNotice(body);
+  };
 
   const geo = useGeoLocation();
   const userCenter = geo.loc ?? { lat: -6.2, lng: 106.8167 };
@@ -495,6 +531,7 @@ export default function StationDetailPage() {
       stationId: station.id,
       connectorType: connectorType ?? undefined,
       vehicleId: vehicleId ?? undefined,
+      notifyAtPercent,
     });
     if (!result.ok) {
       setChargingRequestError(result.error || t("page.couldNotStartCharging"));
@@ -554,6 +591,10 @@ export default function StationDetailPage() {
   };
 
   const handleChargingAction = () => {
+    // This click is a user gesture, so request notification permission here too —
+    // it covers sessions adopted on reload/reconnect (not just fresh starts), where
+    // the confirm-start gesture never happened. The browser only prompts once.
+    void requestNotificationPermission();
     if (chargingStatus === "charging") {
       setChargingOpen(true);
       return;
@@ -587,6 +628,9 @@ export default function StationDetailPage() {
     }
     setChargingRequestError(null);
     setStartChargingOpen(false);
+    // Ask for notification permission from this user gesture so charge-complete /
+    // target-% alerts can be shown. Fire-and-forget; the browser only prompts once.
+    void requestNotificationPermission();
     await handleStartCharging(selectedConnectorType, selectedVehicleId);
   };
 
@@ -741,6 +785,17 @@ export default function StationDetailPage() {
         toDateMs(cancelledTicketPayload?.estimated_completion_at) ??
         null;
 
+      // One-shot "notify me at X%" event — fire the alert without touching the
+      // charging state (progress continues via its own messages).
+      if (type === "target-reached") {
+        const targetPercent =
+          toProgressPercent(payload.notifyAtPercent) ??
+          toProgressPercent(payload.batteryPercentage) ??
+          undefined;
+        chargeNotifyRef.current("target", targetPercent);
+        return;
+      }
+
       if (type === "completed") {
         setChargingStatus("done");
         setChargingCancelled(false);
@@ -749,6 +804,7 @@ export default function StationDetailPage() {
         setEstimatedCompletionAt(null);
         setChargingBatteryPercent(batteryPercentFromPayload ?? 100);
         chargingCompleteRequested.current = true;
+        chargeNotifyRef.current("complete");
         return;
       }
 
@@ -1028,6 +1084,8 @@ export default function StationDetailPage() {
         vehicles={cars}
         selectedVehicleId={selectedVehicleId}
         onVehicleChange={setSelectedVehicleId}
+        notifyAtPercent={notifyAtPercent}
+        onNotifyAtPercentChange={setNotifyAtPercent}
         onConfirm={handleConfirmStartCharging}
         isSubmitting={chargingRequestLoading}
       />
@@ -1077,6 +1135,22 @@ export default function StationDetailPage() {
           sx={{ borderRadius: 3 }}
         >
           {ticketErrorToast}
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        key={chargeNotice}
+        open={!!chargeNotice}
+        autoHideDuration={6000}
+        onClose={() => setChargeNotice(null)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setChargeNotice(null)}
+          severity="success"
+          variant="filled"
+          sx={{ borderRadius: 3 }}
+        >
+          {chargeNotice}
         </Alert>
       </Snackbar>
     </Box>
