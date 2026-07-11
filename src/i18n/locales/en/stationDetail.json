@@ -3,6 +3,7 @@
     "loading": "Loading",
     "stationFallback": "Station",
     "photoFallback": "Photo",
+    "featuredAlt": "{{name}} feature image",
     "compatible": "Compatible",
     "notSupported": "Not supported",
     "kmAway": "{{distance}} km away",
