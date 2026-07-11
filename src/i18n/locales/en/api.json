@@ -17,6 +17,12 @@
     "imageInvalidType": "The feature image must be a PNG or JPG image.",
     "imageTooLarge": "The feature image must be smaller than 500 KB."
   },
+  "reviews": {
+    "idMissing": "Station is missing.",
+    "loadFailed": "Could not load reviews.",
+    "submitFailed": "Could not submit your review.",
+    "deleteFailed": "Could not delete the review."
+  },
   "charging": {
     "startFailed": "Could not start charging.",
     "progressInvalid": "Progress percent is invalid.",
