@@ -17,6 +17,12 @@
     "imageInvalidType": "Gambar utama harus berupa gambar PNG atau JPG.",
     "imageTooLarge": "Gambar utama harus lebih kecil dari 500 KB."
   },
+  "reviews": {
+    "idMissing": "Stasiun tidak ada.",
+    "loadFailed": "Tidak dapat memuat ulasan.",
+    "submitFailed": "Tidak dapat mengirim ulasan Anda.",
+    "deleteFailed": "Tidak dapat menghapus ulasan."
+  },
   "charging": {
     "startFailed": "Tidak dapat memulai pengisian daya.",
     "progressInvalid": "Persentase progres tidak valid.",
