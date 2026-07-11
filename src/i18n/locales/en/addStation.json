@@ -9,8 +9,19 @@
     "connectors": "Connectors",
     "pricing": "Pricing",
     "amenities": "Amenities",
+    "featuredImage": "Feature image",
     "photos": "Photos",
     "notes": "Notes"
+  },
+  "featuredImage": {
+    "hint": "Shown as the station's hero image. PNG or JPG, up to 500 KB.",
+    "empty": "No feature image selected.",
+    "choose": "Choose image",
+    "change": "Change image",
+    "remove": "Remove",
+    "previewAlt": "Feature image preview",
+    "typeError": "Please choose a PNG or JPG image.",
+    "sizeError": "The image must be smaller than 500 KB."
   },
   "fields": {
     "name": "Station name",
