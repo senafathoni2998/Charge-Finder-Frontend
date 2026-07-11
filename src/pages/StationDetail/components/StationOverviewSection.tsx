@@ -5,6 +5,7 @@ import LaunchIcon from "@mui/icons-material/Launch";
 import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import { UI } from "../../../theme/theme";
 import { minutesAgo } from "../../../utils/time";
+import { resolveAssetUrl } from "../../../utils/assets";
 import type { Availability } from "../../../models/model";
 import type { UserCar } from "../../../features/auth/authSlice";
 import type { Station } from "../types";
@@ -40,6 +41,7 @@ export default function StationOverviewSection({
 
   const photos = station?.photos ?? [];
   const photoCount = photos.length || 3;
+  const featuredImageUrl = resolveAssetUrl(station?.featuredImage);
 
   const handlePrevious = () => {
     setCurrentPhotoIndex((prev) => (prev === 0 ? photoCount - 1 : prev - 1));
@@ -92,6 +94,20 @@ export default function StationOverviewSection({
         </Stack>
       ) : (
         <Stack spacing={1.25}>
+          {featuredImageUrl ? (
+            <Box
+              component="img"
+              src={featuredImageUrl}
+              alt={t("overview.featuredAlt", { name: station.name })}
+              sx={{
+                width: "100%",
+                height: { xs: 180, sm: 240 },
+                objectFit: "cover",
+                borderRadius: 4,
+                border: `1px solid ${UI.border2}`,
+              }}
+            />
+          ) : null}
           {isMobile ? (
             <Box sx={{ position: "relative" }}>
               <MiniPhoto
