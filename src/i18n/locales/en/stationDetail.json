@@ -14,7 +14,10 @@
   "connectors": {
     "title": "Connectors",
     "subtitle": "Compatibility + realtime availability per connector type",
-    "available": "{{available}}/{{total}} available"
+    "available": "{{available}}/{{total}} available",
+    "freeInUse": "{{free}} free · {{inUse}} in use",
+    "full": "Full",
+    "live": "Live"
   },
   "amenities": {
     "title": "Amenities",
