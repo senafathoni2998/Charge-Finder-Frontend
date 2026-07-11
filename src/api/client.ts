@@ -11,7 +11,11 @@ export type ApiResult<T> =
 
 export type ApiRequestOptions = {
   method?: string;
-  /** Serialized to JSON (with a Content-Type header) when provided. */
+  /**
+   * Request body. A `FormData` value is sent as-is (the browser sets the
+   * multipart Content-Type + boundary); anything else is JSON-serialized with a
+   * `Content-Type: application/json` header.
+   */
   body?: unknown;
   /** Caller's AbortSignal (e.g. from a component effect cleanup). */
   signal?: AbortSignal;
@@ -73,13 +77,21 @@ export async function apiRequest<T = unknown>(
       : null;
 
   const hasBody = body !== undefined && body !== null;
+  // FormData bodies must be passed through untouched so the browser can attach the
+  // multipart boundary; only non-FormData bodies are JSON-encoded.
+  const isFormData =
+    typeof FormData !== "undefined" && body instanceof FormData;
 
   try {
     const response = await fetch(url, {
       method,
-      ...(hasBody ? { body: JSON.stringify(body) } : {}),
+      ...(hasBody
+        ? { body: isFormData ? (body as FormData) : JSON.stringify(body) }
+        : {}),
       headers: {
-        ...(hasBody ? { "Content-Type": "application/json" } : {}),
+        ...(hasBody && !isFormData
+          ? { "Content-Type": "application/json" }
+          : {}),
         ...headers,
       },
       ...(absolute ? {} : { credentials }),
