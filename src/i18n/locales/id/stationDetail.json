@@ -3,6 +3,7 @@
     "loading": "Memuat",
     "stationFallback": "Stasiun",
     "photoFallback": "Foto",
+    "featuredAlt": "Gambar utama {{name}}",
     "compatible": "Kompatibel",
     "notSupported": "Tidak didukung",
     "kmAway": "Berjarak {{distance}} km",
