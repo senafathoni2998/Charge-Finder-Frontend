@@ -1,6 +1,9 @@
 import type { TFunction } from "i18next";
 import type { PaymentMethod } from "./types";
 
+// Default "notify me at battery %" threshold when the user first enables it.
+export const DEFAULT_NOTIFY_AT_PERCENT = 80;
+
 // Payment methods shown in the ticket purchase dialog.
 export const getPaymentMethods = (t: TFunction): PaymentMethod[] => [
   {

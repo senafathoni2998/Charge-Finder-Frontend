@@ -39,6 +39,35 @@ describe('charging API', () => {
         body: JSON.stringify({ stationId: validParams.stationId, connectorType: validParams.connectorType }),
       }));
     });
+
+    it('includes a valid notifyAtPercent threshold in the body', async () => {
+      (global.fetch as any).mockResolvedValue({
+        ok: true,
+        json: async () => ({ ticket: { id: 't1' } }),
+      });
+
+      await startChargingSession({ ...validParams, notifyAtPercent: 80 });
+      const [, init] = (global.fetch as any).mock.calls[0];
+      expect(JSON.parse(init.body)).toMatchObject({ notifyAtPercent: 80 });
+    });
+
+    it('omits notifyAtPercent when null or out of range', async () => {
+      (global.fetch as any).mockResolvedValue({
+        ok: true,
+        json: async () => ({ ticket: { id: 't1' } }),
+      });
+
+      await startChargingSession({ ...validParams, notifyAtPercent: null });
+      expect(JSON.parse((global.fetch as any).mock.calls[0][1].body)).not.toHaveProperty(
+        'notifyAtPercent'
+      );
+
+      (global.fetch as any).mockClear();
+      await startChargingSession({ ...validParams, notifyAtPercent: 150 });
+      expect(JSON.parse((global.fetch as any).mock.calls[0][1].body)).not.toHaveProperty(
+        'notifyAtPercent'
+      );
+    });
   });
 
   describe('updateChargingProgress', () => {

@@ -130,7 +130,16 @@
     "vehicleCharging": "{{label}} (Mengisi daya)",
     "allVehiclesCharging": "Semua kendaraan Anda sedang mengisi daya.",
     "noConnectors": "Tidak ada konektor yang tersedia untuk stasiun ini.",
-    "startCharging": "Mulai mengisi daya"
+    "startCharging": "Mulai mengisi daya",
+    "notifyAt": "Beri tahu saya di % baterai",
+    "notifyAtHint": "Kami akan memberi tahu Anda saat baterai mencapai {{percent}}%.",
+    "notifyAtOff": "Anda tetap akan diberi tahu saat pengisian selesai."
+  },
+  "notify": {
+    "completeTitle": "Pengisian selesai",
+    "completeBody": "EV Anda selesai mengisi daya di {{station}}.",
+    "targetTitle": "Baterai di {{percent}}%",
+    "targetBody": "EV Anda mencapai {{percent}}% di {{station}}."
   },
   "reportDialog": {
     "title": "Laporkan masalah",
