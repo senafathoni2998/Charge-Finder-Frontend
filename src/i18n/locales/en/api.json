@@ -24,6 +24,13 @@
     "submitFailed": "Could not submit your review.",
     "deleteFailed": "Could not delete the review."
   },
+  "trips": {
+    "idMissing": "Trip is missing.",
+    "planFailed": "Could not plan the trip.",
+    "saveFailed": "Could not save the trip.",
+    "loadFailed": "Could not load your trips.",
+    "deleteFailed": "Could not delete the trip."
+  },
   "charging": {
     "startFailed": "Could not start charging.",
     "progressInvalid": "Progress percent is invalid.",

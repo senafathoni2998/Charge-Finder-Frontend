@@ -20,6 +20,7 @@ import enEditCar from "./locales/en/editCar.json";
 import enAddStation from "./locales/en/addStation.json";
 import enEditStation from "./locales/en/editStation.json";
 import enAddUser from "./locales/en/addUser.json";
+import enTrip from "./locales/en/trip.json";
 import enNotFound from "./locales/en/notFound.json";
 import enRouteError from "./locales/en/routeError.json";
 import enSeo from "./locales/en/seo.json";
@@ -39,6 +40,7 @@ import idEditCar from "./locales/id/editCar.json";
 import idAddStation from "./locales/id/addStation.json";
 import idEditStation from "./locales/id/editStation.json";
 import idAddUser from "./locales/id/addUser.json";
+import idTrip from "./locales/id/trip.json";
 import idNotFound from "./locales/id/notFound.json";
 import idRouteError from "./locales/id/routeError.json";
 import idSeo from "./locales/id/seo.json";
@@ -59,6 +61,7 @@ export const namespaces = [
   "addStation",
   "editStation",
   "addUser",
+  "trip",
   "notFound",
   "routeError",
   "seo",
@@ -83,6 +86,7 @@ export const resources = {
     addStation: enAddStation,
     editStation: enEditStation,
     addUser: enAddUser,
+    trip: enTrip,
     notFound: enNotFound,
     routeError: enRouteError,
     seo: enSeo,
@@ -103,6 +107,7 @@ export const resources = {
     addStation: idAddStation,
     editStation: idEditStation,
     addUser: idAddUser,
+    trip: idTrip,
     notFound: idNotFound,
     routeError: idRouteError,
     seo: idSeo,

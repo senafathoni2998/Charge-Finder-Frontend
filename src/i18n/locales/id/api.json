@@ -24,6 +24,13 @@
     "submitFailed": "Tidak dapat mengirim ulasan Anda.",
     "deleteFailed": "Tidak dapat menghapus ulasan."
   },
+  "trips": {
+    "idMissing": "Perjalanan tidak ada.",
+    "planFailed": "Tidak dapat merencanakan perjalanan.",
+    "saveFailed": "Tidak dapat menyimpan perjalanan.",
+    "loadFailed": "Tidak dapat memuat perjalanan Anda.",
+    "deleteFailed": "Tidak dapat menghapus perjalanan."
+  },
   "charging": {
     "startFailed": "Tidak dapat memulai pengisian daya.",
     "progressInvalid": "Persentase progres tidak valid.",

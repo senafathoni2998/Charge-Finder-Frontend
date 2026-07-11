@@ -27,10 +27,11 @@ vi.mock('../../pages/Profile', () => ({
     profileLoader: () => 'profileLoader', 
     profileAction: () => 'profileAction' 
 }));
-vi.mock('../../pages/AddCar', () => ({ 
-    default: () => 'AddCar', 
-    addCarAction: () => 'addCarAction' 
+vi.mock('../../pages/AddCar', () => ({
+    default: () => 'AddCar',
+    addCarAction: () => 'addCarAction'
 }));
+vi.mock('../../pages/Trip', () => ({ default: () => 'Trip' }));
 vi.mock('../../pages/EditCar', () => ({ 
     default: () => 'EditCar', 
     editCarAction: () => 'editCarAction' 
@@ -107,6 +108,11 @@ describe('Router Configuration', () => {
         
         const protectedWrapper = findComponentRoute(rootRoute.children, 'RequireAuth');
         expect(protectedWrapper).toBeDefined();
+
+        // Trip planner
+        const trip = findRoute(protectedWrapper.children, 'trip');
+        const tripLoaded = await trip.lazy();
+        expect(tripLoaded.Component()).toBe('Trip');
 
         // Profile
         const profile = findRoute(protectedWrapper.children, 'profile');

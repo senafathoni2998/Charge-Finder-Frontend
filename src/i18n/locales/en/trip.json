@@ -1,0 +1,72 @@
+{
+  "header": {
+    "title": "Trip planner",
+    "subtitle": "Plan a range-aware route with charging stops added automatically."
+  },
+  "form": {
+    "route": "Route",
+    "setOrigin": "Set origin",
+    "setDestination": "Set destination",
+    "mapHint": "Click the map to place the selected point.",
+    "origin": "Origin",
+    "destination": "Destination",
+    "notSet": "not set",
+    "useMyLocation": "Use my location",
+    "locating": "Locating…",
+    "lat": "Latitude",
+    "lng": "Longitude",
+    "vehicleRange": "Vehicle & range",
+    "vehicle": "Vehicle",
+    "noVehicle": "None — plan by range",
+    "rangeKm": "Full range (km)",
+    "rangeHelper": "Required when no vehicle is selected.",
+    "rangeOverrideHelper": "Optional — overrides the vehicle's estimated range.",
+    "advanced": "Advanced options",
+    "startBattery": "Start battery (%)",
+    "buffer": "Reserve buffer (%)",
+    "chargeTo": "Charge to (%)",
+    "minPower": "Min power (kW)",
+    "maxDetour": "Max detour (km)",
+    "efficiency": "Efficiency (kWh/100km)",
+    "connectors": "Connector types",
+    "planTrip": "Plan trip",
+    "planning": "Planning…"
+  },
+  "map": {
+    "origin": "Origin",
+    "destination": "Destination"
+  },
+  "result": {
+    "placeholder": "Set an origin and destination, then plan your trip to see charging stops here.",
+    "feasible": "Feasible route ({{count}} stops)",
+    "infeasible": "No feasible route",
+    "directDistance": "Direct",
+    "totalDistance": "Total",
+    "stops": "Stops",
+    "reserve": "Reserve",
+    "usableStart": "Usable range",
+    "chargingStops": "Charging stops",
+    "unnamedStation": "Charging station",
+    "stopDistance": "{{leg}} this leg · {{cumulative}} total",
+    "stopBattery": "Arrive {{arrival}} → depart {{depart}}",
+    "noStopsNeeded": "You can reach the destination without charging.",
+    "tripName": "Trip name (optional)",
+    "saveTrip": "Save trip",
+    "saving": "Saving…",
+    "saved": "Trip saved."
+  },
+  "saved": {
+    "title": "Saved trips",
+    "empty": "No saved trips yet.",
+    "untitled": "Untitled trip",
+    "feasible": "Feasible",
+    "infeasible": "Not feasible",
+    "summary": "{{distance}} · {{stops}} stops",
+    "delete": "Delete trip",
+    "loadIntoPlanner": "Load into planner"
+  },
+  "errors": {
+    "pointsRequired": "Set both an origin and a destination.",
+    "rangeRequired": "Select a vehicle or enter a full range (km)."
+  }
+}

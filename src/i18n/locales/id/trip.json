@@ -1,0 +1,72 @@
+{
+  "header": {
+    "title": "Perencana perjalanan",
+    "subtitle": "Rencanakan rute sesuai jangkauan dengan titik pengisian otomatis."
+  },
+  "form": {
+    "route": "Rute",
+    "setOrigin": "Atur asal",
+    "setDestination": "Atur tujuan",
+    "mapHint": "Klik peta untuk menempatkan titik yang dipilih.",
+    "origin": "Asal",
+    "destination": "Tujuan",
+    "notSet": "belum diatur",
+    "useMyLocation": "Gunakan lokasi saya",
+    "locating": "Mencari lokasi…",
+    "lat": "Lintang",
+    "lng": "Bujur",
+    "vehicleRange": "Kendaraan & jangkauan",
+    "vehicle": "Kendaraan",
+    "noVehicle": "Tidak ada — rencanakan berdasarkan jangkauan",
+    "rangeKm": "Jangkauan penuh (km)",
+    "rangeHelper": "Wajib jika tidak memilih kendaraan.",
+    "rangeOverrideHelper": "Opsional — menggantikan estimasi jangkauan kendaraan.",
+    "advanced": "Opsi lanjutan",
+    "startBattery": "Baterai awal (%)",
+    "buffer": "Cadangan (%)",
+    "chargeTo": "Isi hingga (%)",
+    "minPower": "Daya minimum (kW)",
+    "maxDetour": "Maks. memutar (km)",
+    "efficiency": "Efisiensi (kWh/100km)",
+    "connectors": "Jenis konektor",
+    "planTrip": "Rencanakan perjalanan",
+    "planning": "Merencanakan…"
+  },
+  "map": {
+    "origin": "Asal",
+    "destination": "Tujuan"
+  },
+  "result": {
+    "placeholder": "Atur asal dan tujuan, lalu rencanakan perjalanan untuk melihat titik pengisian di sini.",
+    "feasible": "Rute layak ({{count}} titik)",
+    "infeasible": "Tidak ada rute yang layak",
+    "directDistance": "Langsung",
+    "totalDistance": "Total",
+    "stops": "Titik",
+    "reserve": "Cadangan",
+    "usableStart": "Jangkauan terpakai",
+    "chargingStops": "Titik pengisian",
+    "unnamedStation": "Stasiun pengisian",
+    "stopDistance": "{{leg}} etape ini · {{cumulative}} total",
+    "stopBattery": "Tiba {{arrival}} → berangkat {{depart}}",
+    "noStopsNeeded": "Anda dapat mencapai tujuan tanpa mengisi daya.",
+    "tripName": "Nama perjalanan (opsional)",
+    "saveTrip": "Simpan perjalanan",
+    "saving": "Menyimpan…",
+    "saved": "Perjalanan disimpan."
+  },
+  "saved": {
+    "title": "Perjalanan tersimpan",
+    "empty": "Belum ada perjalanan tersimpan.",
+    "untitled": "Perjalanan tanpa nama",
+    "feasible": "Layak",
+    "infeasible": "Tidak layak",
+    "summary": "{{distance}} · {{stops}} titik",
+    "delete": "Hapus perjalanan",
+    "loadIntoPlanner": "Muat ke perencana"
+  },
+  "errors": {
+    "pointsRequired": "Atur asal dan tujuan.",
+    "rangeRequired": "Pilih kendaraan atau masukkan jangkauan penuh (km)."
+  }
+}
