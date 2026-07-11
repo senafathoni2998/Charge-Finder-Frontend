@@ -8,13 +8,16 @@ import {
   FormControlLabel,
   Radio,
   RadioGroup,
+  Slider,
   Stack,
+  Switch,
   Typography,
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 import type { ConnectorType } from "../../../models/model";
 import type { UserCar } from "../../../features/auth/authSlice";
+import { DEFAULT_NOTIFY_AT_PERCENT } from "../constants";
 
 type StartChargingDialogProps = {
   open: boolean;
@@ -24,6 +27,9 @@ type StartChargingDialogProps = {
   vehicles: UserCar[];
   selectedVehicleId: string | null;
   onVehicleChange: (value: string) => void;
+  /** Notify-me-at battery % threshold (1–99), or null when disabled. */
+  notifyAtPercent: number | null;
+  onNotifyAtPercentChange: (value: number | null) => void;
   onClose: () => void;
   onConfirm: () => void;
   isSubmitting?: boolean;
@@ -42,11 +48,14 @@ export default function StartChargingDialog({
   vehicles,
   selectedVehicleId,
   onVehicleChange,
+  notifyAtPercent,
+  onNotifyAtPercentChange,
   onClose,
   onConfirm,
   isSubmitting = false,
 }: StartChargingDialogProps) {
   const { t } = useTranslation("stationDetail");
+  const notifyEnabled = notifyAtPercent != null;
   const hasOptions = connectorTypes.length > 0;
   const hasVehicles = vehicles.length > 0;
   const hasAvailableVehicles =
@@ -158,6 +167,56 @@ export default function StartChargingDialog({
               {t("startChargingDialog.noConnectors")}
             </Typography>
           )}
+
+          {/* Notify-me-at-% threshold (charge-complete is always notified). */}
+          <Box>
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+            >
+              <Typography
+                variant="caption"
+                sx={{ color: UI.text3, fontWeight: 700 }}
+              >
+                {t("startChargingDialog.notifyAt")}
+              </Typography>
+              <Switch
+                checked={notifyEnabled}
+                onChange={(event) =>
+                  onNotifyAtPercentChange(
+                    event.target.checked ? DEFAULT_NOTIFY_AT_PERCENT : null
+                  )
+                }
+                inputProps={{ "aria-label": t("startChargingDialog.notifyAt") }}
+              />
+            </Stack>
+            {notifyEnabled ? (
+              <Box sx={{ px: 1 }}>
+                <Slider
+                  value={notifyAtPercent ?? DEFAULT_NOTIFY_AT_PERCENT}
+                  onChange={(_event, value) =>
+                    onNotifyAtPercentChange(value as number)
+                  }
+                  min={50}
+                  max={95}
+                  step={5}
+                  marks
+                  valueLabelDisplay="auto"
+                  aria-label={t("startChargingDialog.notifyAt")}
+                />
+                <Typography variant="body2" sx={{ color: UI.text2 }}>
+                  {t("startChargingDialog.notifyAtHint", {
+                    percent: notifyAtPercent ?? DEFAULT_NOTIFY_AT_PERCENT,
+                  })}
+                </Typography>
+              </Box>
+            ) : (
+              <Typography variant="body2" sx={{ color: UI.text3 }}>
+                {t("startChargingDialog.notifyAtOff")}
+              </Typography>
+            )}
+          </Box>
         </Stack>
       </DialogContent>
       <DialogActions sx={{ p: 2 }}>
