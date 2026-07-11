@@ -130,7 +130,16 @@
     "vehicleCharging": "{{label}} (Charging)",
     "allVehiclesCharging": "All your vehicles are currently charging.",
     "noConnectors": "No connectors are available for this station.",
-    "startCharging": "Start charging"
+    "startCharging": "Start charging",
+    "notifyAt": "Notify me at battery %",
+    "notifyAtHint": "We'll alert you when your battery reaches {{percent}}%.",
+    "notifyAtOff": "You'll still be notified when charging completes."
+  },
+  "notify": {
+    "completeTitle": "Charging complete",
+    "completeBody": "Your EV finished charging at {{station}}.",
+    "targetTitle": "Battery at {{percent}}%",
+    "targetBody": "Your EV reached {{percent}}% at {{station}}."
   },
   "reportDialog": {
     "title": "Report an issue",
