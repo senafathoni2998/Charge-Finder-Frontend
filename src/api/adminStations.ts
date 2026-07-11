@@ -1,13 +1,40 @@
 import type { Station } from "../models/model";
 import i18n from "../i18n";
 import { apiRequest } from "./client";
+import {
+  buildStationFormData,
+  type StationFormPayload,
+} from "../pages/AddStation/stationFormUtils";
+import { isAllowedImageType, MAX_IMAGE_UPLOAD_BYTES } from "../utils/assets";
 
 type StationPayload = Omit<Station, "id"> & { id?: string };
+
+// Feature-image upload options shared by create/update. When `image` is set (or
+// `removeFeaturedImage` on update), the request is sent as multipart FormData;
+// otherwise the classic JSON path is used.
+type StationImageOptions = {
+  image?: File | null;
+  removeFeaturedImage?: boolean;
+  signal?: AbortSignal;
+};
 
 type StationMutationResult = {
   ok: boolean;
   station: Station | null;
   error?: string;
+};
+
+// Validates a to-be-uploaded feature image against the same MIME/size rules the
+// backend enforces, so the user gets an instant, localized error. Returns an error
+// message, or null when the file is acceptable.
+const validateFeatureImage = (image: File): string | null => {
+  if (!isAllowedImageType(image)) {
+    return i18n.t("stations.imageInvalidType", { ns: "api" });
+  }
+  if (image.size > MAX_IMAGE_UPLOAD_BYTES) {
+    return i18n.t("stations.imageTooLarge", { ns: "api" });
+  }
+  return null;
 };
 
 type StationDeleteResult = {
@@ -17,16 +44,31 @@ type StationDeleteResult = {
 
 type StationResponse = { station?: Station; data?: Station };
 
-// Creates a new station using admin credentials.
+// Creates a new station using admin credentials. When `options.image` is provided
+// the request is multipart (feature image + JSON-encoded fields); otherwise JSON.
 export const createStation = async (
   payload: StationPayload,
-  signal?: AbortSignal
+  options: StationImageOptions = {}
 ): Promise<StationMutationResult> => {
+  const { image, signal } = options;
+  const fallbackError = i18n.t("stations.createFailed", { ns: "api" });
+
+  let body: unknown = payload;
+  if (image) {
+    const imageError = validateFeatureImage(image);
+    if (imageError) {
+      return { ok: false, station: null, error: imageError };
+    }
+    const form = buildStationFormData(payload as unknown as StationFormPayload);
+    form.append("featuredImage", image);
+    body = form;
+  }
+
   const res = await apiRequest<StationResponse>("/stations/add-station", {
     method: "POST",
-    body: payload,
+    body,
     signal,
-    fallbackError: i18n.t("stations.createFailed", { ns: "api" }),
+    fallbackError,
   });
   if (!res.ok) {
     return { ok: false, station: null, error: res.error };
@@ -35,11 +77,13 @@ export const createStation = async (
   return { ok: true, station };
 };
 
-// Updates a station using admin credentials.
+// Updates a station using admin credentials. A new `options.image` replaces the
+// feature image; `options.removeFeaturedImage` clears it. Either triggers a
+// multipart request; without them the classic JSON path is used.
 export const updateStation = async (
   stationId: string,
   payload: StationPayload,
-  signal?: AbortSignal
+  options: StationImageOptions = {}
 ): Promise<StationMutationResult> => {
   if (!stationId) {
     return {
@@ -49,11 +93,33 @@ export const updateStation = async (
     };
   }
 
+  const { image, removeFeaturedImage, signal } = options;
+  const fallbackError = i18n.t("stations.updateFailed", { ns: "api" });
+
+  let body: unknown = { ...payload, stationId };
+  if (image || removeFeaturedImage) {
+    if (image) {
+      const imageError = validateFeatureImage(image);
+      if (imageError) {
+        return { ok: false, station: null, error: imageError };
+      }
+    }
+    const form = buildStationFormData(payload as unknown as StationFormPayload);
+    form.append("stationId", stationId);
+    if (image) {
+      form.append("featuredImage", image);
+    }
+    if (removeFeaturedImage) {
+      form.append("removeFeaturedImage", "true");
+    }
+    body = form;
+  }
+
   const res = await apiRequest<StationResponse>("/stations/update-station", {
     method: "PATCH",
-    body: { ...payload, stationId },
+    body,
     signal,
-    fallbackError: i18n.t("stations.updateFailed", { ns: "api" }),
+    fallbackError,
   });
   if (!res.ok) {
     return { ok: false, station: null, error: res.error };
