@@ -5,6 +5,7 @@ import ConnectorChip from "./ConnectorChip";
 import StatusChip from "./StatusChip";
 import { minutesAgo } from "../../../utils/time";
 import { resolveAssetUrl } from "../../../utils/assets";
+import { StarRating } from "../../../components";
 import type { Connector } from "../../../models/model";
 import type { StationWithDistance } from "../types";
 
@@ -81,6 +82,10 @@ const StationCard = ({ s, selectedId, focusStation }: StationCardProps) => {
               <ConnectorChip key={idx} type={c.type} powerKW={c.powerKW} />
             ))}
           </Stack>
+
+          {s.ratingCount ? (
+            <StarRating value={s.ratingAverage} count={s.ratingCount} size="small" />
+          ) : null}
 
           <Stack
             direction="row"

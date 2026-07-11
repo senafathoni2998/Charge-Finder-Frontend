@@ -42,4 +42,33 @@ export type Station = {
   amenities: string[];
   notes?: string;
   isChargingHere?: boolean;
+  // Denormalized review aggregates the backend keeps in sync (present on reads;
+  // default 0 for stations with no reviews yet).
+  ratingAverage?: number;
+  ratingCount?: number;
+};
+
+// The public reviewer fields exposed by the reviews API (never email/etc.).
+export type ReviewUser = {
+  id: string | null;
+  name: string | null;
+  image: string | null;
+};
+
+export type StationReview = {
+  id: string;
+  station: string | null;
+  user: ReviewUser;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+// Aggregate summary returned alongside a station's reviews list. `distribution`
+// is keyed by star value "1".."5".
+export type ReviewSummary = {
+  average: number;
+  count: number;
+  distribution: Record<string, number>;
 };
