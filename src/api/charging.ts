@@ -6,6 +6,8 @@ type ChargingRequestParams = {
   stationId: string;
   connectorType?: ConnectorType | null;
   vehicleId?: string | null;
+  /** Optional "notify me at this battery %" threshold (1–99); null/omitted = off. */
+  notifyAtPercent?: number | null;
   cancel?: boolean;
   signal?: AbortSignal;
 };
@@ -39,6 +41,7 @@ export const startChargingSession = async ({
   stationId,
   connectorType,
   vehicleId,
+  notifyAtPercent,
   signal,
 }: ChargingRequestParams): Promise<ChargingRequestResult> => {
   if (!stationId) {
@@ -48,6 +51,14 @@ export const startChargingSession = async ({
   const payload: Record<string, unknown> = { stationId };
   if (connectorType) payload.connectorType = connectorType;
   if (vehicleId) payload.vehicleId = vehicleId;
+  if (
+    typeof notifyAtPercent === "number" &&
+    Number.isFinite(notifyAtPercent) &&
+    notifyAtPercent >= 1 &&
+    notifyAtPercent <= 99
+  ) {
+    payload.notifyAtPercent = Math.round(notifyAtPercent);
+  }
 
   const res = await apiRequest<TicketResponse>("/stations/start-charging", {
     method: "POST",
