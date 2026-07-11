@@ -34,7 +34,9 @@
     "distanceAway": "{{distance}} km away",
     "updatedAgo": "Updated {{minutes}}m ago",
     "viewDetails": "View details",
-    "openInMaps": "Open in Google Maps"
+    "openInMaps": "Open in Google Maps",
+    "portsFree": "{{count}} free",
+    "full": "Full"
   },
   "status": {
     "charging": "Charging"
