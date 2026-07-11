@@ -26,6 +26,7 @@ import {
 import { deleteVehicleRequest, setActiveVehicleRequest } from "./vehicleRequests";
 import { fetchVehicleById } from "../../api/vehicles";
 import { fetchChargingHistory } from "../../api/chargingHistory";
+import { resolveAssetUrl } from "../../utils/assets";
 import ProfileOverviewCard from "./components/ProfileOverviewCard";
 import CarsCard from "./components/CarsCard";
 import EditProfileDialog from "./components/EditProfileDialog";
@@ -37,16 +38,6 @@ import ChargingHistoryCard, {
 export { profileAction, profileLoader } from "./profileRoute";
 
 const CHARGING_VEHICLE_REFRESH_MS = 60000;
-const ASSET_BASE_URL = import.meta.env.VITE_APP_ASSET_URL?.trim() || "";
-
-const resolveAssetUrl = (value: unknown): string | null => {
-  if (typeof value !== "string") return null;
-  const trimmed = value.trim();
-  if (!trimmed) return null;
-  if (/^(https?:\/\/|data:|blob:)/i.test(trimmed)) return trimmed;
-  if (!ASSET_BASE_URL) return trimmed;
-  return `${ASSET_BASE_URL.replace(/\/+$/, "")}/${trimmed.replace(/^\/+/, "")}`;
-};
 
 const toCleanString = (value: unknown): string => {
   if (typeof value === "string") return value.trim();
