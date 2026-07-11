@@ -30,6 +30,8 @@ describe('StartChargingDialog', () => {
         vehicles: mockVehicles,
         selectedVehicleId: 'car1',
         onVehicleChange: vi.fn(),
+        notifyAtPercent: 80 as number | null,
+        onNotifyAtPercentChange: vi.fn(),
         onClose: vi.fn(),
         onConfirm: vi.fn(),
         isSubmitting: false,
@@ -186,5 +188,53 @@ describe('StartChargingDialog', () => {
         render(<StartChargingDialog {...mockProps} />);
         const button = screen.getByRole('button', { name: 'Start charging' });
         expect(button).toBeEnabled();
+    });
+
+    // The dialog renders in a portal (document.body) and the MUI Switch's single
+    // <input type="checkbox"> has a version-dependent ARIA role, so query the DOM.
+    const getToggle = () =>
+        document.querySelector('input[type="checkbox"]') as HTMLInputElement;
+
+    it('shows the notify-at control enabled with a slider when a threshold is set', () => {
+        render(<StartChargingDialog {...mockProps} notifyAtPercent={80} />);
+        expect(screen.getByText('Notify me at battery %')).toBeInTheDocument();
+        expect(
+            screen.getByText("We'll alert you when your battery reaches 80%.")
+        ).toBeInTheDocument();
+        expect(getToggle()).toBeChecked();
+    });
+
+    it('hides the slider and shows the complete-only note when disabled', () => {
+        render(<StartChargingDialog {...mockProps} notifyAtPercent={null} />);
+        expect(
+            screen.getByText("You'll still be notified when charging completes.")
+        ).toBeInTheDocument();
+        expect(getToggle()).not.toBeChecked();
+    });
+
+    it('enables notifications at the default threshold when toggled on', () => {
+        const onNotifyAtPercentChange = vi.fn();
+        render(
+            <StartChargingDialog
+                {...mockProps}
+                notifyAtPercent={null}
+                onNotifyAtPercentChange={onNotifyAtPercentChange}
+            />
+        );
+        fireEvent.click(getToggle());
+        expect(onNotifyAtPercentChange).toHaveBeenCalledWith(80);
+    });
+
+    it('disables notifications when toggled off', () => {
+        const onNotifyAtPercentChange = vi.fn();
+        render(
+            <StartChargingDialog
+                {...mockProps}
+                notifyAtPercent={80}
+                onNotifyAtPercentChange={onNotifyAtPercentChange}
+            />
+        );
+        fireEvent.click(getToggle());
+        expect(onNotifyAtPercentChange).toHaveBeenCalledWith(null);
     });
 });
