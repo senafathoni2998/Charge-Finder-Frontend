@@ -3,6 +3,8 @@ import { useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import { CONNECTOR_OPTIONS } from "../MainPage/constants";
 import type { StationFormValues } from "../../forms/schemas";
+import type { StationImageSelection } from "../AddStation/components/StationFormCard";
+import { resolveAssetUrl } from "../../utils/assets";
 import { updateStationRequest } from "./editStationRoute";
 import { buildEditStationDefaults } from "./utils";
 import EditStationFormSection from "./components/EditStationFormSection";
@@ -27,10 +29,13 @@ export default function EditStationPage() {
     navigate("/admin");
   };
 
-  const handleSubmit = async (values: StationFormValues) => {
+  const handleSubmit = async (
+    values: StationFormValues,
+    image: StationImageSelection
+  ) => {
     if (!station) return;
     setServerError(null);
-    const result = await updateStationRequest(station.id, values, t);
+    const result = await updateStationRequest(station.id, values, image, t);
     if (result.ok) {
       navigate("/admin");
       return;
@@ -62,6 +67,7 @@ export default function EditStationPage() {
       <EditStationFormSection
         key={station.id}
         defaultValues={buildEditStationDefaults(station, defaultConnectorType)}
+        initialImageUrl={resolveAssetUrl(station.featuredImage)}
         serverError={serverError}
         onSubmit={handleSubmit}
         onCancel={handleBackToAdmin}
