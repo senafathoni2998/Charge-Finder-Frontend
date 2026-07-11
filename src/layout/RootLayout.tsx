@@ -14,6 +14,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import AltRouteIcon from "@mui/icons-material/AltRoute";
 import { useTranslation } from "react-i18next";
 import { UI } from "../theme/theme";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
@@ -32,6 +33,7 @@ export default function RootLayout() {
   const isAdmin = useAppSelector(
     (state) => state.auth.isAuthenticated && state.auth.role === "admin",
   );
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
   const dispatch = useAppDispatch();
   const isRouteLoading = navigation.state === "loading";
   const navTitle = (() => {
@@ -46,6 +48,7 @@ export default function RootLayout() {
     if (path.startsWith("/admin")) return t("titles.admin");
     if (path.startsWith("/profile/cars/new")) return t("titles.addCar");
     if (path.startsWith("/profile")) return t("titles.profile");
+    if (path.startsWith("/trip")) return t("titles.trip");
     return t("titles.home");
   })();
   const navigateBack = () => {
@@ -147,6 +150,25 @@ export default function RootLayout() {
                 aria-label={t("aria.admin")}
               >
                 <AdminPanelSettingsIcon />
+              </IconButton>
+            </Tooltip>
+          )}
+
+          {isMapPage && isAuthenticated && (
+            <Tooltip title={t("tooltips.trip")}>
+              <IconButton
+                onClick={() => navigate("/trip")}
+                sx={{
+                  borderRadius: 3,
+                  color: UI.text,
+                  ":hover": {
+                    border: `1px solid ${UI.border2}`,
+                    backgroundColor: "rgba(10,10,16,0.03)",
+                  },
+                }}
+                aria-label={t("aria.trip")}
+              >
+                <AltRouteIcon />
               </IconButton>
             </Tooltip>
           )}
