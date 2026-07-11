@@ -11,7 +11,13 @@ vi.mock('../components/StationFormCard', () => ({
             <div data-testid="server-error">{serverError}</div>
             <div data-testid="submit-label">{submitLabel}</div>
             <div data-testid="default-status">{defaultValues?.status}</div>
-            <button onClick={() => onSubmit({ name: 'My Station' })}>submit</button>
+            <button
+                onClick={() =>
+                    onSubmit({ name: 'My Station' }, { file: null, remove: false })
+                }
+            >
+                submit
+            </button>
         </div>
     ),
 }));
@@ -45,6 +51,7 @@ describe('AddStationPage', () => {
         await waitFor(() => expect(navigate).toHaveBeenCalledWith('/admin'));
         expect(route.createStationRequest).toHaveBeenCalledWith(
             { name: 'My Station' },
+            null,
             'Could not create station.'
         );
     });
