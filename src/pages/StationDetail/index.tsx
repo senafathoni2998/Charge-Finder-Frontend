@@ -56,6 +56,7 @@ import ReportDialog from "./components/ReportDialog";
 import ShareDialog from "./components/ShareDialog";
 import { checkSessionStatus } from "../../utils/session";
 import StartChargingDialog from "./components/StartChargingDialog";
+import ReviewsSection from "./components/ReviewsSection";
 import {
   buildChargingSocketUrl,
   buildTicketFromServer,
@@ -90,6 +91,8 @@ export default function StationDetailPage() {
   const location = useLocation();
   const dispatch = useAppDispatch();
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const currentUserId = useAppSelector((state) => state.auth.userId);
+  const userRole = useAppSelector((state) => state.auth.role);
   const cars = useAppSelector((state) => state.auth.cars);
   const activeCarId = useAppSelector((state) => state.auth.activeCarId);
 
@@ -942,6 +945,16 @@ export default function StationDetailPage() {
           />
           <CoordinatesSection loading={loading} station={station} />
         </Stack>
+      </Box>
+
+      <Box sx={{ px: { xs: 2, md: 3 }, pb: { xs: 2, md: 3 } }}>
+        <ReviewsSection
+          stationId={stationId}
+          isAuthenticated={isAuthenticated}
+          currentUserId={currentUserId}
+          isAdmin={userRole === "admin"}
+          onReviewsChanged={refreshStation}
+        />
       </Box>
 
       <PaymentDialog
