@@ -148,3 +148,26 @@ export const buildStationPayload = (
     lastUpdatedISO: new Date().toISOString(),
   };
 };
+
+// Serializes a station payload into multipart FormData for requests that carry a
+// feature-image file. Scalars go as strings; structured fields are JSON-encoded so
+// the backend's normalizeStationBody middleware can restore them for validation.
+export const buildStationFormData = (
+  payload: StationFormPayload
+): FormData => {
+  const form = new FormData();
+  form.append("name", payload.name);
+  form.append("address", payload.address);
+  form.append("status", payload.status);
+  form.append("lat", String(payload.lat));
+  form.append("lng", String(payload.lng));
+  form.append("lastUpdatedISO", payload.lastUpdatedISO);
+  form.append("connectors", JSON.stringify(payload.connectors));
+  form.append("pricing", JSON.stringify(payload.pricing));
+  form.append("amenities", JSON.stringify(payload.amenities));
+  form.append("photos", JSON.stringify(payload.photos));
+  if (typeof payload.notes === "string") {
+    form.append("notes", payload.notes);
+  }
+  return form;
+};
