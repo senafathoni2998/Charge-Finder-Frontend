@@ -18,6 +18,16 @@ type StationCardProps = {
 const StationCard = ({ s, selectedId, focusStation }: StationCardProps) => {
   const { t } = useTranslation("mainPage");
   const thumbnailUrl = resolveAssetUrl(s.featuredImage);
+  const totalPorts = s.connectors.reduce(
+    (sum, c) => sum + Math.max(0, c.ports ?? 0),
+    0
+  );
+  const totalFree = s.connectors.reduce(
+    (sum, c) =>
+      sum + Math.min(Math.max(0, c.availablePorts ?? 0), Math.max(0, c.ports ?? 0)),
+    0
+  );
+  const isFull = totalPorts > 0 && totalFree <= 0;
   return (
     <Card
       variant="outlined"
@@ -83,9 +93,46 @@ const StationCard = ({ s, selectedId, focusStation }: StationCardProps) => {
             ))}
           </Stack>
 
-          {s.ratingCount ? (
-            <StarRating value={s.ratingAverage} count={s.ratingCount} size="small" />
-          ) : null}
+          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+            {totalPorts > 0 ? (
+              <Box
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 0.5,
+                  px: 1,
+                  py: 0.25,
+                  borderRadius: 999,
+                  border: `1px solid ${
+                    isFull ? "rgba(211,47,47,0.3)" : "rgba(46,125,50,0.3)"
+                  }`,
+                  backgroundColor: isFull
+                    ? "rgba(211,47,47,0.08)"
+                    : "rgba(46,125,50,0.08)",
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    backgroundColor: isFull ? "#d32f2f" : "#2e7d32",
+                  }}
+                />
+                <Typography
+                  variant="caption"
+                  sx={{ fontWeight: 800, color: isFull ? "#d32f2f" : "#2e7d32" }}
+                >
+                  {isFull
+                    ? t("station.full")
+                    : t("station.portsFree", { count: totalFree })}
+                </Typography>
+              </Box>
+            ) : null}
+            {s.ratingCount ? (
+              <StarRating value={s.ratingAverage} count={s.ratingCount} size="small" />
+            ) : null}
+          </Stack>
 
           <Stack
             direction="row"

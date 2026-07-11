@@ -31,6 +31,11 @@ describe('ConnectorRow', () => {
         expect(screen.getByText('2/4 available')).toBeInTheDocument();
     });
 
+    it('should render the free / in-use breakdown', () => {
+        render(<ConnectorRow c={mockConnector} />);
+        expect(screen.getByText('2 free · 2 in use')).toBeInTheDocument();
+    });
+
     it('should render with all ports available', () => {
         const connector: Connector = {
             type: 'Type2',
@@ -44,7 +49,7 @@ describe('ConnectorRow', () => {
         expect(screen.getByText('22 kW')).toBeInTheDocument();
     });
 
-    it('should render with no ports available', () => {
+    it('shows "Full" (not the available count) when no ports are free', () => {
         const connector: Connector = {
             type: 'CHAdeMO',
             powerKW: 50,
@@ -52,7 +57,22 @@ describe('ConnectorRow', () => {
             availablePorts: 0,
         };
         render(<ConnectorRow c={connector} />);
-        expect(screen.getByText('0/2 available')).toBeInTheDocument();
+        expect(screen.getByText('Full')).toBeInTheDocument();
+        expect(screen.queryByText('0/2 available')).not.toBeInTheDocument();
+        expect(screen.getByText('0 free · 2 in use')).toBeInTheDocument();
+    });
+
+    it('clamps availablePorts above the physical port count', () => {
+        // Defensive: never render a negative "in use" count.
+        const connector: Connector = {
+            type: 'CCS2',
+            powerKW: 50,
+            ports: 2,
+            availablePorts: 5,
+        };
+        render(<ConnectorRow c={connector} />);
+        expect(screen.getByText('2/2 available')).toBeInTheDocument();
+        expect(screen.getByText('2 free · 0 in use')).toBeInTheDocument();
     });
 
     it('should render within a bordered box', () => {

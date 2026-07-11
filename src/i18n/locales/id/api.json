@@ -14,6 +14,7 @@
     "createFailed": "Tidak dapat membuat stasiun.",
     "updateFailed": "Tidak dapat memperbarui stasiun.",
     "deleteFailed": "Tidak dapat menghapus stasiun.",
+    "availabilityFailed": "Tidak dapat memuat ketersediaan langsung.",
     "imageInvalidType": "Gambar utama harus berupa gambar PNG atau JPG.",
     "imageTooLarge": "Gambar utama harus lebih kecil dari 500 KB."
   },

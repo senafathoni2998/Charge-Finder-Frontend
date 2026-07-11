@@ -14,6 +14,7 @@
     "createFailed": "Could not create station.",
     "updateFailed": "Could not update station.",
     "deleteFailed": "Could not delete station.",
+    "availabilityFailed": "Could not load live availability.",
     "imageInvalidType": "The feature image must be a PNG or JPG image.",
     "imageTooLarge": "The feature image must be smaller than 500 KB."
   },

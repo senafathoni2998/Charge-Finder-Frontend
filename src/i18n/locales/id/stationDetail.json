@@ -14,7 +14,10 @@
   "connectors": {
     "title": "Konektor",
     "subtitle": "Kompatibilitas + ketersediaan real-time per jenis konektor",
-    "available": "{{available}}/{{total}} tersedia"
+    "available": "{{available}}/{{total}} tersedia",
+    "freeInUse": "{{free}} kosong · {{inUse}} terpakai",
+    "full": "Penuh",
+    "live": "Langsung"
   },
   "amenities": {
     "title": "Fasilitas",

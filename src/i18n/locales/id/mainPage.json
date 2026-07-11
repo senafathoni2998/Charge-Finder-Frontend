@@ -34,7 +34,9 @@
     "distanceAway": "{{distance}} km dari sini",
     "updatedAgo": "Diperbarui {{minutes}}m lalu",
     "viewDetails": "Lihat detail",
-    "openInMaps": "Buka di Google Maps"
+    "openInMaps": "Buka di Google Maps",
+    "portsFree": "{{count}} kosong",
+    "full": "Penuh"
   },
   "status": {
     "charging": "Mengisi daya"

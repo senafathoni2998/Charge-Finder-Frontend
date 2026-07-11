@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { fetchStations, fetchStationById } from '../stations';
+import { fetchStations, fetchStationById, fetchStationAvailability } from '../stations';
 
 describe('stations API', () => {
   const baseUrl = 'http://localhost:3000';
@@ -73,5 +73,46 @@ describe('stations API', () => {
         const result = await fetchStationById(stationId);
         expect(result).toEqual({ ok: false, station: null, error: "Station not found." });
       });
+  });
+
+  describe('fetchStationAvailability', () => {
+    const stationId = 'st1';
+    const availability = {
+      stationId,
+      status: 'AVAILABLE',
+      lastUpdatedISO: '2026-01-01T00:00:00.000Z',
+      connectors: [{ type: 'CCS2', powerKW: 100, ports: 4, availablePorts: 2 }],
+    };
+
+    it('fetches live availability from the availability endpoint', async () => {
+      (global.fetch as any).mockResolvedValue({
+        ok: true,
+        json: async () => ({ availability }),
+      });
+
+      const result = await fetchStationAvailability(stationId);
+      expect(result).toEqual({ ok: true, availability });
+      expect(fetch).toHaveBeenCalledWith(
+        `${baseUrl}/stations/${stationId}/availability`,
+        expect.objectContaining({ method: 'GET' })
+      );
+    });
+
+    it('returns an error without fetching when stationId is missing', async () => {
+      const result = await fetchStationAvailability('');
+      expect(result.ok).toBe(false);
+      expect(result.availability).toBeNull();
+      expect(fetch).not.toHaveBeenCalled();
+    });
+
+    it('surfaces the API error on failure', async () => {
+      (global.fetch as any).mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: async () => ({ message: 'boom' }),
+      });
+      const result = await fetchStationAvailability(stationId);
+      expect(result).toEqual({ ok: false, availability: null, error: 'boom' });
+    });
   });
 });

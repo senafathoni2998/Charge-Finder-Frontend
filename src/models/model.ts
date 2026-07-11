@@ -48,6 +48,15 @@ export type Station = {
   ratingCount?: number;
 };
 
+// Live connector availability for a station (from the uncached availability
+// endpoint the detail page polls). `connectors` reuses the Connector shape.
+export type StationAvailability = {
+  stationId: string;
+  status: Availability;
+  lastUpdatedISO: string;
+  connectors: Connector[];
+};
+
 // The public reviewer fields exposed by the reviews API (never email/etc.).
 export type ReviewUser = {
   id: string | null;

@@ -3,13 +3,18 @@ import { useTranslation } from "react-i18next";
 import { Connector } from "../../../models/model";
 import { UI } from "../../../theme/theme";
 
+// Availability accent colors (kept local — the theme has no semantic tokens).
+const FREE_COLOR = "#2e7d32";
+const FULL_COLOR = "#d32f2f";
+
 const ConnectorRow = ({ c }: { c: Connector }) => {
   const { t } = useTranslation("stationDetail");
-  const pct = c.ports ? Math.round((c.availablePorts / c.ports) * 100) : 0;
-  const availabilityText = t("connectors.available", {
-    available: c.availablePorts,
-    total: c.ports,
-  });
+  const total = Math.max(0, c.ports ?? 0);
+  const free = Math.min(Math.max(0, c.availablePorts ?? 0), total);
+  const inUse = Math.max(0, total - free);
+  const isFull = total > 0 && free <= 0;
+  const pct = total ? Math.round((free / total) * 100) : 0;
+  const accent = isFull ? FULL_COLOR : FREE_COLOR;
 
   return (
     <Box
@@ -26,9 +31,23 @@ const ConnectorRow = ({ c }: { c: Connector }) => {
           justifyContent="space-between"
           alignItems="center"
         >
-          <Typography sx={{ fontWeight: 900, color: UI.text }}>
-            {c.type}
-          </Typography>
+          <Stack direction="row" spacing={1} alignItems="center">
+            {/* Free/occupied status dot */}
+            <Box
+              aria-hidden
+              sx={{
+                width: 10,
+                height: 10,
+                borderRadius: "50%",
+                backgroundColor: accent,
+                boxShadow: `0 0 0 3px ${accent}22`,
+                flexShrink: 0,
+              }}
+            />
+            <Typography sx={{ fontWeight: 900, color: UI.text }}>
+              {c.type}
+            </Typography>
+          </Stack>
           <Chip
             size="small"
             label={`${c.powerKW} kW`}
@@ -57,17 +76,24 @@ const ConnectorRow = ({ c }: { c: Connector }) => {
                 width: `${pct}%`,
                 height: "100%",
                 borderRadius: 999,
-                background: UI.brandGradStrong,
+                backgroundColor: accent,
+                transition: "width 300ms ease, background-color 300ms ease",
               }}
             />
           </Box>
           <Typography
             variant="caption"
-            sx={{ color: UI.text3, fontWeight: 700 }}
+            sx={{ color: isFull ? FULL_COLOR : UI.text2, fontWeight: 800 }}
           >
-            {availabilityText}
+            {isFull
+              ? t("connectors.full")
+              : t("connectors.available", { available: free, total })}
           </Typography>
         </Stack>
+
+        <Typography variant="caption" sx={{ color: UI.text3 }}>
+          {t("connectors.freeInUse", { free, inUse })}
+        </Typography>
       </Stack>
     </Box>
   );
