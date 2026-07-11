@@ -4,6 +4,7 @@ import { UI } from "../../../theme/theme";
 import ConnectorChip from "./ConnectorChip";
 import StatusChip from "./StatusChip";
 import { minutesAgo } from "../../../utils/time";
+import { resolveAssetUrl } from "../../../utils/assets";
 import type { Connector } from "../../../models/model";
 import type { StationWithDistance } from "../types";
 
@@ -15,6 +16,7 @@ type StationCardProps = {
 
 const StationCard = ({ s, selectedId, focusStation }: StationCardProps) => {
   const { t } = useTranslation("mainPage");
+  const thumbnailUrl = resolveAssetUrl(s.featuredImage);
   return (
     <Card
       variant="outlined"
@@ -44,16 +46,33 @@ const StationCard = ({ s, selectedId, focusStation }: StationCardProps) => {
             alignItems="flex-start"
             spacing={1}
           >
-            <Box>
-              <Typography
-                sx={{ fontWeight: 850, lineHeight: 1.1, color: UI.text }}
-              >
-                {s.name}
-              </Typography>
-              <Typography variant="body2" sx={{ color: UI.text2 }}>
-                {s.address}
-              </Typography>
-            </Box>
+            <Stack direction="row" spacing={1.25} sx={{ minWidth: 0 }}>
+              {thumbnailUrl ? (
+                <Box
+                  component="img"
+                  src={thumbnailUrl}
+                  alt=""
+                  sx={{
+                    width: 52,
+                    height: 52,
+                    flexShrink: 0,
+                    objectFit: "cover",
+                    borderRadius: 2,
+                    border: `1px solid ${UI.border2}`,
+                  }}
+                />
+              ) : null}
+              <Box sx={{ minWidth: 0 }}>
+                <Typography
+                  sx={{ fontWeight: 850, lineHeight: 1.1, color: UI.text }}
+                >
+                  {s.name}
+                </Typography>
+                <Typography variant="body2" sx={{ color: UI.text2 }}>
+                  {s.address}
+                </Typography>
+              </Box>
+            </Stack>
             <StatusChip status={s.status} isChargingHere={s.isChargingHere} />
           </Stack>
 
