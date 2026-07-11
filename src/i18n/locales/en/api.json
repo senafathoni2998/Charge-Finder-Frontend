@@ -13,7 +13,9 @@
     "missing": "Station is missing.",
     "createFailed": "Could not create station.",
     "updateFailed": "Could not update station.",
-    "deleteFailed": "Could not delete station."
+    "deleteFailed": "Could not delete station.",
+    "imageInvalidType": "The feature image must be a PNG or JPG image.",
+    "imageTooLarge": "The feature image must be smaller than 500 KB."
   },
   "charging": {
     "startFailed": "Could not start charging.",

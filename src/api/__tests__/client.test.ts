@@ -56,6 +56,21 @@ describe("apiRequest", () => {
     );
   });
 
+  it("passes a FormData body through without a JSON content-type", async () => {
+    (global.fetch as any).mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({}),
+    });
+    const form = new FormData();
+    form.append("name", "Station");
+    await apiRequest("/x", { method: "POST", body: form });
+
+    const [, init] = (global.fetch as any).mock.calls[0];
+    expect(init.body).toBe(form);
+    expect(init.headers).not.toHaveProperty("Content-Type");
+  });
+
   it("uses the response message on HTTP error", async () => {
     (global.fetch as any).mockResolvedValue({
       ok: false,

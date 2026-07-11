@@ -13,7 +13,9 @@
     "missing": "Stasiun tidak ada.",
     "createFailed": "Tidak dapat membuat stasiun.",
     "updateFailed": "Tidak dapat memperbarui stasiun.",
-    "deleteFailed": "Tidak dapat menghapus stasiun."
+    "deleteFailed": "Tidak dapat menghapus stasiun.",
+    "imageInvalidType": "Gambar utama harus berupa gambar PNG atau JPG.",
+    "imageTooLarge": "Gambar utama harus lebih kecil dari 500 KB."
   },
   "charging": {
     "startFailed": "Tidak dapat memulai pengisian daya.",

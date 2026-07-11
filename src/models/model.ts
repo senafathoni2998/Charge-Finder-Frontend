@@ -33,6 +33,11 @@ export type Station = {
   status: Availability;
   lastUpdatedISO: string;
   photos: StationPhoto[];
+  /**
+   * Public path of the station's uploaded feature (hero) image, resolved to a
+   * full URL for display via resolveAssetUrl. Absent/null when none was uploaded.
+   */
+  featuredImage?: string | null;
   pricing: StationPricing;
   amenities: string[];
   notes?: string;

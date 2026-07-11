@@ -8,7 +8,9 @@ import type { StationFormValues } from "../../forms/schemas";
 import { createStationRequest } from "./addStationRoute";
 import { createEmptyStationDefaults } from "./stationFormUtils";
 import StationHeader from "./components/StationHeader";
-import StationFormCard from "./components/StationFormCard";
+import StationFormCard, {
+  type StationImageSelection,
+} from "./components/StationFormCard";
 
 // Add station page: owns the submit side-effect + navigation. The form state lives
 // in StationFormCard (react-hook-form).
@@ -21,9 +23,16 @@ export default function AddStationPage() {
     createEmptyStationDefaults(defaultConnectorType)
   );
 
-  const handleSubmit = async (values: StationFormValues) => {
+  const handleSubmit = async (
+    values: StationFormValues,
+    image: StationImageSelection
+  ) => {
     setServerError(null);
-    const result = await createStationRequest(values, t("errors.createStation"));
+    const result = await createStationRequest(
+      values,
+      image.file,
+      t("errors.createStation")
+    );
     if (result.ok) {
       navigate("/admin");
       return;

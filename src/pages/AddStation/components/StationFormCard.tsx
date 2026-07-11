@@ -1,3 +1,4 @@
+import { useEffect, useState, type ChangeEvent } from "react";
 import { Controller, useFieldArray, useForm, type Path } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -14,24 +15,38 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
 import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 import { tValidation } from "../../../i18n/validation";
 import type { ConnectorType } from "../../../models/model";
 import { stationFormSchema, type StationFormValues } from "../../../forms/schemas";
 import { createDefaultConnector, createDefaultPhoto } from "../stationFormUtils";
+import { isAllowedImageType, MAX_IMAGE_UPLOAD_BYTES } from "../../../utils/assets";
 import useStationLocationField from "../hooks/useStationLocationField";
 import LocationPickerMap from "./LocationPickerMap";
+
+// The feature-image selection the form reports on submit: a newly picked file, a
+// request to remove the existing image, or neither (keep current).
+export type StationImageSelection = {
+  file: File | null;
+  remove: boolean;
+};
 
 type StationFormCardProps = {
   defaultValues: StationFormValues;
   connectorOptions: ConnectorType[];
   defaultConnectorType: ConnectorType;
   serverError: string | null;
-  onSubmit: (values: StationFormValues) => void | Promise<void>;
+  onSubmit: (
+    values: StationFormValues,
+    image: StationImageSelection
+  ) => void | Promise<void>;
   onCancel: () => void;
   submitLabel?: string;
   submittingLabel?: string;
+  /** Resolved URL of the station's current feature image (edit mode). */
+  initialImageUrl?: string | null;
 };
 
 const STATUS_OPTIONS: StationFormValues["status"][] = [
@@ -60,6 +75,7 @@ export default function StationFormCard({
   onCancel,
   submitLabel,
   submittingLabel,
+  initialImageUrl = null,
 }: StationFormCardProps) {
   const { t } = useTranslation("addStation");
   const {
@@ -76,6 +92,56 @@ export default function StationFormCard({
 
   const connectors = useFieldArray({ control, name: "connectors" });
   const photos = useFieldArray({ control, name: "photos" });
+
+  // Feature image is handled outside react-hook-form (a File, like the profile
+  // image). `removeImage` flags clearing the existing one; `filePreview` is the
+  // object URL of a freshly picked file (revoked on change/unmount).
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [removeImage, setRemoveImage] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!imageFile) {
+      setFilePreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(imageFile);
+    setFilePreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [imageFile]);
+
+  const previewUrl =
+    filePreview ?? (removeImage ? null : initialImageUrl);
+
+  const handleImagePick = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    // Reset the input so re-picking the same file still fires onChange.
+    event.target.value = "";
+    if (!file) return;
+    if (!isAllowedImageType(file)) {
+      setImageFile(null);
+      setImageError(t("featuredImage.typeError"));
+      return;
+    }
+    if (file.size > MAX_IMAGE_UPLOAD_BYTES) {
+      setImageFile(null);
+      setImageError(t("featuredImage.sizeError"));
+      return;
+    }
+    setImageError(null);
+    setRemoveImage(false);
+    setImageFile(file);
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImageError(null);
+    setRemoveImage(true);
+  };
+
+  const submit = (values: StationFormValues) =>
+    onSubmit(values, { file: imageFile, remove: removeImage });
 
   const lat = watch("lat");
   const lng = watch("lng");
@@ -108,7 +174,7 @@ export default function StationFormCard({
     >
       <Box sx={{ height: 8, background: UI.brandGradStrong }} />
       <CardContent sx={{ p: { xs: 2.25, sm: 3 } }}>
-        <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <Box component="form" onSubmit={handleSubmit(submit)} noValidate>
           <Stack spacing={2.5}>
             <Stack spacing={2}>
               <Typography sx={{ fontWeight: 800, color: UI.text }}>
@@ -389,6 +455,91 @@ export default function StationFormCard({
                 fullWidth
                 sx={fieldSx}
               />
+            </Stack>
+
+            <Divider sx={{ borderColor: UI.border2 }} />
+
+            <Stack spacing={1.5}>
+              <Typography sx={{ fontWeight: 800, color: UI.text }}>
+                {t("sections.featuredImage")}
+              </Typography>
+              <Typography sx={{ color: UI.text3, fontSize: 13 }}>
+                {t("featuredImage.hint")}
+              </Typography>
+              {previewUrl ? (
+                <Box
+                  component="img"
+                  src={previewUrl}
+                  alt={t("featuredImage.previewAlt")}
+                  sx={{
+                    width: "100%",
+                    maxWidth: 360,
+                    height: 200,
+                    objectFit: "cover",
+                    borderRadius: 3,
+                    border: `1px solid ${UI.border2}`,
+                  }}
+                />
+              ) : (
+                <Box
+                  sx={{
+                    height: 160,
+                    maxWidth: 360,
+                    borderRadius: 3,
+                    border: `1px dashed ${UI.border}`,
+                    backgroundColor: "rgba(10,10,16,0.02)",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 1,
+                    color: UI.text2,
+                  }}
+                >
+                  <ImageOutlinedIcon />
+                  <Typography sx={{ fontSize: 13 }}>
+                    {t("featuredImage.empty")}
+                  </Typography>
+                </Box>
+              )}
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Button
+                  component="label"
+                  variant="outlined"
+                  size="small"
+                  startIcon={<ImageOutlinedIcon />}
+                  sx={{
+                    textTransform: "none",
+                    borderRadius: 3,
+                    borderColor: UI.border,
+                    color: UI.text,
+                  }}
+                >
+                  {previewUrl
+                    ? t("featuredImage.change")
+                    : t("featuredImage.choose")}
+                  <input
+                    hidden
+                    type="file"
+                    accept="image/png,image/jpeg,image/jpg"
+                    onChange={handleImagePick}
+                  />
+                </Button>
+                {previewUrl ? (
+                  <Button
+                    variant="text"
+                    size="small"
+                    startIcon={<DeleteOutlineIcon />}
+                    onClick={handleRemoveImage}
+                    sx={{ textTransform: "none", borderRadius: 3, color: UI.text2 }}
+                  >
+                    {t("featuredImage.remove")}
+                  </Button>
+                ) : null}
+              </Stack>
+              {imageError ? (
+                <Typography sx={errorTextSx}>{imageError}</Typography>
+              ) : null}
             </Stack>
 
             <Divider sx={{ borderColor: UI.border2 }} />
