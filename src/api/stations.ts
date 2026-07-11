@@ -1,10 +1,16 @@
-import type { Station } from "../models/model";
+import type { Station, StationAvailability } from "../models/model";
 import i18n from "../i18n";
 import { apiRequest } from "./client";
 
 type FetchStationsResult = {
   ok: boolean;
   stations: Station[];
+  error?: string;
+};
+
+type FetchAvailabilityResult = {
+  ok: boolean;
+  availability: StationAvailability | null;
   error?: string;
 };
 
@@ -90,4 +96,32 @@ export const fetchStationById = async (
   }
 
   return { ok: true, station: station as Station };
+};
+
+// Loads a station's live connector availability (free/occupied ports + status)
+// from the uncached availability endpoint. Meant to be polled.
+export const fetchStationAvailability = async (
+  stationId: string,
+  signal?: AbortSignal
+): Promise<FetchAvailabilityResult> => {
+  if (!stationId) {
+    return {
+      ok: false,
+      availability: null,
+      error: i18n.t("stations.idMissing", { ns: "api" }),
+    };
+  }
+
+  const res = await apiRequest<{ availability?: StationAvailability }>(
+    `/stations/${encodeURIComponent(stationId)}/availability`,
+    {
+      method: "GET",
+      signal,
+      fallbackError: i18n.t("stations.availabilityFailed", { ns: "api" }),
+    }
+  );
+  if (!res.ok) {
+    return { ok: false, availability: null, error: res.error };
+  }
+  return { ok: true, availability: res.data?.availability ?? null };
 };
