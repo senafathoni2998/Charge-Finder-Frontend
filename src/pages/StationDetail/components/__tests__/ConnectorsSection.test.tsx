@@ -1,24 +1,49 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import ConnectorsSection from '../ConnectorsSection';
 import type { Station } from '../../../types';
+import { useStationAvailability } from '../../hooks/useStationAvailability';
 
 // Mock dependencies
 vi.mock('../ConnectorRow', () => ({
-    default: ({ c }: { c: { type: string } }) => (
-        <div data-testid={`connector-${c.type}`}>{c.type}</div>
+    default: ({ c }: { c: { type: string; availablePorts: number } }) => (
+        <div data-testid={`connector-${c.type}`}>
+            {c.type}:{c.availablePorts}
+        </div>
     ),
 }));
 
 vi.mock('../SectionCard', () => ({
-    default: ({ title, subtitle, children }: any) => (
+    default: ({ title, subtitle, right, children }: any) => (
         <div>
             <h2>{title}</h2>
             <p>{subtitle}</p>
+            <div data-testid="section-right">{right}</div>
             {children}
         </div>
     ),
 }));
+
+// The live-availability polling hook is exercised in its own test; here we control
+// its return value so the section's overlay/fallback logic is what's under test.
+vi.mock('../../hooks/useStationAvailability', () => ({
+    useStationAvailability: vi.fn(),
+}));
+
+const mockedHook = vi.mocked(useStationAvailability);
+
+const hookState = (overrides = {}) => ({
+    connectors: null,
+    status: null,
+    lastUpdatedISO: null,
+    updatedAt: null,
+    live: false,
+    ...overrides,
+});
+
+beforeEach(() => {
+    mockedHook.mockReturnValue(hookState() as any);
+});
 
 describe('ConnectorsSection', () => {
     const mockStation: Station = {
@@ -92,5 +117,34 @@ describe('ConnectorsSection', () => {
         };
         render(<ConnectorsSection loading={false} station={stationWithNoConnectors} />);
         expect(screen.getByText('Connectors')).toBeInTheDocument();
+    });
+
+    it('falls back to the station connectors before the first live poll', () => {
+        render(<ConnectorsSection loading={false} station={mockStation} />);
+        // station's baseline availablePorts (CCS2:2) is shown.
+        expect(screen.getByTestId('connector-CCS2')).toHaveTextContent('CCS2:2');
+        expect(screen.queryByText('Live')).not.toBeInTheDocument();
+    });
+
+    it('overlays live availability and shows the Live indicator once polling succeeds', () => {
+        mockedHook.mockReturnValue(
+            hookState({
+                live: true,
+                connectors: [
+                    { type: 'CCS2', powerKW: 50, ports: 4, availablePorts: 0 },
+                    { type: 'Type2', powerKW: 22, ports: 2, availablePorts: 1 },
+                ],
+            }) as any
+        );
+        render(<ConnectorsSection loading={false} station={mockStation} />);
+        // Live availablePorts (CCS2:0) overrides the station baseline (CCS2:2).
+        expect(screen.getByTestId('connector-CCS2')).toHaveTextContent('CCS2:0');
+        expect(screen.getByText('Live')).toBeInTheDocument();
+    });
+
+    it('does not show the Live indicator while loading', () => {
+        mockedHook.mockReturnValue(hookState({ live: true }) as any);
+        render(<ConnectorsSection loading={true} station={null} />);
+        expect(screen.queryByText('Live')).not.toBeInTheDocument();
     });
 });
