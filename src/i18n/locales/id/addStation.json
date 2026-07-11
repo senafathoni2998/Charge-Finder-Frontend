@@ -9,8 +9,19 @@
     "connectors": "Konektor",
     "pricing": "Tarif",
     "amenities": "Fasilitas",
+    "featuredImage": "Gambar utama",
     "photos": "Foto",
     "notes": "Catatan"
+  },
+  "featuredImage": {
+    "hint": "Ditampilkan sebagai gambar utama stasiun. PNG atau JPG, maksimal 500 KB.",
+    "empty": "Belum ada gambar utama yang dipilih.",
+    "choose": "Pilih gambar",
+    "change": "Ganti gambar",
+    "remove": "Hapus",
+    "previewAlt": "Pratinjau gambar utama",
+    "typeError": "Silakan pilih gambar PNG atau JPG.",
+    "sizeError": "Gambar harus lebih kecil dari 500 KB."
   },
   "fields": {
     "name": "Nama stasiun",
