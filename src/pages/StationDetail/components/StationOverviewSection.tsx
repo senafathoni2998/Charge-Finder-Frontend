@@ -6,6 +6,7 @@ import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import { UI } from "../../../theme/theme";
 import { minutesAgo } from "../../../utils/time";
 import { resolveAssetUrl } from "../../../utils/assets";
+import { StarRating } from "../../../components";
 import type { Availability } from "../../../models/model";
 import type { UserCar } from "../../../features/auth/authSlice";
 import type { Station } from "../types";
@@ -94,6 +95,13 @@ export default function StationOverviewSection({
         </Stack>
       ) : (
         <Stack spacing={1.25}>
+          {station.ratingCount ? (
+            <StarRating
+              value={station.ratingAverage}
+              count={station.ratingCount}
+              showValue
+            />
+          ) : null}
           {featuredImageUrl ? (
             <Box
               component="img"
