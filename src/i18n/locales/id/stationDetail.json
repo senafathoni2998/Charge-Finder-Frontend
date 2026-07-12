@@ -28,6 +28,7 @@
     "loginToBuy": "Masuk untuk membeli tiket dan mulai mengisi daya.",
     "buyToStart": "Beli tiket untuk mulai mengisi daya.",
     "notCompatible": "Tidak kompatibel dengan jenis konektor mobil Anda.",
+    "checkingStatus": "Memeriksa status…",
     "openInMaps": "Buka di Google Maps",
     "chargingStatus": "Status pengisian",
     "minutesAgoShort": "{{minutes}}m",
@@ -37,6 +38,7 @@
   "pricing": {
     "title": "Tarif",
     "subtitle": "Perkiraan info biaya (dapat bervariasi menurut operator)",
+    "checkingStatus": "Memeriksa status…",
     "perKwh": "Per kWh",
     "perMinute": "Per menit",
     "parking": "Parkir"

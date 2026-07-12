@@ -84,6 +84,10 @@ import { useStartChargingSelection } from "./hooks/useStartChargingSelection";
  * - Uses safe browser-only actions.
  */
 
+// Never mask the action/pricing buttons longer than this while resolving the active
+// ticket, even if the endpoint is slow/unreachable (its own request timeout is 15s).
+const TICKET_STATUS_LOADING_CAP_MS = 5000;
+
 export default function StationDetailPage() {
   const isMdUp = useMediaQuery("(min-width:900px)", {
     noSsr: true,
@@ -120,6 +124,12 @@ export default function StationDetailPage() {
   );
   const [ticketErrorToast, setTicketErrorToast] = useState<string | null>(null);
   const [ticketRequestLoading, setTicketRequestLoading] = useState(false);
+  // True while we're still fetching whether the user has an active/charging ticket
+  // at this station (on mount / re-entry). Keeps the action + pricing buttons in a
+  // loading state so they don't flash "Buy ticket" before flipping to "Charging".
+  const [ticketStatusLoading, setTicketStatusLoading] = useState(
+    () => isAuthenticated
+  );
   const [chargingOpen, setChargingOpen] = useState(false);
   const [chargingProgress, setChargingProgress] = useState(0);
   const [chargingStatus, setChargingStatus] = useState<ChargingStatus>("idle");
@@ -355,9 +365,21 @@ export default function StationDetailPage() {
   };
 
   useEffect(() => {
-    if (!activeStationId || !isAuthenticated) return;
+    // Not signed in — there's no ticket to resolve, so nothing to wait on.
+    if (!isAuthenticated) {
+      setTicketStatusLoading(false);
+      return;
+    }
+    // Station not loaded yet — keep waiting; we fetch once its id is known.
+    if (!activeStationId) return;
+    setTicketStatusLoading(true);
     const controller = new AbortController();
     let active = true;
+    // Safety cap so a slow/hung endpoint can't leave the buy/charge actions masked
+    // for the full request timeout — after this we reveal the buttons regardless.
+    const capTimer = setTimeout(() => {
+      if (active) setTicketStatusLoading(false);
+    }, TICKET_STATUS_LOADING_CAP_MS);
 
     const loadActiveTicket = async () => {
       const result = await fetchActiveTicketForStation(
@@ -365,6 +387,8 @@ export default function StationDetailPage() {
         controller.signal
       );
       if (!active) return;
+      clearTimeout(capTimer);
+      setTicketStatusLoading(false);
       if (!result.ok) return;
 
       if (!result.ticket) {
@@ -402,6 +426,7 @@ export default function StationDetailPage() {
     loadActiveTicket();
     return () => {
       active = false;
+      clearTimeout(capTimer);
       controller.abort();
     };
   }, [activeStationId, isAuthenticated]);
@@ -991,6 +1016,7 @@ export default function StationDetailPage() {
             onOpenMaps={openGoogleMaps}
             chargingError={chargingRequestError}
             chargingLoading={chargingRequestLoading}
+            statusLoading={ticketStatusLoading}
           />
           <PricingSection
             loading={loading}
@@ -998,6 +1024,7 @@ export default function StationDetailPage() {
             paymentActionLabel={paymentActionLabel}
             paymentDisabled={isCharging}
             onPaymentOpen={handlePaymentOpen}
+            statusLoading={ticketStatusLoading}
           />
           <CoordinatesSection loading={loading} station={station} />
         </Stack>

@@ -1,4 +1,11 @@
-import { Button, Divider, Skeleton, Stack, Typography } from "@mui/material";
+import {
+  Button,
+  CircularProgress,
+  Divider,
+  Skeleton,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { UI } from "../../../theme/theme";
 import { formatCurrency } from "../../../utils/distance";
@@ -12,6 +19,8 @@ type PricingSectionProps = {
   paymentActionLabel: string;
   paymentDisabled: boolean;
   onPaymentOpen: () => void;
+  /** True while the active-ticket status is still being fetched (e.g. on re-entry). */
+  statusLoading?: boolean;
 };
 
 // Presents the pricing breakdown and ticket purchase action.
@@ -21,6 +30,7 @@ export default function PricingSection({
   paymentActionLabel,
   paymentDisabled,
   onPaymentOpen,
+  statusLoading = false,
 }: PricingSectionProps) {
   const { t } = useTranslation("stationDetail");
   return (
@@ -36,7 +46,12 @@ export default function PricingSection({
           <Button
             variant="contained"
             onClick={onPaymentOpen}
-            disabled={paymentDisabled || !station}
+            disabled={paymentDisabled || !station || statusLoading}
+            startIcon={
+              statusLoading ? (
+                <CircularProgress size={18} sx={{ color: "white" }} />
+              ) : undefined
+            }
             fullWidth
             sx={{
               textTransform: "none",
@@ -46,7 +61,7 @@ export default function PricingSection({
               background: UI.brandGradStrong,
             }}
           >
-            {paymentActionLabel}
+            {statusLoading ? t("pricing.checkingStatus") : paymentActionLabel}
           </Button>
           <Divider sx={{ borderColor: UI.border2 }} />
           <InfoRow

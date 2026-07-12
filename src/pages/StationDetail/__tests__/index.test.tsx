@@ -106,8 +106,8 @@ vi.mock('../components/ActionsCard', () => ({
 }));
 
 vi.mock('../components/PricingSection', () => ({
-    default: ({ onPaymentOpen, paymentActionLabel }: any) => (
-        <div data-testid="pricing-section">
+    default: ({ onPaymentOpen, paymentActionLabel, statusLoading }: any) => (
+        <div data-testid="pricing-section" data-status-loading={String(!!statusLoading)}>
             <div>{paymentActionLabel}</div>
             <button onClick={onPaymentOpen}>Open payment</button>
         </div>
@@ -296,6 +296,36 @@ describe('StationDetailPage', () => {
         expect(screen.getByTestId('actions-card')).toBeInTheDocument();
         expect(screen.getByTestId('pricing-section')).toBeInTheDocument();
         expect(screen.getByTestId('coordinates-section')).toBeInTheDocument();
+    });
+
+    it('reveals the action/pricing buttons after the loading cap when the ticket fetch hangs', async () => {
+        vi.useFakeTimers();
+        try {
+            // Simulate a slow/unreachable /active-ticket endpoint (never resolves).
+            mockFetchActiveTicketForStation.mockReturnValue(new Promise(() => {}));
+            const store = createTestStore({ isAuthenticated: true });
+            renderPage(store);
+
+            // Let the station load so the ticket effect starts (loading + cap timer).
+            await act(async () => {
+                await vi.advanceTimersByTimeAsync(0);
+            });
+            expect(screen.getByTestId('pricing-section')).toHaveAttribute(
+                'data-status-loading',
+                'true'
+            );
+
+            // The cap must reveal the buttons even though the fetch never settled.
+            await act(async () => {
+                await vi.advanceTimersByTimeAsync(5000);
+            });
+            expect(screen.getByTestId('pricing-section')).toHaveAttribute(
+                'data-status-loading',
+                'false'
+            );
+        } finally {
+            vi.useRealTimers();
+        }
     });
 
     it('opens report dialog when report action is triggered', async () => {

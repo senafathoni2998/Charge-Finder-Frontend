@@ -3,6 +3,7 @@ import {
   Button,
   Card,
   CardContent,
+  CircularProgress,
   Divider,
   Skeleton,
   Stack,
@@ -32,6 +33,8 @@ type ActionsCardProps = {
   onOpenMaps: () => void;
   chargingError?: string | null;
   chargingLoading?: boolean;
+  /** True while the active-ticket status is still being fetched (e.g. on re-entry). */
+  statusLoading?: boolean;
 };
 
 // Shows the primary action buttons and live station status.
@@ -48,8 +51,10 @@ export default function ActionsCard({
   onOpenMaps,
   chargingError,
   chargingLoading = false,
+  statusLoading = false,
 }: ActionsCardProps) {
   const { t } = useTranslation("stationDetail");
+  const chargeButtonLoading = statusLoading || chargingLoading;
   return (
     <Card
       variant="outlined"
@@ -66,8 +71,14 @@ export default function ActionsCard({
           <Typography sx={{ fontWeight: 950, color: UI.text }}>{t("actionsCard.title")}</Typography>
           <Button
             variant="contained"
-            disabled={!canCharge || chargingLoading}
-            startIcon={<ElectricBoltIcon />}
+            disabled={!canCharge || chargeButtonLoading}
+            startIcon={
+              chargeButtonLoading ? (
+                <CircularProgress size={18} sx={{ color: "white" }} />
+              ) : (
+                <ElectricBoltIcon />
+              )
+            }
             sx={{
               textTransform: "none",
               borderRadius: 3,
@@ -77,14 +88,14 @@ export default function ActionsCard({
             }}
             onClick={onChargingAction}
           >
-            {chargingActionLabel}
+            {statusLoading ? t("actionsCard.checkingStatus") : chargingActionLabel}
           </Button>
           {chargingError ? (
             <Typography variant="caption" sx={{ color: "rgba(244,67,54,0.9)" }}>
               {chargingError}
             </Typography>
           ) : null}
-          {!isAuthenticated ? (
+          {statusLoading ? null : !isAuthenticated ? (
             <Typography variant="caption" sx={{ color: UI.text3 }}>
               {t("actionsCard.loginToBuy")}
             </Typography>
