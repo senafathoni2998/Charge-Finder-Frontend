@@ -80,6 +80,16 @@ describe('PricingSection', () => {
         expect(button).toBeDisabled();
     });
 
+    it('shows a checking-status label + disabled button while statusLoading', () => {
+        render(<PricingSection {...mockProps} statusLoading={true} />);
+        const button = screen.getByRole('button', { name: /Checking status/ });
+        expect(button).toBeDisabled();
+        // The default "Buy ticket" label is not shown until the status is known.
+        expect(
+            screen.queryByRole('button', { name: 'Buy ticket' })
+        ).not.toBeInTheDocument();
+    });
+
     it('should render per kWh pricing', () => {
         render(<PricingSection {...mockProps} />);
         expect(screen.getByText('Per kWh:')).toBeInTheDocument();
