@@ -28,6 +28,7 @@
     "loginToBuy": "Log in to buy a ticket and start charging.",
     "buyToStart": "Buy a ticket to start charging.",
     "notCompatible": "Not compatible with your car's connector types.",
+    "checkingStatus": "Checking status…",
     "openInMaps": "Open in Google Maps",
     "chargingStatus": "Charging status",
     "minutesAgoShort": "{{minutes}}m",
@@ -37,6 +38,7 @@
   "pricing": {
     "title": "Pricing",
     "subtitle": "Estimated cost info (may vary by operator)",
+    "checkingStatus": "Checking status…",
     "perKwh": "Per kWh",
     "perMinute": "Per minute",
     "parking": "Parking"
