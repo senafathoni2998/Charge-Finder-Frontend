@@ -106,6 +106,32 @@ describe('ActionsCard', () => {
         expect(button).toBeDisabled();
     });
 
+    it('shows a checking-status label + disabled button while statusLoading', () => {
+        render(
+            <ActionsCard {...mockProps} statusLoading={true} canCharge={true} />
+        );
+        const button = screen.getByRole('button', { name: /Checking status/ });
+        expect(button).toBeDisabled();
+        // The (possibly wrong) default label is not shown yet.
+        expect(
+            screen.queryByRole('button', { name: 'Start charging' })
+        ).not.toBeInTheDocument();
+    });
+
+    it('suppresses the buy-to-start hint while statusLoading', () => {
+        render(
+            <ActionsCard
+                {...mockProps}
+                statusLoading={true}
+                isAuthenticated={true}
+                hasTicket={false}
+            />
+        );
+        expect(
+            screen.queryByText(/Buy a ticket to start charging/)
+        ).not.toBeInTheDocument();
+    });
+
     it('should render login message when not authenticated', () => {
         render(<ActionsCard {...mockProps} isAuthenticated={false} />);
         expect(screen.getByText(/Log in to buy a ticket/)).toBeInTheDocument();
