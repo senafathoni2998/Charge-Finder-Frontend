@@ -14,6 +14,12 @@ import {
   haversineKm,
 } from "../../utils/distance";
 import { useGeoLocation } from "../../hooks/geolocation-hook";
+import { useOnlineStatus } from "../../hooks/useOnlineStatus";
+import {
+  loadNearbyStations,
+  saveNearbyStations,
+} from "../../utils/nearbyStationsCache";
+import { OfflineBanner } from "../../components";
 import type { ConnectorType } from "../../models/model";
 import type { FilterStatus, Station, StationWithDistance } from "./types";
 import {
@@ -57,6 +63,11 @@ export default function MainPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [stations, setStations] = useState<Station[]>([]);
   const [showDemoHint, setShowDemoHint] = useState(false);
+  // Offline UX: whether the shown stations came from the last-known cache, and
+  // when that snapshot was saved (drives the OfflineBanner's "saved N min ago").
+  const [usingCachedData, setUsingCachedData] = useState(false);
+  const [cachedSavedAt, setCachedSavedAt] = useState<number | null>(null);
+  const isOnline = useOnlineStatus();
 
   const drawerOpen = useAppSelector((state) => state.app.isSidebarOpen);
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
@@ -93,29 +104,63 @@ export default function MainPage() {
   useEffect(() => {
     const controller = new AbortController();
     let active = true;
+    const center = { lat: effectiveCenter.lat, lng: effectiveCenter.lng };
 
     const loadStations = async () => {
-      lastFetchRef.current = {
-        lat: effectiveCenter.lat,
-        lng: effectiveCenter.lng,
-      };
+      lastFetchRef.current = { lat: center.lat, lng: center.lng };
       const result = await fetchStations({
         signal: controller.signal,
-        lat: effectiveCenter.lat,
-        lng: effectiveCenter.lng,
+        lat: center.lat,
+        lng: center.lng,
         radiusKm,
       });
+      // Aborted requests (deps changed / unmount) leave `active` false; bail so a
+      // cancelled fetch never wipes or overwrites what a newer fetch is loading.
       if (!active) return;
-      setStations(result.ok ? result.stations : []);
-      // First-time UX: if the backend seeded demo stations near a user with nothing
-      // nearby, tell them once so the (Demo) markers don't look like real stations.
-      if (
-        result.ok &&
-        result.stations.some(isDemoStation) &&
-        !hasSeenDemoHint()
-      ) {
-        markDemoHintSeen();
-        setShowDemoHint(true);
+
+      const online = typeof navigator === "undefined" || navigator.onLine;
+
+      if (result.ok) {
+        setStations(result.stations);
+        if (online) {
+          // Fresh from the network — persist as the offline "last-known" snapshot
+          // (no-ops on an empty list, so a barren area can't clobber good data).
+          saveNearbyStations(center, radiusKm, result.stations);
+          setUsingCachedData(false);
+          setCachedSavedAt(null);
+        } else {
+          // A body while offline means the service worker served its cached copy.
+          // Present it as last-known and reuse the snapshot's original timestamp
+          // (do NOT re-save — that would reset the age we show the user). Use the
+          // bounded load so we never show a misleading age from a >24h-old snapshot.
+          const snapshot = loadNearbyStations();
+          setUsingCachedData(true);
+          setCachedSavedAt(snapshot?.savedAt ?? null);
+        }
+        // First-time UX: if the backend seeded demo stations near a user with
+        // nothing nearby, tell them once so (Demo) markers aren't mistaken for real.
+        if (
+          online &&
+          result.stations.some(isDemoStation) &&
+          !hasSeenDemoHint()
+        ) {
+          markDemoHintSeen();
+          setShowDemoHint(true);
+        }
+        return;
+      }
+
+      // The request failed (offline / server unreachable). Fall back to the last
+      // stations we saved so the map isn't left empty.
+      const snapshot = loadNearbyStations();
+      if (snapshot && snapshot.stations.length > 0) {
+        setStations(snapshot.stations);
+        setUsingCachedData(true);
+        setCachedSavedAt(snapshot.savedAt);
+      } else {
+        setStations([]);
+        setUsingCachedData(false);
+        setCachedSavedAt(null);
       }
     };
 
@@ -124,7 +169,13 @@ export default function MainPage() {
       active = false;
       controller.abort();
     };
-  }, [geo.requestId, effectiveCenter.lat, effectiveCenter.lng, radiusKm]);
+  }, [
+    geo.requestId,
+    effectiveCenter.lat,
+    effectiveCenter.lng,
+    radiusKm,
+    isOnline,
+  ]);
   const activeCar = useMemo(() => {
     if (!isAuthenticated) return null;
     return cars.find((c) => c.id === activeCarId) ?? null;
@@ -446,6 +497,12 @@ export default function MainPage() {
             onViewportChange: handleViewportChange,
           } satisfies MapPanelViewState
         }
+      />
+
+      <OfflineBanner
+        isOnline={isOnline}
+        usingCachedData={usingCachedData}
+        savedAt={cachedSavedAt}
       />
 
       <Snackbar

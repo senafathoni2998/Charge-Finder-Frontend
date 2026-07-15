@@ -1,4 +1,8 @@
 import type { UserCar } from "../../features/auth/authSlice";
+import {
+  clearNearbyStations,
+  clearOfflineStationCaches,
+} from "../../utils/nearbyStationsCache";
 
 const LOCAL_KEYS = {
   authToken: "cf_auth_token",
@@ -95,6 +99,11 @@ export const clearAuthStorage = (
     storage.removeItem(LOCAL_KEYS.userCar);
     storage.removeItem(LOCAL_KEYS.userCars);
     storage.removeItem(LOCAL_KEYS.activeCarId);
+    // Drop the offline nearby-stations snapshot and the SW's cached station
+    // responses so one account's data (incl. per-user flags) never surfaces for
+    // the next user on a shared device.
+    clearNearbyStations();
+    void clearOfflineStationCaches();
     if (options.setLogoutRedirect !== false) {
       window.sessionStorage.setItem(SESSION_KEYS.logoutRedirect, "1");
     }

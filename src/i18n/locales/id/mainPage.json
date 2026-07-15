@@ -52,5 +52,10 @@
       "you": "Anda"
     }
   },
+  "offline": {
+    "offline": "Anda sedang offline. Sambungkan kembali untuk memuat stasiun terdekat.",
+    "offlineCached": "Anda sedang offline — menampilkan stasiun yang disimpan {{minutes}} menit lalu.",
+    "cached": "Jaringan tidak tersedia — menampilkan stasiun yang disimpan {{minutes}} menit lalu."
+  },
   "demoHint": "Ini adalah stasiun demo yang ditempatkan di dekat Anda — satu untuk setiap status (Tersedia, Sibuk, Nonaktif) sehingga Anda dapat menjelajahi setiap keadaan. Stasiun asli akan muncul di sini saat ditambahkan."
 }

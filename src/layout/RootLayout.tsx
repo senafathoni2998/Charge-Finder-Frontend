@@ -19,7 +19,7 @@ import { useTranslation } from "react-i18next";
 import { UI } from "../theme/theme";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { setSidebarOpen } from "../features/app/appSlice";
-import { LanguageSwitcher } from "../components";
+import { InstallAppButton, LanguageSwitcher } from "../components";
 
 export default function RootLayout() {
   const location = useLocation();
@@ -133,6 +133,8 @@ export default function RootLayout() {
           <Box sx={{ flex: 1 }} />
 
           <LanguageSwitcher color={UI.text} />
+
+          <InstallAppButton color={UI.text} />
 
           {isAdmin && (
             <Tooltip title={t("tooltips.admin")}>
