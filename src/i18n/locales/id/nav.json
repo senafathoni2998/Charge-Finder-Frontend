@@ -17,7 +17,8 @@
     "admin": "Admin",
     "profile": "Profil",
     "filters": "Filter",
-    "trip": "Rencanakan perjalanan"
+    "trip": "Rencanakan perjalanan",
+    "install": "Pasang aplikasi"
   },
   "aria": {
     "back": "Kembali",
@@ -25,6 +26,7 @@
     "profile": "Buka profil",
     "filters": "Buka filter",
     "logo": "Logo ChargeFinder",
-    "trip": "Buka perencana perjalanan"
+    "trip": "Buka perencana perjalanan",
+    "install": "Pasang aplikasi Charge Finder"
   }
 }
