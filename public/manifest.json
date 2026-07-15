@@ -1,20 +1,67 @@
 {
+  "id": "/",
   "name": "Charge Finder Demo - Full-Stack Portfolio Project",
   "short_name": "Charge Finder",
-  "description": "A full-stack demo for finding EV charging stations. Frontend: React, TypeScript, Leaflet. Backend: Node.js, Express, Redis, MongoDB. Portfolio project.",
-  "start_url": "/",
+  "description": "Find nearby EV charging stations. Works offline with the last stations you loaded. Frontend: React, TypeScript, Leaflet. Backend: Node.js, Express, Redis, MongoDB.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "display_override": ["standalone", "minimal-ui"],
+  "background_color": "#F6F7FB",
   "theme_color": "#1976d2",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
+  "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false,
   "icons": [
     {
-      "src": "/app-logo.svg",
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-any.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
   ],
-  "categories": ["utilities", "navigation"],
+  "shortcuts": [
+    {
+      "name": "Nearby stations",
+      "short_name": "Nearby",
+      "description": "Open the map and find charging stations near you.",
+      "url": "/?source=pwa-shortcut",
+      "icons": [
+        { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }
+      ]
+    }
+  ],
+  "categories": ["utilities", "navigation", "travel"],
   "screenshots": []
 }
