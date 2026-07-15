@@ -52,5 +52,10 @@
       "you": "You"
     }
   },
+  "offline": {
+    "offline": "You're offline. Reconnect to load nearby stations.",
+    "offlineCached": "You're offline — showing stations saved {{minutes}} min ago.",
+    "cached": "Network unavailable — showing stations saved {{minutes}} min ago."
+  },
   "demoHint": "These are demo stations placed near you — one for each status (Available, Busy, Offline) so you can explore every state. Real stations appear here as they’re added."
 }
