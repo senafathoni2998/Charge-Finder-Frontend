@@ -17,7 +17,8 @@
     "admin": "Admin",
     "profile": "Profile",
     "filters": "Filters",
-    "trip": "Plan a trip"
+    "trip": "Plan a trip",
+    "install": "Install app"
   },
   "aria": {
     "back": "Go back",
@@ -25,6 +26,7 @@
     "profile": "Open profile",
     "filters": "Open filters",
     "logo": "ChargeFinder logo",
-    "trip": "Open trip planner"
+    "trip": "Open trip planner",
+    "install": "Install Charge Finder app"
   }
 }
